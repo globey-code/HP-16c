@@ -56,4 +56,4 @@ Contributions are welcome! Follow these steps:
 This project is licensed under the MIT License.
 
 ## Credits
-Developed by Globey-Code(https://github.com/globey-code).
+Developed by [Globey-Code](https://github.com/globey-code).
