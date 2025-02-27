@@ -21,7 +21,7 @@ This is a **work-in-progress emulator** of the **HP 16C** Programmer's Calculato
 ### Setup Instructions
 1. **Clone the repository**:
    ```sh
-   git clone https://github.com/yourusername/HP-16C-Emulator.git
+   git clone https://github.com/globey-code/HP-16c.git
    cd HP-16C-Emulator
    ```
 2. **Install dependencies**:
