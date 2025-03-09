@@ -22,17 +22,17 @@ class Display:
 
         # Create a label for the mode indicator (bottom left by default).
         self.mode_label = tk.Label(self.frame, font=("Courier", 10), bg="#9C9C9C")
-        self.mode_label.place(x=2, rely=1.0, anchor="sw")
+        self.mode_label.place(x=3, rely=1.0, anchor="sw", y=-8)
 
         # Configure stack content label (default: southeast)
         if stack_content_config is None:
-            stack_content_config = {"relx": 1.0, "rely": 1.0, "anchor": "se"}
+            stack_content_config = {"relx": 0.99, "rely": 0.92, "anchor": "se"}
         self.stack_content = tk.Label(self.frame, font=("Courier", 10), bg="#9C9C9C")
         self.stack_content.place(**stack_content_config)
 
         # Configure word size label (default: northeast)
         if word_size_config is None:
-            word_size_config = {"relx": 1.0, "rely": 0.0, "anchor": "ne"}
+            word_size_config = {"relx": 0.99, "rely": 0.92, "anchor": "ne"}
         self.word_size_label = tk.Label(self.frame, font=("Courier", 10), bg="#9C9C9C")
         self.word_size_label.place(**word_size_config)
 

@@ -13,7 +13,7 @@
 
 from arithmetic import add, subtract, multiply, divide
 
-# Initialize a four-level stack (R0, R1, R2, R3)
+# Initialize a four-level stack (T, Z, Y, X)
 stack = [0.0, 0.0, 0.0, 0.0]
 
 # Default word size (1..64). The real HP 16C typically defaults to 16 bits.
@@ -55,31 +55,36 @@ def apply_word_size(value):
     return value
 
 # Push a new value onto the stack, applying word-size and two's complement rules.
-# The new value goes to R0; R0->R1, R1->R2, R2->R3, R3 is dropped off.
+# The new value goes to T; T->Z, Z->Y, Y->X, X is dropped off.
 def push(value):
+    """Push a value onto the stack and shift the rest down."""
     global stack
-    value = apply_word_size(value)
-
-    stack = [value] + stack[:-1]
-    log_stack_to_file("PUSH")
-    print(f"Pushed value: {value}. New stack state: {stack}")
+    value = apply_word_size(value)  # Apply word-size limit
+    stack[:] = [value] + stack[:-1]  # Keep reference while shifting
+    print(f"[DEBUG] Pushed value: {value}. New stack state: {stack}")
 
 
-# Pop the top value (R0) from the stack and return it.
-# After popping, R1->R0, R2->R1, R3->R2, and a 0.0 is appended at R3.
 
+
+# Pop the top value (T) from the stack and return it.
+# After popping, Z->T, Y->Z, X->Y, and a 0.0 is appended at X.
 def pop():
+    """Removes and returns the top value of the stack, shifting the rest up."""
     global stack
+    if not stack:
+        return 0
     top_val = stack[0]
-    stack = stack[1:] + [0.0]
-    log_stack_to_file("POP")
+    stack[:] = stack[1:] + [0.0]  # Maintain reference while shifting
+    print(f"[DEBUG] Popped value: {top_val}. New stack state: {stack}")
     return top_val
+
+
 
 def get_state():
     # Return a copy of the stack to prevent accidental modification.
     return stack.copy()
 
-# Return the top value of the stack (R0) without removing it.
+# Return the top value of the stack (T) without removing it.
 def peek():
     return stack[0]
 
@@ -94,16 +99,16 @@ def clear_stack():
 #
 # Supported operators: '+', '-', '*', '/'
 #
-# - Pop the top value (R0) -> top_value
-# - Pop the second value (R0) -> second_value
+# - Pop the top value (T) -> top_value
+# - Pop the second value (T) -> second_value
 # - Perform second_value operator top_value
 # - Apply word-size logic
 # - Push the result back onto the stack
 # - Return the final result
 
 def perform_operation(operator):
-    top_value = pop()        # was R0
-    second_value = pop()     # was R1 after the first pop
+    top_value = pop()        # was T
+    second_value = pop()     # was Z after the first pop
 
     # Convert them to integers if they're floats.
     top_value = int(top_value)
@@ -131,25 +136,25 @@ def perform_operation(operator):
     log_stack_to_file(f"OPERATOR {operator}")
     return result
 
-# Duplicate the top value of the stack (R0 -> R0, R1->R0, R2->R1, R3->R2).
+# Duplicate the top value of the stack (T -> T, Z->T, Y->Z, X->Y).
 def duplicate():
     push(peek())
 
-# Swap the top two values of the stack (R0 <-> R1).
+# Swap the top two values of the stack (T <-> Z).
 def swap():
     global stack
     if len(stack) >= 2:
         stack[0], stack[1] = stack[1], stack[0]
         log_stack_to_file("SWAP")
 
-# Roll the stack up (R0 -> R3, R1 -> R0, R2 -> R1, R3 -> R2).
+# Roll the stack up (T -> X, Z -> T, Y -> Z, X -> Y).
 def roll():
     global stack
     stack = [stack[-1]] + stack[:-1]
     log_stack_to_file("ROLL")
 
 # Print the current contents of the stack in a formatted manner.
-# R0 is the top of the stack, R3 is the bottom.
+# T is the top of the stack, X is the bottom.
 def print_stack():
     print("Current stack:")
     for i, value in enumerate(stack):

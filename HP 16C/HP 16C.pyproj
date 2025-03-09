@@ -33,6 +33,7 @@
     <Compile Include="mode_manager.py" />
     <Compile Include="reload.py" />
     <Compile Include="state_manager.py" />
+    <Compile Include="test_shift_left.py" />
     <Compile Include="ui.py" />
     <Compile Include="unused\old_command_map.py" />
     <Compile Include="display.py" />

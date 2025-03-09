@@ -1,6 +1,6 @@
 # f_key.py
 from toggle_helpers import revert_to_normal
-from f_function import f_action
+from f_function import f_action, action_sl
 from normal_state_function import get_display  # assume this returns the current display
 
 # Global flag to track whether f-mode is active.
@@ -45,13 +45,19 @@ def bind_widgets_to_f_action(btn, button_widgets):
     ]
     for widget in widgets:
         if widget:
-            widget.bind("<Button-1>", lambda e, b=btn: execute_f_action(b, button_widgets))
+            widget.bind("<Button-1>", lambda e, b=btn: execute_f_action(b, button_widgets, get_display()))
 
-def execute_f_action(button, button_widgets):
+
+def execute_f_action(button, button_widgets, display_widget):
     global f_mode_active
-    f_action(button)
+
+    # Execute the corresponding function, now passing display_widget
+    f_action(button, display_widget)  
+
+    # Restore button colors and deactivate f_mode
     for btn in button_widgets:
         if btn.get("command_name") in ("yellow_f_function", "blue_g_function"):
             continue
-        revert_to_normal(btn, button_widgets, get_display())
-    f_mode_active = False
+        revert_to_normal(btn, button_widgets, display_widget)
+
+    f_mode_active = False  # Disable f-mode

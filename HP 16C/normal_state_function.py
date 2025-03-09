@@ -18,6 +18,7 @@ def get_display():
     """Return the current display instance."""
     global display
     return display
+    return display_widget
 
 def convert_entry(raw_value, mode):
     """

@@ -1,13 +1,14 @@
-import stack
+from stack import stack, push, pop, apply_word_size
 from normal_state_function import display  # reuse existing global display
 from word_size import set_word_size_from_input, ALLOWED_WORD_SIZES
+from error import show_error
 
-def f_action(button):
+def f_action(button, display_widget):
     top_text = button.get("orig_top_text", "").replace("\n", "").strip()
     print("f action triggered for button with top label:", top_text)
     
     if top_text == "SL":
-        action_sl()
+        action_sl(display_widget)
     elif top_text == "x><(i)":
         action_x_exchange_i()
     elif top_text == "(i)":
@@ -19,13 +20,43 @@ def f_action(button):
     else:
         print("No f function defined for top label:", top_text)
 
-def action_sl():
+def action_sl(display_widget):
     """Shift the top stack value left by one bit."""
-    value = stack.pop()
+    
+    global stack  # Ensure we're using the correct stack reference
+
+    print(f"[DEBUG] Before SL - Stack Reference ID: {id(stack)}, Contents: {stack}")
+
+    # Stack Underflow Check
+    if len(stack) == 0 or stack[0] == 0.0:
+        show_error(display_widget, "E101")  # Stack Underflow Error
+        return
+
+    value = stack[0]  # Get top of stack (T)
+
+    # Convert whole-number floats to integers
+    if isinstance(value, float) and value.is_integer():
+        value = int(value)
+
+    # Invalid Operand Check (Only integers can be shifted)
+    if not isinstance(value, int):
+        show_error(display_widget, "E102")  # Invalid Operand Error
+        return
+
+    # Perform Shift Left
     result = value << 1
-    stack.push(result)
-    display.set_entry(str(result))
-    print("Shift Left executed:", result)
+    result = apply_word_size(result)  # Apply word-size limit
+
+    # Update stack correctly
+    pop()  # Remove old top
+    push(result)  # Push new top
+
+    # Update Display
+    display_widget.set_entry(str(result))
+
+    print(f"[DEBUG] After SL - Stack Reference ID: {id(stack)}, Contents: {stack}")
+    print(f"Shift Left executed: {value} << 1 = {result}")
+
 
 def action_sr():
     """Shift the top stack value right by one bit."""
