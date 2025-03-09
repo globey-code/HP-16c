@@ -32,7 +32,7 @@ class Display:
 
         # Configure word size label (default: northeast)
         if word_size_config is None:
-            word_size_config = {"relx": 0.99, "rely": 0.92, "anchor": "ne"}
+            word_size_config = {"relx": 0.99, "rely": 0.02, "anchor": "ne"}
         self.word_size_label = tk.Label(self.frame, font=("Courier", 10), bg="#9C9C9C")
         self.word_size_label.place(**word_size_config)
 
