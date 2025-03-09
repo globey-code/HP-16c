@@ -1,6 +1,6 @@
 import stack
 from normal_state_function import display  # reuse existing global display
-from word_size import set_word_size_from_input
+from word_size import set_word_size_from_input, ALLOWED_WORD_SIZES
 
 def f_action(button):
     top_text = button.get("orig_top_text", "").replace("\n", "").strip()
@@ -45,12 +45,13 @@ def action_x_exchange_i():
 def action_i():
     """Perform a specific action related to (i). You can define this explicitly."""
     print("Executing (i) specific function.")
-    # Add custom logic here.
+    # Add custom logic here as needed.
 
 def action_wsize():
     """Set the word size using the current display entry.
     This emulates the real HP-16C: you enter the word size (e.g., '16'),
     press the yellow f key to enter f-mode, and then press the WSIZE key.
+    If the input is invalid, the word size label is updated with the allowed sizes.
     """
     from normal_state_function import get_display
     disp = get_display()
@@ -59,11 +60,12 @@ def action_wsize():
         new_size = set_word_size_from_input(input_value)
         if new_size is not None:
             print(f"Word size set to {new_size} bits.")
-            # Update the status area (we assume display.stack_label is used for status).
-            disp.stack_label.config(text=f"Word Size: {new_size} bits")
-            # Optionally clear the display after setting the word size.
+            disp.word_size_label.config(text=f"WS: {new_size} bits")
             disp.clear_entry()
         else:
-            print("Failed to set word size: invalid input.")
+            valid_sizes = ', '.join(map(str, ALLOWED_WORD_SIZES))
+            error_message = f"Invalid WS! Must be one of: {valid_sizes}"
+            print(error_message)
+            disp.word_size_label.config(text=error_message)
     else:
         print("Display not found in action_wsize().")

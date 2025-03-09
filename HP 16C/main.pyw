@@ -13,7 +13,7 @@ def main():
     root.configure(bg="#1e1818")
     root.resizable(False, False)
 
-    #restrict_input(root)  # <-- Restrict keyboard input here
+    #restrict_input(root)  # <-- Optionally restrict keyboard input
 
     config = load_config()
 
@@ -22,11 +22,11 @@ def main():
     except Exception:
         custom_font = ("Courier", 18)
 
-    # Create the UI (this returns the display and buttons)
+    # Create the UI (returns display and buttons)
     disp, buttons = setup_ui(root, config, custom_font)
     set_display(disp)
 
-    # Start periodic stack updates now that disp is defined.
+    # Start periodic stack updates
     disp.schedule_stack_updates()
 
     # Initialize button states

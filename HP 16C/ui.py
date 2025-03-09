@@ -2,7 +2,6 @@ import tkinter as tk
 from display import Display
 from button_config import BUTTONS_CONFIG
 
-
 def setup_ui(root, config, custom_font):
     # Calculate window size from BUTTONS_CONFIG
     margin = config["margin"]
@@ -27,17 +26,18 @@ def setup_ui(root, config, custom_font):
     y_coord = (screen_h - final_height) // 2
     root.geometry(f"{final_width}x{final_height}+{x_coord}+{y_coord}")
 
-    # Create display
+    # Create display.
+    # (Using defaults: stack content in southeast, word size in northeast.)
     disp = Display(root,
                    x=margin + 25,
                    y=margin + 25,
                    width=display_width - 50,
-                   height=display_height -50,
+                   height=display_height - 50,
                    font=custom_font)
     disp.set_mode("DEC")
     disp.update()
 
-    # Buttons creation with adjusted offset
+    # Buttons creation with adjusted offset.
     buttons = []
     offset_x = (final_width - btn_area_width) // 2 - btn_min_x
     offset_y = margin + display_height + margin - btn_min_y
