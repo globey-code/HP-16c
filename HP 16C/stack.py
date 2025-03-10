@@ -1,118 +1,92 @@
-# stack.py
-#
-# Module to handle stack-based operations for the HP 16C emulator, including word-size
-# and two's complement logic.
-#
-# The HP 16C uses a four-level stack. The top of the stack is at index 0.
-# When a new value is pushed, the existing values are shifted down (with the bottom value dropped).
-# Arithmetic operations pop the top two values, perform the operation, then push the result.
-#
-# This version also logs every stack change to a file named stack_log.txt and
-# applies two's complement masking based on a user-configurable word size.
+"""
+stack.py
 
+Implements a 4-level stack. Raises custom exceptions on error.
+No UI references. Only logic + data.
+"""
 
+from logging_config import logger
+from error import StackUnderflowError, InvalidOperandError
 from arithmetic import add, subtract, multiply, divide
 
-# Initialize a four-level stack (T, Z, Y, X)
-stack = [0.0, 0.0, 0.0, 0.0]
-
-# Default word size (1..64). The real HP 16C typically defaults to 16 bits.
+stack = [0.0, 0.0, 0.0, 0.0]  # T, Z, Y, X
 current_word_size = 16
+current_complement_mode = "2S"
 
-# Append the current stack state to stack_log.txt, along with an optional action label.
-def log_stack_to_file(action=""):    
-    with open("stack_log.txt", "a") as f:
-        f.write(f"[{action}] Stack state: {stack}\n")
-
-# Set the global word size for two's complement operations (1..64).
-def set_word_size(bits):
-    global current_word_size
-    if bits < 1 or bits > 64:
-        raise ValueError("Word size must be between 1 and 64 bits.")
-    current_word_size = bits
-    print(f"Word size set to {bits} bits.")
-
-# Return the current word size.
-def get_word_size():
-    return current_word_size
-
-# Apply the current word size to 'value':
-# 1) Mask off bits above current_word_size.
-# 2) Interpret as signed if the sign bit is set (two's complement).
-def apply_word_size(value):
-    # If value is a float with a fractional part, return it unchanged.
-    # (The two's complement logic is only meaningful for whole numbers.)
-    if isinstance(value, float) and not value.is_integer():
-        return value
-
-    # Otherwise, for whole numbers, apply word-size masking.
-    value = int(value)
-    mask = (1 << current_word_size) - 1
-    value &= mask
-    sign_bit = 1 << (current_word_size - 1)
-    if value & sign_bit:
-        value -= (1 << current_word_size)
-    return value
-
-# Push a new value onto the stack, applying word-size and two's complement rules.
-# The new value goes to T; T->Z, Z->Y, Y->X, X is dropped off.
 def push(value):
-    """Push a value onto the stack and shift the rest down."""
     global stack
-    value = apply_word_size(value)  # Apply word-size limit
-    stack[:] = [value] + stack[:-1]  # Keep reference while shifting
-    print(f"[DEBUG] Pushed value: {value}. New stack state: {stack}")
+    value = apply_word_size(value)
+    stack.insert(0, value)
+    if len(stack) > 4:
+        stack.pop()
+    logger.debug(f"Pushed {value}, stack={stack}")
 
-
-
-
-# Pop the top value (T) from the stack and return it.
-# After popping, Z->T, Y->Z, X->Y, and a 0.0 is appended at X.
 def pop():
-    """Removes and returns the top value of the stack, shifting the rest up."""
     global stack
-    if not stack:
-        return 0
+    if not stack or stack[0] == 0.0:
+        raise StackUnderflowError()
     top_val = stack[0]
-    stack[:] = stack[1:] + [0.0]  # Maintain reference while shifting
-    print(f"[DEBUG] Popped value: {top_val}. New stack state: {stack}")
+    stack[:] = stack[1:] + [0.0]
+    logger.debug(f"Popped {top_val}, stack={stack}")
     return top_val
 
-
-
-def get_state():
-    # Return a copy of the stack to prevent accidental modification.
-    return stack.copy()
-
-# Return the top value of the stack (T) without removing it.
 def peek():
     return stack[0]
 
-# Clear the stack by setting all values to 0.0.
 def clear_stack():
     global stack
     stack = [0.0, 0.0, 0.0, 0.0]
-    log_stack_to_file("CLEAR")
+    logger.debug("Stack cleared")
 
-# Perform an arithmetic operation using the top two values of the stack.
-# The operation is performed as: second_operand operator top_operand.
-#
-# Supported operators: '+', '-', '*', '/'
-#
-# - Pop the top value (T) -> top_value
-# - Pop the second value (T) -> second_value
-# - Perform second_value operator top_value
-# - Apply word-size logic
-# - Push the result back onto the stack
-# - Return the final result
+def get_state():
+    return stack.copy()
+
+def set_word_size(bits):
+    global current_word_size
+    if bits < 1 or bits > 64:
+        raise ValueError("Word size must be between 1 and 64.")
+    current_word_size = bits
+    logger.debug(f"Word size set to {bits}")
+
+def get_word_size():
+    return current_word_size
+
+def apply_word_size(value):
+    global current_word_size, current_complement_mode
+
+    # If float has fractional part, keep as float
+    if isinstance(value, float) and not value.is_integer():
+        return value
+
+    val_int = int(value)
+    mask = (1 << current_word_size) - 1
+    val_int &= mask  # mask off bits above current_word_size
+
+    if current_complement_mode == "UNSIGNED":
+        # In UNSIGNED mode, we do NOT interpret sign bit as negative
+        # So we just return val_int as is (0..65535 if 16-bit, e.g.)
+        return val_int
+
+    elif current_complement_mode == "1S":
+        # 1's complement logic: if sign bit is set, interpret as negative
+        sign_bit = 1 << (current_word_size - 1)
+        if val_int & sign_bit:
+            # 1's complement negative
+            # Typically, 1's complement negative is: -(~val_int & mask)
+            # or -(mask ^ val_int)
+            val_int = -((~val_int) & mask)
+        return val_int
+
+    else:  # "2S" (default)
+        sign_bit = 1 << (current_word_size - 1)
+        if val_int & sign_bit:
+            val_int -= (1 << current_word_size)
+        return val_int
+
 
 def perform_operation(operator):
-    top_value = pop()        # was T
-    second_value = pop()     # was Z after the first pop
-
-    # Convert them to integers if they're floats.
-    top_value = int(top_value)
-    second_value = int(second_value)
+    top_value = pop()
+    second_value = pop()
 
     if operator == "+":
         result = add(second_value, top_value)
@@ -121,41 +95,32 @@ def perform_operation(operator):
     elif operator == "*":
         result = multiply(second_value, top_value)
     elif operator == "/":
-        try:
-            result = divide(second_value, top_value)
-        except ZeroDivisionError:
-            print("Division by zero encountered. Result set to 0.")
-            result = 0
+        result = divide(second_value, top_value)
     else:
-        raise ValueError(f"Unsupported operator: {operator}")
+        raise InvalidOperandError()
 
-    # Apply word-size logic to the result before pushing
     result = apply_word_size(result)
-
     push(result)
-    log_stack_to_file(f"OPERATOR {operator}")
     return result
 
-# Duplicate the top value of the stack (T -> T, Z->T, Y->Z, X->Y).
 def duplicate():
     push(peek())
 
-# Swap the top two values of the stack (T <-> Z).
 def swap():
     global stack
     if len(stack) >= 2:
         stack[0], stack[1] = stack[1], stack[0]
-        log_stack_to_file("SWAP")
+    logger.debug(f"Swapped top two, stack={stack}")
 
-# Roll the stack up (T -> X, Z -> T, Y -> Z, X -> Y).
 def roll():
     global stack
     stack = [stack[-1]] + stack[:-1]
-    log_stack_to_file("ROLL")
+    logger.debug(f"Rolled stack, stack={stack}")
 
-# Print the current contents of the stack in a formatted manner.
-# T is the top of the stack, X is the bottom.
-def print_stack():
-    print("Current stack:")
-    for i, value in enumerate(stack):
-        print(f"R{i}: {value}")
+def set_complement_mode(mode: str):
+    global current_complement_mode
+    valid_modes = {"1S", "2S", "UNSIGNED"}
+    if mode not in valid_modes:
+        raise ValueError(f"Invalid complement mode: {mode}")
+    current_complement_mode = mode
+    print(f"[stack] Complement mode set to {mode}")

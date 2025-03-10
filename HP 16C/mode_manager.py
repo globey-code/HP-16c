@@ -1,3 +1,9 @@
+"""
+mode_manager.py
+
+Tracks the current mode (BIN, OCT, DEC, HEX) and checks if a digit is allowed.
+"""
+
 CURRENT_MODE = "DEC"
 
 VALID_CHARS = {
@@ -11,7 +17,6 @@ def set_mode(mode, display):
     global CURRENT_MODE
     CURRENT_MODE = mode
     display.set_mode(mode)
-    print(f"Mode changed to: {mode}")
 
 def is_input_allowed(char):
     global CURRENT_MODE

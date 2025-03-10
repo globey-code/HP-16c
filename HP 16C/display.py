@@ -1,48 +1,73 @@
+"""
+display.py
+
+Pure UI component that shows the current entry, mode, and stack content.
+"""
+
 import tkinter as tk
-import stack
-from keyboard_input import restrict_input
+import stack  # If you need stack access for update_stack_content()
 
 class Display:
-    def __init__(self, master, x, y, width, height, font=None, 
-                 stack_content_config=None, word_size_config=None):
+    def __init__(self, master, x, y, width, height,
+                 border_thickness=1,
+                 font=None,
+                 stack_content_config=None,
+                 word_size_config=None):
+        """
+        Creates a display area with a white border around it.
+        Move or resize by changing (x, y, width, height).
+        """
         self.master = master
-        self.current_entry = ""
-        self.raw_value = ""          # Store the original decimal entry here.
-        self.mode = "DEC"            # Current mode: DEC by default.
-        self.font = font if font is not None else ("Courier", 18)
+        self.current_entry = "0"
+        self.raw_value = "0"
+        self.mode = "DEC"
+        self.font = font if font else ("Courier", 18)
 
-        # Create the main frame for the display.
-        self.frame = tk.Frame(master, bg="#9C9C9C")
+        # 1) Outer frame with a white border
+        self.frame = tk.Frame(
+            master,
+            bg="#9C9C9C",
+            highlightthickness=border_thickness,  # The thickness of the white border
+            highlightbackground="white",          # The color of the border
+            relief="flat"
+        )
+        # Place the frame using the constructor args (x, y, width, height)
         self.frame.place(x=x, y=y, width=width, height=height)
 
-        # Create a Text widget to show the calculator entry.
-        self.widget = tk.Text(self.frame, bg="#9C9C9C", fg="black", font=self.font)
+        # 2) Inner text widget, sized to match the frame exactly
+        self.widget = tk.Text(
+            self.frame,
+            bg="#9C9C9C",
+            fg="black",
+            font=self.font,
+            bd=0,                 # No extra border inside
+            highlightthickness=0  # No highlight inside the text
+        )
         self.widget.place(x=0, y=0, width=width, height=height)
-        self.widget.bind("<Key>", lambda e: "break")  # Prevent direct keyboard input
+        self.widget.bind("<Key>", lambda e: "break")  # Prevent direct typing
 
-        # Create a label for the mode indicator (bottom left by default).
+        # (Optional) A mode label at bottom-left
         self.mode_label = tk.Label(self.frame, font=("Courier", 10), bg="#9C9C9C")
         self.mode_label.place(x=3, rely=1.0, anchor="sw", y=-8)
 
-        # Configure stack content label (default: southeast)
+        # (Optional) A stack content label at bottom-right
         if stack_content_config is None:
             stack_content_config = {"relx": 0.99, "rely": 0.92, "anchor": "se"}
         self.stack_content = tk.Label(self.frame, font=("Courier", 10), bg="#9C9C9C")
         self.stack_content.place(**stack_content_config)
 
-        # Configure word size label (default: northeast)
+        # (Optional) A word size label at top-right
         if word_size_config is None:
             word_size_config = {"relx": 0.99, "rely": 0.02, "anchor": "ne"}
         self.word_size_label = tk.Label(self.frame, font=("Courier", 10), bg="#9C9C9C")
         self.word_size_label.place(**word_size_config)
 
     def append_entry(self, ch):
-        self.raw_value += ch        # Append to raw_value (assumed to be in decimal).
-        self.current_entry = self.raw_value  # In DEC mode, display raw_value.
+        self.raw_value += ch
+        self.current_entry = self.raw_value
         self.update()
 
     def set_entry(self, entry):
-        # When setting a new entry from a conversion, do not change raw_value.
         self.current_entry = entry
         self.update()
 
@@ -62,16 +87,7 @@ class Display:
         self.mode = mode_str
         self.mode_label.config(text=mode_str)
 
-    def show_error(self, title, message):
-        print(f"{title}: {message}")
-
-    # Updates the stack content label with the current stack state.
     def update_stack_content(self):
-        state = stack.get_state()  # E.g., [0.0, 0.0, 0.0, 0.0]
-        text = f"stack = {state}"
-        self.stack_content.config(text=text)
-
-    # Schedules periodic updates for the stack content label.
-    def schedule_stack_updates(self, interval=200):
-        self.update_stack_content()
-        self.master.after(interval, lambda: self.schedule_stack_updates(interval))
+        """Example: show the current stack state if you have 'stack.py'."""
+        s = stack.get_state()
+        self.stack_content.config(text=f"Stack: {s}")

@@ -1,46 +1,64 @@
-from f_key import toggle_f_state
-from g_key import toggle_g_state
-from normal_state_key import toggle_normal_state
-from normal_state_function import set_display
-from reload import reload_program  # Import the reload function
+"""
+button_state_manager.py
+
+Binds each button to the correct method in the controller or modes.
+No circular import: we only import 'controller' if needed.
+"""
+
+from modes import toggle_f_mode, toggle_g_mode, do_shift_left, f_mode_active, g_mode_active
 
 class ButtonStateManager:
-    def __init__(self, button_widgets, display):
+    def __init__(self, button_widgets, controller):
         self.button_widgets = button_widgets
-        self.display = display
+        self.controller = controller
 
     def bind_button_states(self):
-        set_display(self.display)
-
         for btn in self.button_widgets:
-            cmd_name = btn.get("command_name")
-            if cmd_name == "yellow_f_function":
-                self.bind_f_button(btn)
-            elif cmd_name == "blue_g_function":
-                self.bind_g_button(btn)
-            elif cmd_name == "reload_program":
-                self.bind_reload_button(btn)
+            cmd_name = btn.get("command_name", "")
+            if cmd_name == "toggle_f_mode":
+                self._bind_toggle_f(btn)
+            elif cmd_name == "toggle_g_mode":
+                self._bind_toggle_g(btn)
+            elif cmd_name == "shift_left_f":
+                self._bind_shift_left_f(btn)
             else:
-                self.bind_normal_button(btn)
+                self._bind_normal(btn)
 
-    def bind_f_button(self, btn):
-        widgets = [btn["frame"], btn.get("top_label"), btn.get("main_label"), btn.get("sub_label")]
-        for widget in widgets:
-            if widget:
-                widget.bind("<Button-1>", lambda e, btns=self.button_widgets: toggle_f_state(btns))
+    def _bind_toggle_f(self, btn):
+        def on_click(e):
+            toggle_f_mode()
+        self._bind_to_all_widgets(btn, on_click)
 
-    def bind_g_button(self, btn):
-        widgets = [btn["frame"], btn.get("top_label"), btn.get("main_label"), btn.get("sub_label")]
-        for widget in widgets:
-            if widget:
-                widget.bind("<Button-1>", lambda e, btns=self.button_widgets: toggle_g_state(btns))
+    def _bind_toggle_g(self, btn):
+        def on_click(e):
+            toggle_g_mode()
+        self._bind_to_all_widgets(btn, on_click)
 
-    def bind_reload_button(self, btn):
-        # Bind only to the reload (ON) button. Do not let normal state binding override this.
-        widgets = [btn["frame"], btn.get("top_label"), btn.get("main_label"), btn.get("sub_label")]
-        for widget in widgets:
-            if widget:
-                widget.bind("<Button-1>", lambda e: reload_program())
+    def _bind_shift_left_f(self, btn):
+        """
+        Example: calls do_shift_left(...) from modes.py, passing the controller.
+        """
+        def on_click(e):
+            do_shift_left(self.controller)
+        self._bind_to_all_widgets(btn, on_click)
 
-    def bind_normal_button(self, btn):
-        toggle_normal_state(btn, self.button_widgets, self.display)
+    def _bind_normal(self, btn):
+        """
+        Default: interpret command_name as a controller method.
+        E.g., "enter_value" => self.controller.enter_value()
+        """
+        def on_click(e):
+            cmd = btn.get("command_name", "")
+            if cmd == "enter_value":
+                self.controller.enter_value()
+            elif cmd == "add_digit_5":
+                self.controller.enter_digit("5")
+            elif cmd == "op_plus":
+                self.controller.enter_operator("+")
+            # etc.
+        self._bind_to_all_widgets(btn, on_click)
+
+    def _bind_to_all_widgets(self, btn, func):
+        for w in [btn["frame"], btn.get("top_label"), btn.get("main_label"), btn.get("sub_label")]:
+            if w:
+                w.bind("<Button-1>", func)
