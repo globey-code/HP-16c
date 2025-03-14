@@ -10,8 +10,8 @@ import tkinter.font as tkFont
 from ui import setup_ui
 from configuration import load_config
 from controller import HP16CController
-#from button_state_manager import ButtonStateManager
-from buttons.buttons import bind_buttons  # the new single file
+# from button_state_manager import ButtonStateManager  # Uncomment if needed
+from buttons.buttons import bind_buttons
 from buttons.button_config import BUTTONS_CONFIG
 
 def main():
@@ -22,7 +22,7 @@ def main():
 
     config = load_config()
 
-    # --- CHANGE DISPLAY SIZE HERE ---
+    # Override display size from config
     config["display_x"] = 125
     config["display_y"] = 20
     config["display_width"] = 575
@@ -34,22 +34,20 @@ def main():
             size=config["display_font_size"]
         )
     except Exception:
-        custom_font = ("Courier", 18)
+        custom_font = tkFont.Font(family="Courier", size=18)  # Use tkFont.Font consistently
 
-    # Setup UI
+    # Setup UI and controller
     disp, buttons = setup_ui(root, config, custom_font)
-    controller = HP16CController(disp, buttons)  # pass two arguments
-    bind_buttons(buttons, disp, controller)
+    controller = HP16CController(disp, buttons)
+    bind_buttons(buttons, disp, controller)  # Bind buttons once
 
-    # Bind button actions
-    #manager = ButtonStateManager(buttons, controller)
-    #manager.bind_button_states()
-    bind_buttons(buttons, disp, controller)
+    # Periodic stack updates (every 100ms)
+    def update_stack():
+        disp.update_stack_content()
+        root.after(100, update_stack)  # Schedule next update
 
-    # Periodic stack updates
-    disp.update_stack_content()
-    disp.master.after(500, lambda: disp.update_stack_content())
-
+    update_stack()  # Start periodic updates
+    
     print("Running HP 16C Emulator")
     root.mainloop()
 

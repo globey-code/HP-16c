@@ -17,6 +17,7 @@ file_handler.setLevel(logging.DEBUG)
 # Log to console:
 console_handler = logging.StreamHandler(sys.stdout)
 console_handler.setLevel(logging.INFO)
+console_handler.setLevel(logging.DEBUG)
 
 formatter = logging.Formatter(
     "%(asctime)s [%(levelname)s] %(name)s: %(message)s",

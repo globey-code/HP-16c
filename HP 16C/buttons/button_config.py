@@ -199,12 +199,6 @@ BUTTONS_CONFIG = [
     {
         "top_label": "WSIZE",      
         "main_label": "STO",    
-        "sub_label": "\u2b60",          
-        "x": 300, "y": 380, "width": 75, "height": 75, 
-        },
-    {
-        "top_label": "WSIZE",      
-        "main_label": "STO",    
         "sub_label": "\u2BC7",          
         "x": 300, "y": 380, "width": 75, "height": 75, 
         },

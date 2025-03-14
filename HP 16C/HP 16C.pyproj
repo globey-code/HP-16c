@@ -29,15 +29,9 @@
     <Compile Include="buttons\buttons.py" />
     <Compile Include="buttons\button_config.py" />
     <Compile Include="buttons\__init__.py" />
-    <Compile Include="button_state_manager.py" />
     <Compile Include="configuration.py" />
     <Compile Include="controller.py" />
-    <Compile Include="keyboard_input.py" />
     <Compile Include="logging_config.py" />
-    <Compile Include="modes.py" />
-    <Compile Include="mode_manager.py" />
-    <Compile Include="reload.py" />
-    <Compile Include="state_manager.py" />
     <Compile Include="tests\test_base_conversion.py" />
     <Compile Include="tests\test_shift_left.py" />
     <Compile Include="tests\__init__.py" />
@@ -53,7 +47,6 @@
     <Compile Include="buttons\old button files\normal_state_key.py" />
     <Compile Include="stack.py" />
     <Compile Include="buttons\old button files\toggle_helpers.py" />
-    <Compile Include="word_size.py" />
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="Global|PythonCore|3.13" />
