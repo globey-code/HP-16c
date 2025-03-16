@@ -26,34 +26,28 @@
   <ItemGroup>
     <Compile Include="arithmetic.py" />
     <Compile Include="base_conversion.py" />
-    <Compile Include="buttons\buttons.py" />
-    <Compile Include="buttons\button_config.py" />
-    <Compile Include="buttons\__init__.py" />
+    <Compile Include="buttons.py" />
+    <Compile Include="button_config.py" />
+    <Compile Include="f_mode.py" />
+    <Compile Include="g_mode.py" />
     <Compile Include="configuration.py" />
     <Compile Include="controller.py" />
     <Compile Include="logging_config.py" />
     <Compile Include="tests\test_base_conversion.py" />
     <Compile Include="tests\test_shift_left.py" />
     <Compile Include="tests\__init__.py" />
+    <Compile Include="test_row_1.py" />
     <Compile Include="ui.py" />
     <Compile Include="display.py" />
     <Compile Include="error.py" />
-    <Compile Include="buttons\old button files\f_function.py" />
-    <Compile Include="buttons\old button files\f_key.py" />
-    <Compile Include="buttons\old button files\g_function.py" />
-    <Compile Include="buttons\old button files\g_key.py" />
     <Compile Include="main.pyw" />
-    <Compile Include="buttons\old button files\normal_state_function.py" />
-    <Compile Include="buttons\old button files\normal_state_key.py" />
     <Compile Include="stack.py" />
-    <Compile Include="buttons\old button files\toggle_helpers.py" />
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="Global|PythonCore|3.13" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="buttons\" />
-    <Folder Include="buttons\old button files\" />
     <Folder Include="tests\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />

@@ -6,15 +6,90 @@ Matches HP-16C RPN behavior per the Owner's Handbook.
 """
 
 import stack
-import buttons.buttons as buttons
+import buttons as buttons
+from f_mode import f_action
+from g_mode import g_action
 from error import HP16CError
 from base_conversion import format_in_current_base, current_base, interpret_in_current_base
+from error import HP16CError, StackUnderflowError, InvalidOperandError, ShiftExceedsWordSizeError, InvalidBitOperationError
+
 
 class HP16CController:
     def __init__(self, display, buttons):
         self.display = display
         self.buttons = buttons
-        self.post_enter = False  # New flag to track ENTER state
+        self.post_enter = False
+        self.f_mode_active = False  # Track f-mode
+        self.g_mode_active = False  # Track g-mode
+
+    # New centralized toggle method
+    def toggle_mode(self, mode):
+        """Toggle f or g mode, updating button appearance and bindings."""
+        from buttons import revert_to_normal, bind_normal_button
+
+        # Reset to normal if toggling off or switching modes
+        if (mode == "f" and self.f_mode_active) or (mode == "g" and self.g_mode_active):
+            for btn in self.buttons:
+                if btn.get("command_name") in ("yellow_f_function", "blue_g_function"):
+                    continue
+                revert_to_normal(btn, self.buttons, self.display, self)
+            self.f_mode_active = False
+            self.g_mode_active = False
+            return
+
+        # Reset all buttons to normal first
+        for btn in self.buttons:
+            if btn.get("command_name") in ("yellow_f_function", "blue_g_function"):
+                continue
+            revert_to_normal(btn, self.buttons, self.display, self)
+
+        # Set new mode
+        if mode == "f":
+            self.f_mode_active = True
+            self.g_mode_active = False
+            color = "#e3af01"  # Yellow for f-mode
+            label_key = "top_label"
+            orig_text_key = "orig_top_text"
+        elif mode == "g":
+            self.f_mode_active = False
+            self.g_mode_active = True
+            color = "#59b7d1"  # Blue for g-mode
+            label_key = "sub_label"
+            orig_text_key = "orig_sub_text"
+        else:
+            return
+
+        # Update button appearance and bindings
+        for btn in self.buttons:
+            if btn.get("command_name") in ("yellow_f_function", "blue_g_function"):
+                continue
+            frame = btn["frame"]
+            label = btn.get(label_key)
+            main_label = btn.get("main_label")
+            other_label = btn.get("sub_label" if label_key == "top_label" else "top_label")
+
+            if label:
+                frame.config(bg=color)
+                label.config(bg=color, fg="black")
+                label.place(relx=0.5, rely=0.5, anchor="center")
+                if main_label:
+                    main_label.place_forget()
+                if other_label:
+                    other_label.place_forget()
+                self._bind_mode_action(btn, mode)
+
+    def _bind_mode_action(self, btn, mode):
+        def on_click(e, b=btn):
+            if mode == "f":
+                from f_mode import f_action
+                f_action(b, self.display, self)
+            elif mode == "g":
+                from g_mode import g_action
+                g_action(b, self.display, self)
+            self.toggle_mode(mode)  # Reset mode after action
+        for w in [btn["frame"], btn.get("top_label"), btn.get("main_label"), btn.get("sub_label")]:
+            if w:
+                w.bind("<Button-1>", on_click)
 
     def enter_digit(self, digit: str):
             """Enter a digit into X, clearing if post-ENTER (page 17)."""
@@ -29,26 +104,20 @@ class HP16CController:
             self.display.append_entry(digit.upper())
 
     def enter_operator(self, operator: str):
-        """Lift stack and perform operation using X and Y, per HP-16C RPN (pages 16-19)."""
-        from stack import get_state
+        print(f"[DEBUG] enter_operator called with operator='{operator}'")
         if self.display.raw_value and self.display.raw_value != "0":
             val = interpret_in_current_base(self.display.raw_value, current_base)
             stack.push(val)
             self.display.raw_value = "0"
         self.post_enter = False
-        current_stack = get_state()
-        print(f"[DEBUG] Operator pressed: {operator}")
-        print(f"[DEBUG] Current base: {self.display.mode}")
-        print(f"[DEBUG] Stack before: {current_stack}")
-
         try:
             result = stack.perform_operation(operator)
+            self.save_last_x(stack.peek())
             result_str = format_in_current_base(result, self.display.mode)
             self.display.set_entry(result_str)
             self.display.raw_value = result_str
             self.display.update_stack_content()
             self.display.result_displayed = True
-            print(f"[DEBUG] Result: {result_str}, Stack after: {stack.get_state()}")
         except HP16CError as e:
             self.handle_error(e)
 
@@ -68,11 +137,13 @@ class HP16CController:
         print(f"[DEBUG] Pushed {val} via ENTER. Stack: {stack.get_state()}")
 
     def handle_error(self, exc: HP16CError):
-        self.display.set_entry(f"ERROR {exc.error_code}: {exc.message}")
+        print(f"[DEBUG] Handling error: {exc.error_code} - {exc.message}")
+        self.display.set_entry(exc.display_message, raw=True)
+        self.display.widget.after(3000, lambda: self.display.set_entry(0))
 
     def pop_value(self):
-        """Pop X and update display (page 27)."""
         val = stack.pop()
+        self.save_last_x(val)  # Save popped value
         top_val = stack.peek()
         self.display.set_entry(format_in_current_base(top_val, self.display.mode))
         self.display.raw_value = str(top_val)
@@ -89,7 +160,6 @@ class HP16CController:
 
     # New Methods for Stack Features
     def shift_left(self):
-        """Shift X left by 1 bit (SL, page 56)."""
         stack.shift_left()
         self.update_stack_display()
 
@@ -119,14 +189,20 @@ class HP16CController:
         self.update_stack_display()
 
     def mask_left(self, bits):
-        """Mask leftmost bits of X (MASKL, page 59)."""
-        stack.mask_left(bits)
-        self.update_stack_display()
+        if bits < 0 or bits > stack.get_word_size():
+            raise InvalidBitOperationError()
+        x = stack.peek()
+        mask = ((1 << (stack.get_word_size() - bits)) - 1) << bits
+        result = x & mask
+        stack.push(result)
 
     def mask_right(self, bits):
-        """Mask rightmost bits of X (MASKR, page 59)."""
-        stack.mask_right(bits)
-        self.update_stack_display()
+        if bits < 0 or bits > stack.get_word_size():
+            raise InvalidBitOperationError()
+        x = stack.peek()
+        mask = (1 << bits) - 1
+        result = x & mask
+        stack.push(result)
 
     def count_bits(self):
         """Count 1 bits in X (#B, page 55)."""
@@ -169,7 +245,6 @@ class HP16CController:
         self.update_stack_display()
 
     def double_remainder(self):
-        """Double-word remainder Y:X % Z (DBLR, page 62)."""
         stack.double_remainder()
         self.update_stack_display()
 
@@ -196,3 +271,16 @@ class HP16CController:
         """Set complement mode (SC, page 46)."""
         stack.set_complement_mode(mode)
         self.update_stack_display()
+ 
+    def store_in_i(self):
+        """Store the X register value into the I register."""
+        val = stack.peek()
+        stack.set_i_register(val)
+        print(f"[DEBUG] Stored {val} in I register")
+
+# New class for g-mode functions
+    def last_x(self):
+        return stack.get_last_x()
+
+    def save_last_x(self, x):
+        self.last_x = x

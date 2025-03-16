@@ -1,364 +1,279 @@
 ﻿"""
 stack.py
 
-Implements a 4-level stack per HP-16C Owner's Handbook (pages 27-31).
-Includes all arithmetic, bit operations, shifts, and double precision from the manual.
-No UI references. Only logic + data.
+Implements a simple stack and word size/complement mode management for the HP-16C emulator.
+This module provides basic operations like push, pop, and peek,
+as well as functions to get/set the word size and complement mode,
+and a function to apply the current word size to a value.
 """
 
-from logging_config import logger
-from error import StackUnderflowError, InvalidOperandError
-from arithmetic import add, subtract, multiply, divide
-from base_conversion import current_base
+from error import HP16CError, StackUnderflowError, InvalidOperandError, ShiftExceedsWordSizeError, InvalidBitOperationError
 
-stack = [0.0, 0.0, 0.0, 0.0]  # T, Z, Y, X (page 27)
-current_word_size = 16  # Default 16 bits (page 45)
-current_complement_mode = "2S"  # Default two's complement (page 46)
-carry_flag = False  # CF for overflow/carry (page 49)
-overflow_flag = False  # Overflow indicator (page 50)
+# --- Global Variables ---
 
-# Core Stack Operations
-def push(value, duplicate_x=False):
-    """Push a value onto the stack, lifting X to Y (page 28)."""
-    global stack
-    value = apply_word_size(value)
-    if duplicate_x:
-        stack.insert(0, stack[0])
-    stack.insert(0, value)
-    if len(stack) > 4:
-        stack.pop()
-    logger.debug(f"Pushed {value}, stack={stack}")
+# Simulate a 4-level stack (T, Z, Y, X); initial values are 0.
+_stack = [0, 0, 0, 0]
+
+# Default word size in bits (e.g., 16 bits)
+_word_size = 16
+
+# Complement mode: "UNSIGNED", "1S", or "2S"
+_complement_mode = "UNSIGNED"
+
+# To hold the last X value
+_last_x = 0  
+
+# --- Stack Operations ---
+def get_state():
+    """Return a copy of the current stack state."""
+    return _stack.copy()
+
+def push(val, duplicate_x=True):
+    global _stack
+    if not isinstance(val, (int, float)):
+        raise InvalidOperandError("Value must be numeric")
+    val = val & ((1 << _word_size) - 1)  # Truncate to word size
+    _stack.pop(0)
+    _stack.append(val)
 
 def pop():
-    """Pop X from the stack, shifting Y to X (page 27)."""
-    global stack
-    if not stack:  # Only raise if stack is truly empty
+    global _stack, _last_x
+    if all(x == 0 for x in _stack):
         raise StackUnderflowError()
-    top_val = stack[0]
-    stack[:] = stack[1:] + [0.0]
-    logger.debug(f"Popped {top_val}, stack={stack}")
-    return top_val
+    val = _stack.pop()
+    _stack.insert(0, 0)
+    _last_x = val
+    return val
 
 def peek():
-    """Return the value in X without popping (page 27)."""
-    return stack[0]
+    """Return the top value (X) of the stack without removing it."""
+    return _stack[-1]
 
-def clear_stack():
-    """Clear all stack levels to 0 (page 30, CLx extends to all)."""
-    global stack
-    stack = [0.0, 0.0, 0.0, 0.0]
-    logger.debug("Stack cleared")
-
-def get_state():
-    """Return a copy of the current stack (page 27)."""
-    return stack.copy()
-
-def duplicate():
-    """Duplicate X into Y, shifting stack up (page 28)."""
-    val = peek()
-    stack[:] = [val] + stack[:3]
-    logger.debug(f"Duplicated X: stack={stack}")
-
-def swap():
-    """Swap X and Y (page 29, x<>y)."""
-    global stack
-    if len(stack) >= 2:
-        stack[0], stack[1] = stack[1], stack[0]
-    logger.debug(f"Swapped top two, stack={stack}")
-
-def roll():
-    """Roll stack down (T to X, X to Y, etc.) (page 29, R↓)."""
-    global stack
-    stack = [stack[-1]] + stack[:-1]
-    logger.debug(f"Rolled stack, stack={stack}")
-
-# Configuration Functions
-def set_word_size(bits):
-    """Set word size from 1 to 64 bits (page 45)."""
-    global current_word_size
-    if not 1 <= bits <= 64:
-        raise ValueError("Word size must be between 1 and 64.")
-    current_word_size = bits
-    logger.debug(f"Word size set to {bits}")
-
-def get_word_size():
-    """Return current word size (page 45)."""
-    return current_word_size
-
-def set_complement_mode(mode: str):
-    """Set complement mode: 1S, 2S, UNSIGNED (page 46)."""
-    global current_complement_mode
-    valid_modes = {"1S", "2S", "UNSIGNED"}
-    if mode not in valid_modes:
-        raise ValueError(f"Invalid complement mode: {mode}")
-    current_complement_mode = mode
-    print(f"[stack] Complement mode set to {mode}")
-
-def apply_word_size(value):
-    """Apply word size and complement mode to value (pages 46-48)."""
-    global current_word_size, current_complement_mode
-    val_int = int(value)
-
-    if current_base == "DEC":
-        return val_int
-
-    mask = (1 << current_word_size) - 1
-    val_int &= mask
-
-    if current_complement_mode == "UNSIGNED":
-        return val_int
-    elif current_complement_mode == "1S":
-        sign_bit = 1 << (current_word_size - 1)
-        if val_int & sign_bit:
-            val_int = -((~val_int) & mask)
-        return val_int
-    else:  # "2S"
-        sign_bit = 1 << (current_word_size - 1)
-        if val_int & sign_bit:
-            val_int -= (1 << current_word_size)
-        return val_int
-
-# Arithmetic and Bit Operations
-def perform_operation(operator):
-    """Perform arithmetic or bit operation on X and Y (pages 16-19, 53-55)."""
-    global carry_flag, overflow_flag
-    top_value = pop()  # X
-    second_value = pop()  # Y
-
-    if operator == "+":
-        result = add(second_value, top_value)
-    elif operator == "-":
-        result = subtract(second_value, top_value)
-    elif operator == "*":
-        result = multiply(second_value, top_value)
-    elif operator == "/":
-        result = divide(second_value, top_value)
-    elif operator == "AND":
-        result = int(second_value) & int(top_value)  # page 53
-    elif operator == "OR":
-        result = int(second_value) | int(top_value)  # page 54
-    elif operator == "XOR":
-        result = int(second_value) ^ int(top_value)  # page 54
-    elif operator == "NOT":
-        push(second_value)  # Unary, restore Y
-        result = ~int(top_value) & ((1 << current_word_size) - 1)  # page 55
-    elif operator == "RMD":
-        if top_value == 0:
-            raise InvalidOperandError()
-        result = int(second_value) % int(top_value)  # page 54
+def perform_operation(op):
+    y = pop()
+    x = pop()
+    _last_x = x
+    result = 0
+    if op == '+':
+        result = x + y
+    elif op == '-':
+        result = x - y
+    elif op == '*':
+        result = x * y
+    elif op == '/':
+        if y == 0:
+            raise ZeroDivisionError("Division by zero")
+        result = int(x / y)
+    elif op == 'xor':
+        result = x ^ y
+    elif op == 'and':
+        result = x & y
+    elif op == 'or':
+        result = x | y
+    elif op == 'not':
+        result = ~x & ((1 << _word_size) - 1)
+        push(y)  # NOT only operates on X, push Y back
     else:
-        raise InvalidOperandError()
-
-    if current_base != "DEC":
-        mask = (1 << current_word_size) - 1
-        carry_flag = result > mask or result < -mask
-        result = apply_word_size(result)
-        overflow_flag = carry_flag  # Simplified overflow logic
+        raise ValueError(f"Unknown operator: {op}")
     push(result)
     return result
 
+# --- Bitwise and Stack Feature Operations ---
 def shift_left():
-    """Shift X left by 1 bit (SL, page 56)."""
-    global carry_flag
-    val = int(pop())
-    mask = (1 << current_word_size) - 1
-    carry_flag = bool(val & (1 << (current_word_size - 1)))
-    result = (val << 1) & mask
+    x = peek()
+    result = x << 1
+    result = result & ((1 << _word_size) - 1)  # Truncate to word size
     push(result)
-    logger.debug(f"Shift left: {val} -> {result}, carry={carry_flag}")
 
 def shift_right():
-    """Shift X right by 1 bit (SR, page 56)."""
-    global carry_flag
-    val = int(pop())
-    carry_flag = bool(val & 1)
-    result = val >> 1
+    x = peek()
+    result = x >> 1
+    result = result & ((1 << _word_size) - 1)  # Truncate to word size
     push(result)
-    logger.debug(f"Shift right: {val} -> {result}, carry={carry_flag}")
 
 def rotate_left():
-    """Rotate X left by 1 bit (RL, page 57)."""
-    val = int(pop())
-    mask = (1 << current_word_size) - 1
-    carry = (val >> (current_word_size - 1)) & 1
-    result = ((val << 1) & mask) | carry
+    x = peek()
+    result = (x << 1) | (x >> (_word_size - 1))
+    result = result & ((1 << _word_size) - 1)  # Truncate to word size
     push(result)
-    logger.debug(f"Rotate left: {val} -> {result}")
 
 def rotate_right():
-    """Rotate X right by 1 bit (RR, page 57)."""
-    val = int(pop())
-    mask = (1 << current_word_size) - 1
-    carry = (val & 1) << (current_word_size - 1)
-    result = (val >> 1) | carry
+    x = peek()
+    result = (x >> 1) | (x << (_word_size - 1))
+    result = result & ((1 << _word_size) - 1)  # Truncate to word size
     push(result)
-    logger.debug(f"Rotate right: {val} -> {result}")
 
 def rotate_left_carry():
-    """Rotate X left through carry (RLC, page 58)."""
-    global carry_flag
-    val = int(pop())
-    mask = (1 << current_word_size) - 1
-    new_carry = bool(val & (1 << (current_word_size - 1)))
-    result = ((val << 1) & mask) | (1 if carry_flag else 0)
-    carry_flag = new_carry
+    x = peek() & ((1 << _word_size) - 1)  # Truncate first
+    carry = 1 if get_carry_flag() else 0
+    result = (x << 1) | carry
+    set_carry_flag(x >> (_word_size - 1))
+    result = result & ((1 << _word_size) - 1)  # Truncate again if needed
     push(result)
-    logger.debug(f"Rotate left carry: {val} -> {result}, carry={carry_flag}")
 
 def rotate_right_carry():
-    """Rotate X right through carry (RRC, page 58)."""
-    global carry_flag
-    val = int(pop())
-    mask = (1 << current_word_size) - 1
-    new_carry = bool(val & 1)
-    result = (val >> 1) | ((1 << (current_word_size - 1)) if carry_flag else 0)
-    carry_flag = new_carry
+    x = peek() & ((1 << _word_size) - 1)  # Truncate first
+    carry = 1 if get_carry_flag() else 0
+    result = (x >> 1) | (carry << (_word_size - 1))
+    set_carry_flag(x & 1)
+    result = result & ((1 << _word_size) - 1)  # Truncate again if needed
     push(result)
-    logger.debug(f"Rotate right carry: {val} -> {result}, carry={carry_flag}")
 
 def mask_left(bits):
-    """Mask the leftmost 'bits' of X (MASKL, page 59)."""
-    val = int(pop())
-    mask = ((1 << bits) - 1) << (current_word_size - bits)
-    result = val & mask
-    push(result)
-    logger.debug(f"Mask left {bits} bits: {val} -> {result}")
+    """Mask leftmost bits of X (simplified implementation)."""
+    x = peek()
+    mask = (1 << bits) - 1
+    push(x & mask)
 
 def mask_right(bits):
-    """Mask the rightmost 'bits' of X (MASKR, page 59)."""
-    val = int(pop())
+    """Mask rightmost bits of X (simplified implementation)."""
+    x = peek()
     mask = (1 << bits) - 1
-    result = val & mask
-    push(result)
-    logger.debug(f"Mask right {bits} bits: {val} -> {result}")
+    push(x & mask)
 
 def count_bits():
-    """Count 1 bits in X (#B, page 55)."""
-    val = int(pop())
-    count = bin(val & ((1 << current_word_size) - 1)).count("1")
+    """Count the number of 1s in the binary representation of X."""
+    x = peek()
+    count = bin(x).count("1")
     push(count)
-    logger.debug(f"Count bits in {val} -> {count}")
 
 def set_bit(bit_index):
-    """Set bit 'bit_index' in X to 1 (SB, page 51)."""
-    val = int(pop())
-    if not 0 <= bit_index < current_word_size:
-        raise ValueError(f"Bit index {bit_index} out of range")
-    result = val | (1 << bit_index)
-    push(apply_word_size(result))
-    logger.debug(f"Set bit {bit_index}: {val} -> {result}")
+    x = peek()
+    if bit_index < 0 or bit_index >= _word_size:
+        raise InvalidBitOperationError()
+    mask = 1 << bit_index
+    result = x | mask
+    result = result & ((1 << _word_size) - 1)  # Truncate to word size
+    push(result)
 
 def clear_bit(bit_index):
-    """Clear bit 'bit_index' in X to 0 (CB, page 51)."""
-    val = int(pop())
-    if not 0 <= bit_index < current_word_size:
-        raise ValueError(f"Bit index {bit_index} out of range")
-    result = val & ~(1 << bit_index)
-    push(apply_word_size(result))
-    logger.debug(f"Clear bit {bit_index}: {val} -> {result}")
+    x = peek()
+    if bit_index < 0 or bit_index >= _word_size:
+        raise InvalidBitOperationError()
+    mask = ~(1 << bit_index)
+    result = x & mask
+    result = result & ((1 << _word_size) - 1)  # Truncate to word size
+    push(result)
 
 def test_bit(bit_index):
-    """Test if bit 'bit_index' in X is 1, set carry flag (B?, page 52)."""
-    global carry_flag
-    val = int(pop())
-    if not 0 <= bit_index < current_word_size:
-        raise ValueError(f"Bit index {bit_index} out of range")
-    carry_flag = bool(val & (1 << bit_index))
-    push(val)  # X unchanged
-    logger.debug(f"Test bit {bit_index} in {val}, carry={carry_flag}")
+    """Test the bit at the given index in X; returns 0 or 1."""
+    x = peek()
+    return (x >> bit_index) & 1
 
 def left_justify():
-    """Shift X left until leftmost bit is 1 (LJ, page 58)."""
-    global carry_flag
-    val = int(pop())
-    mask = (1 << current_word_size) - 1
-    if val == 0:
-        push(0)
-        carry_flag = False
-        return
-    while not (val & (1 << (current_word_size - 1))):
-        carry_flag = bool(val & (1 << (current_word_size - 1)))
-        val = (val << 1) & mask
-    push(val)
-    logger.debug(f"Left justify: {val}")
+    """
+    Left justify the number in X.
+    (For many HP calculators, this may be a no-op or reformatting.)
+    """
+    # Not implemented in this simplified version.
+    pass
 
 def absolute():
-    """Return absolute value of X (ABS, page 52)."""
-    val = int(pop())
-    result = abs(val)
-    push(apply_word_size(result))
-    logger.debug(f"Absolute: {val} -> {result}")
+    """Replace X with its absolute value."""
+    x = peek()
+    push(abs(x))
 
-# Double Precision (pages 60-62)
 def double_multiply():
-    """Multiply X and Y, return double-word result in Y:X (DBL×)."""
-    x = int(pop())
-    y = int(pop())
-    result = x * y
-    mask = (1 << current_word_size) - 1
-    low_word = apply_word_size(result & mask)
-    high_word = apply_word_size(result >> current_word_size)
-    push(high_word)  # Y
-    push(low_word)  # X
-    logger.debug(f"Double multiply: {y} * {x} = {high_word}:{low_word}")
+    """Double-word multiply the top two values."""
+    y = pop()
+    x = pop()
+    push(x * y)
 
 def double_divide():
-    """Divide Y:X by Z, return quotient in X, remainder in Y (DBL÷)."""
-    x = int(pop())  # Divisor
-    y = int(pop())  # Low word
-    z = int(pop())  # High word
-    dividend = (z << current_word_size) | y
-    if x == 0:
-        raise InvalidOperandError()
-    quotient = dividend // x
-    remainder = dividend % x
-    push(apply_word_size(remainder))  # Y
-    push(apply_word_size(quotient))   # X
-    logger.debug(f"Double divide: {z}:{y} / {x} = {quotient}, rem={remainder}")
+    """Double-word divide the top two values."""
+    y = pop()
+    x = pop()
+    if y == 0:
+        raise ZeroDivisionError("Division by zero")
+    push(int(x / y))
 
 def double_remainder():
-    """Return remainder of Y:X divided by Z in X (DBLR)."""
-    x = int(pop())  # Divisor
-    y = int(pop())  # Low word
-    z = int(pop())  # High word
-    dividend = (z << current_word_size) | y
-    if x == 0:
-        raise InvalidOperandError()
-    remainder = dividend % x
-    push(apply_word_size(remainder))
-    logger.debug(f"Double remainder: {z}:{y} % {x} = {remainder}")
+    y = pop()
+    x = pop()
+    if y == 0:
+        raise DivisionByZeroError("Division by zero")
+    push(x % y)
 
-# Flag Operations (pages 49-50)
 def set_flag(flag_type):
-    """Set carry or overflow flag (SF, page 50)."""
-    global carry_flag, overflow_flag
-    if flag_type == "CF":
-        carry_flag = True
-    elif flag_type == "OF":
-        overflow_flag = True
-    logger.debug(f"Set flag {flag_type}")
+    """Set a flag (e.g., carry or overflow). Not implemented in this version."""
+    pass
 
 def clear_flag(flag_type):
-    """Clear carry or overflow flag (CF, page 50)."""
-    global carry_flag, overflow_flag
-    if flag_type == "CF":
-        carry_flag = False
-    elif flag_type == "OF":
-        overflow_flag = False
-    logger.debug(f"Cleared flag {flag_type}")
+    """Clear a flag (e.g., carry or overflow). Not implemented in this version."""
+    pass
 
 def test_flag(flag_type):
-    """Test carry or overflow flag state (F?, page 50)."""
-    if flag_type == "CF":
-        return carry_flag
-    elif flag_type == "OF":
-        return overflow_flag
-    logger.debug(f"Test flag {flag_type} = {carry_flag if flag_type == 'CF' else overflow_flag}")
+    """Test a flag. Not implemented; returns False."""
+    return False
 
+# --- Word Size and Complement Mode Management ---
+def set_word_size(size):
+    global _word_size
+    if not 1 <= size <= 64:
+        raise IncorrectWordSizeError()
+    _word_size = size
+
+def get_word_size():
+    global _word_size
+    return _word_size
+
+def apply_word_size(val):
+    """
+    Apply the current word size to the value.
+    For integer values, mask them to the current word size.
+    Non-integer floats are returned unchanged.
+    """
+    try:
+        if isinstance(val, float) and not val.is_integer():
+            return val
+        mask = (1 << _word_size) - 1
+        return int(val) & mask
+    except Exception:
+        return val
+
+# --- Complement Mode Management ---
+def get_complement_mode():
+    """Return the current complement mode."""
+    return _complement_mode
+
+def set_complement_mode(mode):
+    """
+    Set the current complement mode.
+    mode should be "UNSIGNED", "1S", or "2S".
+    """
+    global _complement_mode
+    if mode in {"UNSIGNED", "1S", "2S"}:
+        _complement_mode = mode
+    else:
+        raise ValueError("Invalid complement mode. Must be 'UNSIGNED', '1S', or '2S'.")
+
+ # Carry Flag 0 means no carry
+_carry_flag = 0
+
+# --- Carry Flag Management ---
 def get_carry_flag():
-    """Return carry flag state (page 49)."""
-    return carry_flag
+    global _carry_flag
+    return _carry_flag
 
-def get_overflow_flag():
-    """Return overflow flag state (page 50)."""
-    return overflow_flag
+def set_carry_flag(value):
+    global _carry_flag
+    _carry_flag = 1 if value else 0
+
+# --- Last X Register Management ---
+def get_last_x():
+    global _last_x
+    return _last_x
+
+def save_last_x():
+    global _last_x
+    _last_x = peek()
+
+def last_x():
+    """Return the last X register value."""
+    return _last_x
+
+
+# --- Stack Initialization --- Testing purposes
+def clear_stack():
+    global _stack
+    _stack = [0, 0, 0, 0]

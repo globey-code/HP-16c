@@ -1,7 +1,7 @@
 """
 base_conversion.py
 
-Handles base conversion for HP-16C emulator (DEC, HEX, BIN, OCT).
+Handles base conversion for the HP-16C emulator (DEC, HEX, BIN, OCT).
 """
 
 current_base = "DEC"
@@ -10,10 +10,8 @@ def interpret_in_current_base(string_value, base=None):
     global current_base
     if base is None:
         base = current_base
-
     if not string_value:
         return 0
-
     try:
         if base == "DEC":
             return int(string_value)
@@ -29,20 +27,18 @@ def interpret_in_current_base(string_value, base=None):
         return 0
 
 def format_in_current_base(value, base=None):
-    """Format a value in the specified base, respecting word size (page 45)."""
+    """Format a value in the specified base, respecting word size."""
     global current_base
     if base is None:
         base = current_base
-
     import stack
-    value = int(value)  # Ensure integer for non-DEC modes
-
+    value = int(value)  # Ensure we have an integer for non-DEC modes
     if base == "DEC":
-        from stack import current_complement_mode, current_word_size
-        if current_complement_mode in {"1S", "2S"}:
+        from stack import get_complement_mode, get_word_size
+        if get_complement_mode() in {"1S", "2S"}:
             return str(value)
         else:
-            mask = (1 << current_word_size) - 1
+            mask = (1 << get_word_size()) - 1
             unsigned_val = value & mask
             return str(unsigned_val)
     elif base == "HEX":
@@ -60,7 +56,7 @@ def format_in_current_base(value, base=None):
         return str(value)
 
 def set_base(new_base, display):
-    """Switch the display mode and reformat the current value (page 17)."""
+    """Switch the display mode and reformat the current value."""
     global current_base
     if hasattr(display, 'current_value') and display.current_value is not None:
         num = display.current_value
@@ -74,10 +70,9 @@ def set_base(new_base, display):
             print("[DEBUG] raw_value is '0' or empty; using 0")
             num = 0
             display.current_value = 0
-
     current_base = new_base
     display.set_mode(new_base)
-    display.set_entry(num)  # Pass numeric value, not formatted string
+    display.set_entry(num)
     new_str = format_in_current_base(num, new_base)
     display.raw_value = new_str
     print(f"[base_conversion] Changed base to {new_base}. Now display shows '{new_str}'")

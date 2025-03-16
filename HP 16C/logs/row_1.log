@@ -1,0 +1,808 @@
+2025-03-16 03:00:51 [INFO] Starting Row 1 Tests
+2025-03-16 03:00:51 [INFO] --- Test Case: Shift Left (SL) - Display: 8, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Shift Right (SR) - Display: 8, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Left (RL) - Display: 8, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Right (RR) - Display: 8, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: 8, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: 8, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Mask Left (MASKL) - Display: 8, Bits: 2, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Mask Right (MASKR) - Display: 8, Bits: 2, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Double Remainder (RMD) - X: 10, Y: 3, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Logical XOR - X: 10, Y: 3, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Shift Left (SL) - Display: 0, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Shift Right (SR) - Display: 0, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Left (RL) - Display: 0, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Right (RR) - Display: 0, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: 0, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: 0, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Mask Left (MASKL) - Display: 0, Bits: 2, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Mask Right (MASKR) - Display: 0, Bits: 2, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Double Remainder (RMD) - X: 0, Y: 0, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Logical XOR - X: 0, Y: 0, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Shift Left (SL) - Display: 1, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Shift Right (SR) - Display: 1, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Left (RL) - Display: 1, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Right (RR) - Display: 1, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: 1, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: 1, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Mask Left (MASKL) - Display: 1, Bits: 0, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Mask Right (MASKR) - Display: 1, Bits: 0, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Double Remainder (RMD) - X: 1, Y: 3, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Logical XOR - X: 1, Y: 3, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Shift Left (SL) - Display: 4, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Shift Right (SR) - Display: 4, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Left (RL) - Display: 4, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Right (RR) - Display: 4, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: 4, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: 4, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Mask Left (MASKL) - Display: 4, Bits: 0, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Mask Right (MASKR) - Display: 4, Bits: 0, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Double Remainder (RMD) - X: 4, Y: 3, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Logical XOR - X: 4, Y: 3, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Mask Left (MASKL) - Display: 8, Bits: 2, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Mask Right (MASKR) - Display: 8, Bits: 2, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Mask Left (MASKL) - Display: 8, Bits: -1, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Mask Right (MASKR) - Display: 8, Bits: -1, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Double Remainder (RMD) - X: 10, Y: 0, Word Size: 1, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Shift Left (SL) - Display: 8, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Shift Right (SR) - Display: 8, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Left (RL) - Display: 8, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Right (RR) - Display: 8, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: 8, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 1, Stack = [0, 0, 0, 1], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: 8, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 1, Stack = [0, 0, 0, 1], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Mask Left (MASKL) - Display: 8, Bits: 2, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Mask Right (MASKR) - Display: 8, Bits: 2, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Double Remainder (RMD) - X: 10, Y: 3, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Logical XOR - X: 10, Y: 3, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Shift Left (SL) - Display: 0, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Shift Right (SR) - Display: 0, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Left (RL) - Display: 0, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Right (RR) - Display: 0, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: 0, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 1, Stack = [0, 0, 0, 1], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: 0, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 1, Stack = [0, 0, 0, 1], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Mask Left (MASKL) - Display: 0, Bits: 2, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Mask Right (MASKR) - Display: 0, Bits: 2, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Double Remainder (RMD) - X: 0, Y: 0, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Logical XOR - X: 0, Y: 0, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Shift Left (SL) - Display: 1, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Shift Right (SR) - Display: 1, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Left (RL) - Display: 1, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Right (RR) - Display: 1, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: 1, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: 1, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Mask Left (MASKL) - Display: 1, Bits: 0, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Mask Right (MASKR) - Display: 1, Bits: 0, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Double Remainder (RMD) - X: 1, Y: 3, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Logical XOR - X: 1, Y: 3, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Shift Left (SL) - Display: 4, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Shift Right (SR) - Display: 4, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Left (RL) - Display: 4, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Right (RR) - Display: 4, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: 4, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 1, Stack = [0, 0, 0, 1], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: 4, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 1, Stack = [0, 0, 0, 1], Carry Flag = 0, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Mask Left (MASKL) - Display: 4, Bits: 0, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Mask Right (MASKR) - Display: 4, Bits: 0, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Double Remainder (RMD) - X: 4, Y: 3, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Logical XOR - X: 4, Y: 3, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Mask Left (MASKL) - Display: 8, Bits: 2, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Mask Right (MASKR) - Display: 8, Bits: 2, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Mask Left (MASKL) - Display: 8, Bits: -1, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Mask Right (MASKR) - Display: 8, Bits: -1, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Double Remainder (RMD) - X: 10, Y: 0, Word Size: 1, Carry Flag: 1, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:51 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = UNSIGNED
+2025-03-16 03:00:51 [INFO] --- Test Case: Shift Left (SL) - Display: 8, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:51 [INFO] --- Test Case: Shift Right (SR) - Display: 8, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Left (RL) - Display: 8, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Right (RR) - Display: 8, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: 8, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: 8, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:51 [INFO] --- Test Case: Mask Left (MASKL) - Display: 8, Bits: 2, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:51 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:51 [INFO] --- Test Case: Mask Right (MASKR) - Display: 8, Bits: 2, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:51 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:51 [INFO] --- Test Case: Double Remainder (RMD) - X: 10, Y: 3, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:51 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:51 [INFO] --- Test Case: Logical XOR - X: 10, Y: 3, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:51 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:51 [INFO] --- Test Case: Shift Left (SL) - Display: 0, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:51 [INFO] --- Test Case: Shift Right (SR) - Display: 0, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Left (RL) - Display: 0, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Right (RR) - Display: 0, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: 0, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: 0, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:51 [INFO] --- Test Case: Mask Left (MASKL) - Display: 0, Bits: 2, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:51 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:51 [INFO] --- Test Case: Mask Right (MASKR) - Display: 0, Bits: 2, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:51 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:51 [INFO] --- Test Case: Double Remainder (RMD) - X: 0, Y: 0, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:51 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:51 [INFO] --- Test Case: Logical XOR - X: 0, Y: 0, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:51 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:51 [INFO] --- Test Case: Shift Left (SL) - Display: 1, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:51 [INFO] --- Test Case: Shift Right (SR) - Display: 1, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Left (RL) - Display: 1, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:51 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Right (RR) - Display: 1, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:51 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: 1, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:51 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:51 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: 1, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: 1, Bits: 0, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: 1, Bits: 0, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Double Remainder (RMD) - X: 1, Y: 3, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Logical XOR - X: 1, Y: 3, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Left (SL) - Display: -1, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Right (SR) - Display: -1, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left (RL) - Display: -1, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right (RR) - Display: -1, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: -1, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: -1, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: -1, Bits: 0, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: -1, Bits: 0, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Double Remainder (RMD) - X: -1, Y: 3, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Logical XOR - X: -1, Y: 3, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Left (SL) - Display: 4, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Right (SR) - Display: 4, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left (RL) - Display: 4, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right (RR) - Display: 4, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: 4, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: 4, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: 4, Bits: 0, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: 4, Bits: 0, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Double Remainder (RMD) - X: 4, Y: 3, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:52 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Logical XOR - X: 4, Y: 3, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:52 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: 8, Bits: 2, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: 8, Bits: 2, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: 8, Bits: -1, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: 8, Bits: -1, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Double Remainder (RMD) - X: 10, Y: 0, Word Size: 1, Carry Flag: 0, Complement Mode: 1S ---
+2025-03-16 03:00:52 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Left (SL) - Display: 8, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Right (SR) - Display: 8, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left (RL) - Display: 8, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right (RR) - Display: 8, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: 8, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 0, 1], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: 8, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 0, 1], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: 8, Bits: 2, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: 8, Bits: 2, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Double Remainder (RMD) - X: 10, Y: 3, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Logical XOR - X: 10, Y: 3, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Left (SL) - Display: 0, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Right (SR) - Display: 0, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left (RL) - Display: 0, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right (RR) - Display: 0, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: 0, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 0, 1], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: 0, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 0, 1], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: 0, Bits: 2, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: 0, Bits: 2, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Double Remainder (RMD) - X: 0, Y: 0, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Logical XOR - X: 0, Y: 0, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Left (SL) - Display: 1, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Right (SR) - Display: 1, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left (RL) - Display: 1, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right (RR) - Display: 1, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: 1, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: 1, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: 1, Bits: 0, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: 1, Bits: 0, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Double Remainder (RMD) - X: 1, Y: 3, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Logical XOR - X: 1, Y: 3, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Left (SL) - Display: -1, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Right (SR) - Display: -1, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left (RL) - Display: -1, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right (RR) - Display: -1, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: -1, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: -1, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: -1, Bits: 0, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: -1, Bits: 0, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Double Remainder (RMD) - X: -1, Y: 3, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Logical XOR - X: -1, Y: 3, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Left (SL) - Display: 4, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Right (SR) - Display: 4, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left (RL) - Display: 4, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right (RR) - Display: 4, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: 4, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 0, 1], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: 4, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 0, 1], Carry Flag = 0, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: 4, Bits: 0, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: 4, Bits: 0, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Double Remainder (RMD) - X: 4, Y: 3, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Logical XOR - X: 4, Y: 3, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: 8, Bits: 2, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: 8, Bits: 2, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: 8, Bits: -1, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: 8, Bits: -1, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Double Remainder (RMD) - X: 10, Y: 0, Word Size: 1, Carry Flag: 1, Complement Mode: 1S ---
+2025-03-16 03:00:52 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 1S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Left (SL) - Display: 8, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Right (SR) - Display: 8, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left (RL) - Display: 8, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right (RR) - Display: 8, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: 8, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: 8, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: 8, Bits: 2, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: 8, Bits: 2, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Double Remainder (RMD) - X: 10, Y: 3, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Logical XOR - X: 10, Y: 3, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Left (SL) - Display: 0, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Right (SR) - Display: 0, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left (RL) - Display: 0, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right (RR) - Display: 0, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: 0, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: 0, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: 0, Bits: 2, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: 0, Bits: 2, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Double Remainder (RMD) - X: 0, Y: 0, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Logical XOR - X: 0, Y: 0, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Left (SL) - Display: 1, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Right (SR) - Display: 1, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left (RL) - Display: 1, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right (RR) - Display: 1, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: 1, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: 1, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: 1, Bits: 0, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: 1, Bits: 0, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Double Remainder (RMD) - X: 1, Y: 3, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Logical XOR - X: 1, Y: 3, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Left (SL) - Display: -1, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Right (SR) - Display: -1, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left (RL) - Display: -1, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right (RR) - Display: -1, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: -1, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: -1, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: -1, Bits: 0, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: -1, Bits: 0, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Double Remainder (RMD) - X: -1, Y: 3, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Logical XOR - X: -1, Y: 3, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Left (SL) - Display: 4, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Right (SR) - Display: 4, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left (RL) - Display: 4, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right (RR) - Display: 4, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: 4, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: 4, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: 4, Bits: 0, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: 4, Bits: 0, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Double Remainder (RMD) - X: 4, Y: 3, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Logical XOR - X: 4, Y: 3, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: 8, Bits: 2, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: 8, Bits: 2, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: 8, Bits: -1, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: 8, Bits: -1, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Double Remainder (RMD) - X: 10, Y: 0, Word Size: 1, Carry Flag: 0, Complement Mode: 2S ---
+2025-03-16 03:00:52 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Left (SL) - Display: 8, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Right (SR) - Display: 8, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left (RL) - Display: 8, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right (RR) - Display: 8, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: 8, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 0, 1], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: 8, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 0, 1], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: 8, Bits: 2, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: 8, Bits: 2, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Double Remainder (RMD) - X: 10, Y: 3, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Logical XOR - X: 10, Y: 3, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Left (SL) - Display: 0, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Right (SR) - Display: 0, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left (RL) - Display: 0, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right (RR) - Display: 0, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: 0, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 0, 1], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: 0, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 0, 1], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: 0, Bits: 2, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: 0, Bits: 2, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Double Remainder (RMD) - X: 0, Y: 0, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Logical XOR - X: 0, Y: 0, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Left (SL) - Display: 1, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Right (SR) - Display: 1, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left (RL) - Display: 1, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right (RR) - Display: 1, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: 1, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: 1, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: 1, Bits: 0, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: 1, Bits: 0, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Double Remainder (RMD) - X: 1, Y: 3, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Logical XOR - X: 1, Y: 3, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Left (SL) - Display: -1, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Right (SR) - Display: -1, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left (RL) - Display: -1, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right (RR) - Display: -1, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: -1, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: -1, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: -1, Bits: 0, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 1, 1], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: -1, Bits: 0, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 1, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Double Remainder (RMD) - X: -1, Y: 3, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Logical XOR - X: -1, Y: 3, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Left (SL) - Display: 4, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Right (SR) - Display: 4, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left (RL) - Display: 4, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right (RR) - Display: 4, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: 4, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 0, 1], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: 4, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 0, 1], Carry Flag = 0, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: 4, Bits: 0, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: 4, Bits: 0, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Double Remainder (RMD) - X: 4, Y: 3, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Logical XOR - X: 4, Y: 3, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: 8, Bits: 2, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: 8, Bits: 2, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: 8, Bits: -1, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: 8, Bits: -1, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Double Remainder (RMD) - X: 10, Y: 0, Word Size: 1, Carry Flag: 1, Complement Mode: 2S ---
+2025-03-16 03:00:52 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 1, Word Size = 1, Complement Mode = 2S
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Left (SL) - Display: 8, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 8, 0], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Right (SR) - Display: 8, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 4, Stack = [0, 0, 8, 4], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left (RL) - Display: 8, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 8, 1], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right (RR) - Display: 8, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 4, Stack = [0, 0, 8, 4], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: 8, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 8, 0], Carry Flag = 1, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: 8, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 4, Stack = [0, 0, 8, 4], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: 8, Bits: 2, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 8, Stack = [0, 0, 8, 8], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: 8, Bits: 2, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 8, 0], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Double Remainder (RMD) - X: 10, Y: 3, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 1, Stack = [0, 0, 0, 1], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Logical XOR - X: 10, Y: 3, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 9, Stack = [0, 0, 0, 9], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Left (SL) - Display: 0, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Right (SR) - Display: 0, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left (RL) - Display: 0, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right (RR) - Display: 0, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: 0, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: 0, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: 0, Bits: 2, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: 0, Bits: 2, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Double Remainder (RMD) - X: 0, Y: 0, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Logical XOR - X: 0, Y: 0, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Left (SL) - Display: 15, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 14, Stack = [0, 0, 15, 14], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Right (SR) - Display: 15, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 7, Stack = [0, 0, 15, 7], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left (RL) - Display: 15, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 15, Stack = [0, 0, 15, 15], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right (RR) - Display: 15, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 15, Stack = [0, 0, 15, 15], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: 15, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 14, Stack = [0, 0, 15, 14], Carry Flag = 1, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: 15, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 7, Stack = [0, 0, 15, 7], Carry Flag = 1, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: 15, Bits: 2, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 12, Stack = [0, 0, 15, 12], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: 15, Bits: 2, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 3, Stack = [0, 0, 15, 3], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Double Remainder (RMD) - X: 15, Y: 3, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Logical XOR - X: 15, Y: 3, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 12, Stack = [0, 0, 0, 12], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Left (SL) - Display: 32, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Shift Right (SR) - Display: 32, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left (RL) - Display: 32, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right (RR) - Display: 32, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Left Carry (RLn) - Display: 32, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Rotate Right Carry (RRn) - Display: 32, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: 32, Bits: 2, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: 32, Bits: 2, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Double Remainder (RMD) - X: 32, Y: 3, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Logical XOR - X: 32, Y: 3, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [WARNING] Raised E101: Stack Underflow - Operation requires more values in the stack.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 0], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: 8, Bits: 5, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 8], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: 8, Bits: 5, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 8], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Left (MASKL) - Display: 8, Bits: -1, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 8], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Mask Right (MASKR) - Display: 8, Bits: -1, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---
+2025-03-16 03:00:52 [WARNING] Raised E107: Invalid Bit Operation - Bit index or operation out of range.
+2025-03-16 03:00:52 [INFO] Result: Display = 0, Stack = [0, 0, 0, 8], Carry Flag = 0, Word Size = 4, Complement Mode = UNSIGNED
+2025-03-16 03:00:52 [INFO] --- Test Case: Double Remainder (RMD) - X: 10, Y: 0, Word Size: 4, Carry Flag: 0, Complement Mode: UNSIGNED ---

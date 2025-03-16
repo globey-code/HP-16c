@@ -6,6 +6,7 @@ Matches HP-16C display behavior per Owner's Handbook (pages 17-19, 43-44).
 """
 
 import tkinter as tk
+import tkinter.font as tkFont
 import stack  # For word size and stack state
 
 class Display:
@@ -16,16 +17,24 @@ class Display:
                  word_size_config=None):
         """
         Creates a display area with a white border around it.
-        Move or resize by changing (x, y, width, height).
         """
+        # Define attributes before using them
         self.master = master
-        self.current_entry = "0"
-        self.raw_value = "0"
-        self.mode = "DEC"
-        self.current_value = None
-        self.font = font if font else ("Courier", 18)
-        self.result_displayed = False
-        self.show_stack = False  # Toggle stack display with SHOW
+        self.current_entry = "0"        # Main display value as a string
+        self.raw_value = "0"            # Raw input value as a string
+        self.mode = "DEC"               # Display mode ("DEC", "FLOAT", etc.)
+        self.current_value = None       # Numeric interpretation of the current entry
+        self.error_displayed = False    # Flag to indicate if an error message is displayed
+        self.result_displayed = False   # Flag to track if the result has just been shown
+        self.show_stack = False         # Toggle for showing stack contents
+
+        # Convert font to a tkFont.Font instance if needed
+        if font is None:
+            self.font = tkFont.Font(family="Courier", size=18)
+        elif isinstance(font, tuple):
+            self.font = tkFont.Font(family=font[0], size=font[1])
+        else:
+            self.font = font
 
         # Outer frame with a white border
         self.frame = tk.Frame(
@@ -37,14 +46,16 @@ class Display:
         )
         self.frame.place(x=x, y=y, width=width, height=height)
 
-        # Inner text widget for main display
-        self.widget = tk.Text(
+        # Use a Label widget for the main display.
+        # This label will always be vertically centered.
+        # We set the anchor to "e" to right-align the text.
+        self.widget = tk.Label(
             self.frame,
+            text=self.current_entry,
             bg="#9C9C9C",
             fg="black",
             font=self.font,
-            bd=0,
-            highlightthickness=0
+            anchor="e"  # Right aligned horizontally; vertical centering is automatic
         )
         self.widget.place(x=0, y=0, width=width, height=height)
         self.widget.bind("<Key>", lambda e: "break")
@@ -65,7 +76,80 @@ class Display:
         self.word_size_label = tk.Label(self.frame, font=("Courier", 10), bg="#9C9C9C")
         self.word_size_label.place(**word_size_config)
 
+        # Delay setting the entry until after layout is complete
+        self.master.after(10, lambda: self.set_entry("0"))
+
+    def set_entry(self, entry, raw=False):
+        """
+        Set the display entry.
+        If raw is True, treat entry as a literal string (e.g., for error messages)
+        and update the display accordingly.
+        """
+        if raw:
+            self.current_entry = entry
+            self.widget.config(text=entry, anchor="e")
+            self.error_displayed = True
+            return
+
+        try:
+            if isinstance(entry, str):
+                from base_conversion import interpret_in_current_base
+                val = interpret_in_current_base(entry, self.mode)
+            else:
+                val = float(entry) if entry else 0
+        except (ValueError, TypeError):
+            val = 0
+            entry = "0"
+
+        # Apply word size if available; otherwise leave unchanged.
+        if hasattr(stack, 'apply_word_size'):
+            val = stack.apply_word_size(val)
+    
+        self.current_value = val  # Store numeric value
+
+        # Format the number based on mode
+        if self.mode == "FLOAT":
+            entry_str = "{:.9f}".format(val).rstrip("0").rstrip(".")
+            if "." not in entry_str:
+                entry_str += ".0"
+            anchor = "w"  # Left align in FLOAT mode
+        elif self.mode in ["HEX", "BIN", "OCT"]:
+            val_int = int(val)
+            word_size = stack.get_word_size()
+            val_int = val_int & ((1 << word_size) - 1)
+            if self.mode == "HEX":
+                padding = max(0, (word_size + 3) // 4)
+                entry_str = format(val_int, f"0{padding}X")
+            elif self.mode == "BIN":
+                padding = word_size
+                entry_str = format(val_int, f"0{padding}b")
+            elif self.mode == "OCT":
+                padding = max(0, (word_size + 2) // 3)
+                entry_str = format(val_int, f"0{padding}o")
+            anchor = "e"
+        else:  # DEC mode
+            entry_str = str(int(val)) if val.is_integer() else "{:.9f}".format(val).rstrip("0").rstrip(".")
+            if len(entry_str) > 10:
+                entry_str = "9.999999999"
+            elif entry_str.startswith("-0"):
+                entry_str = "-" + entry_str[2:].lstrip("0") or "0"
+            elif entry_str.startswith("0"):
+                entry_str = entry_str.lstrip("0") or "0"
+            anchor = "e"
+
+        self.current_entry = entry_str
+        self.widget.config(text=entry_str, anchor=anchor)
+        self.error_displayed = False
+
     def append_entry(self, ch):
+        """
+        Append a character to the current entry.
+        If an error message is currently displayed, clear it first.
+        """
+        if self.error_displayed:
+            self.clear_entry()
+            self.error_displayed = False
+
         print(f"[DEBUG] append_entry called, result_displayed: {self.result_displayed}, raw_value: {self.raw_value}")
         if self.result_displayed:
             self.raw_value = ch
@@ -78,52 +162,6 @@ class Display:
         self.current_value = None  # Force reinterpretation
         self.set_entry(self.current_entry)
 
-    def set_entry(self, entry):
-        """Set display entry with HP-16C formatting (pages 17-19, 43-44)."""
-        try:
-            # Interpret entry as a number based on current mode
-            if isinstance(entry, str):
-                from base_conversion import interpret_in_current_base
-                val = interpret_in_current_base(entry, self.mode)
-            else:
-                val = float(entry) if entry else 0
-        except (ValueError, TypeError):
-            val = 0
-            entry = "0"
-
-        # Apply word size and complement mode
-        val = stack.apply_word_size(val)
-        self.current_value = val  # Store numeric value
-
-        # Mode-specific formatting
-        if self.mode == "FLOAT":
-            entry_str = "{:.9f}".format(val).rstrip("0").rstrip(".")
-        elif self.mode in ["HEX", "BIN", "OCT"]:
-            val_int = int(val)
-            word_size = stack.get_word_size()
-            val_int = val_int & ((1 << word_size) - 1)  # Mask to word size
-            if self.mode == "HEX":
-                padding = max(0, (word_size + 3) // 4)
-                entry_str = format(val_int, f"0{padding}X")
-            elif self.mode == "BIN":
-                padding = word_size
-                entry_str = format(val_int, f"0{padding}b")
-            elif self.mode == "OCT":
-                padding = max(0, (word_size + 2) // 3)
-                entry_str = format(val_int, f"0{padding}o")
-        else:  # DEC mode
-            entry_str = str(int(val)) if val.is_integer() else "{:.9f}".format(val).rstrip("0").rstrip(".")
-            if len(entry_str) > 10:
-                entry_str = "9.999999999"
-            elif entry_str.startswith("-0"):
-                entry_str = "-" + entry_str[2:].lstrip("0") or "0"
-            elif entry_str.startswith("0"):
-                entry_str = entry_str.lstrip("0") or "0"
-
-        self.current_entry = entry_str
-        self.widget.delete("1.0", "end")
-        self.widget.insert("1.0", self.current_entry)
-
     def get_entry(self):
         return self.current_entry
 
@@ -131,26 +169,27 @@ class Display:
         self.current_entry = "0"
         self.raw_value = "0"
         self.current_value = None
-        self.widget.delete("1.0", "end")
-        self.widget.insert("1.0", self.current_entry)
+        self.widget.config(text=self.current_entry, anchor="e")
 
     def set_mode(self, mode_str):
         self.mode = mode_str
         self.mode_label.config(text=mode_str)
-        # Reformat the current value immediately
         self.set_entry(self.current_value or self.raw_value or 0)
 
     def update(self):
-        self.widget.delete("1.0", "end")
-        self.widget.insert("1.0", self.current_entry)
+        self.widget.config(text=self.current_entry, anchor="e")
 
     def update_stack_content(self):
-        """Show stack state if enabled by SHOW (page 43)."""
-        if self.show_stack:
-            stack_state = stack.get_state()
-            self.stack_content.config(text=f"Stack: {stack_state}")
-        self.word_size_label.config(text=f"WS: {stack.get_word_size()} bits")
-        self.mode_label.config(text=self.mode)
+        complement_mode = stack.get_complement_mode()
+        word_size = stack.get_word_size()
+        carry_flag = stack.get_carry_flag()
+
+        complement_code = {"UNSIGNED": "00", "1S": "01", "2S": "02"}
+        comp_str = complement_code.get(complement_mode, "00")
+    
+        # Format: "CompCode - WS - Carry"
+        formatted_status = f"{comp_str} - {word_size:02d} - {'{:04b}'.format(carry_flag)}"
+        self.word_size_label.config(text=comp_str + "-" + str(word_size) + "-" + "{:04b}".format(carry_flag))
 
     def toggle_stack_display(self, mode=None):
         """Toggle stack display with SHOW command (page 43)."""
