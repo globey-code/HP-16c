@@ -1,41 +1,35 @@
 """
 logging_config.py
 
-Logging configuration for the HP-16C emulator.
-Logs to both file (in the logs directory) and console.
+Sets up logging for the HP-16C emulator with console and file output.
 """
 
 import logging
 import os
-import sys
+from datetime import datetime
 
-# Create logs directory if it doesn't exist
-LOG_DIR = os.path.join(os.path.dirname(__file__), "logs")
-os.makedirs(LOG_DIR, exist_ok=True)
+def setup_logging():
+    """Configure logging with timestamped file output and console output."""
+    current_time = datetime.now().strftime("%m-%d-%Y_%I-%M%p").lower()  # e.g., 03-16-2025_10-58pm
+    log_dir = "logs"
+    os.makedirs(log_dir, exist_ok=True)
+    log_file = f"{log_dir}/hp16c_debug_{current_time}.log"
 
-# Set up logger
-logger = logging.getLogger("hp16c")
-logger.setLevel(logging.DEBUG)  # Overall logger level
+    # Custom UTF-8 handler for console
+    class UTF8StreamHandler(logging.StreamHandler):
+        def emit(self, record):
+            msg = self.format(record)
+            self.stream.buffer.write((msg + self.terminator).encode('utf-8'))
+            self.flush()
 
-# File handler setup
-file_handler = logging.FileHandler(os.path.join(LOG_DIR, "hp16c.log"), mode="a")
-file_handler.setLevel(logging.DEBUG)  # Detailed logging to file
+    logging.basicConfig(
+        level=logging.INFO,
+        format="[%(asctime)s] %(levelname)s: %(message)s",
+        handlers=[
+            logging.FileHandler(log_file, encoding='utf-8'),  # UTF-8 for file
+            UTF8StreamHandler()  # UTF-8 for console
+        ]
+    )
+    return logging.getLogger(__name__)
 
-# Console handler for real-time feedback
-console_handler = logging.StreamHandler(sys.stdout)
-console_handler.setLevel(logging.DEBUG)  # Change to logging.INFO if less detail desired
-
-# Common formatter for consistent log format
-formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
-file_handler.setFormatter(formatter)
-console_handler.setFormatter(formatter)
-
-# Ensure the logs directory exists
-LOG_DIR = os.path.join(os.path.dirname(__file__), "logs")
-os.makedirs(LOG_DIR, exist_ok=True)
-
-# Attach handlers to the logger
-logger = logging.getLogger("hp16c")
-logger.setLevel(logging.DEBUG)
-logger.addHandler(file_handler)
-logger.addHandler(console_handler)
+logger = setup_logging()

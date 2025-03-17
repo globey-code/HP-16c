@@ -1,5 +1,5 @@
 """
-test_row_1.py
+f_mode_row_1_test.py
 
 Comprehensive unit tests for Row 1 f-mode operations in the HP 16C emulator.
 Logs detailed results to logs/row_1.log.
@@ -210,18 +210,22 @@ def test_rmd(controller, x_value, y_value, word_size=4, carry_flag=0, complement
     stack.set_word_size(word_size)
     stack.set_complement_mode(complement_mode)
     stack.set_carry_flag(carry_flag)
-    if x_value == 0 and y_value == 0:  # Simulate empty stack
-        stack.push(0)  # Push one value to trigger underflow
-    else:
-        stack.push(int(x_value))
-        stack.push(int(y_value))
     button = MockButton("RMD")
     try:
+        if x_value == 0 and y_value == 0:
+            stack.clear_stack()  # Ensure stack is empty for underflow test
+        else:
+            stack.push(int(y_value))  # Push Y (divisor) first
+            stack.push(int(x_value))  # Then X (dividend)
+        controller.display.raw_value = str(x_value)
+        logger.info(f"Stack before RMD: {stack.get_state()}")
         f_mode.f_action(button, controller.display, controller)
         logger.info(f"Result: Display = {controller.display.current_entry}, Stack = {stack.get_state()}, Carry Flag = {stack.get_carry_flag()}, Word Size = {stack.get_word_size()}, Complement Mode = {stack.get_complement_mode()}")
     except HP16CError as e:
-        if x_value == 0 and y_value == 0:
-            logger.info(f"Expected Error: {e.display_message}")
+        if isinstance(e, StackUnderflowError) and x_value == 0 and y_value == 0:
+            logger.info(f"Expected StackUnderflowError: {e.display_message}")
+        elif isinstance(e, DivisionByZeroError) and y_value == 0 and x_value != 0:
+            logger.info(f"Expected DivisionByZeroError: {e.display_message}")
         else:
             logger.error(f"Unexpected Error: {e.display_message}")
 
@@ -231,18 +235,19 @@ def test_xor(controller, x_value, y_value, word_size=4, carry_flag=0, complement
     stack.set_word_size(word_size)
     stack.set_complement_mode(complement_mode)
     stack.set_carry_flag(carry_flag)
-    if x_value == 0 and y_value == 0:  # Simulate empty stack
-        stack.push(0)  # Push one value to trigger underflow
-    else:
-        stack.push(int(x_value))
-        stack.push(int(y_value))
     button = MockButton("XOR")
     try:
+        if x_value == 0 and y_value == 0:
+            stack.clear_stack()  # Ensure stack is empty for underflow test
+        else:
+            stack.push(int(y_value))  # Push Y first
+            stack.push(int(x_value))  # Then X
+        controller.display.raw_value = str(x_value)
         f_mode.f_action(button, controller.display, controller)
         logger.info(f"Result: Display = {controller.display.current_entry}, Stack = {stack.get_state()}, Carry Flag = {stack.get_carry_flag()}, Word Size = {stack.get_word_size()}, Complement Mode = {stack.get_complement_mode()}")
     except HP16CError as e:
-        if x_value == 0 and y_value == 0:
-            logger.info(f"Expected Error: {e.display_message}")
+        if isinstance(e, StackUnderflowError) and x_value == 0 and y_value == 0:
+            logger.info(f"Expected StackUnderflowError: {e.display_message}")
         else:
             logger.error(f"Unexpected Error: {e.display_message}")
 

@@ -5,26 +5,40 @@ Provides integer-based arithmetic for the HP16C. Raises custom exceptions on err
 """
 
 from error import DivisionByZeroError
+from base_conversion import current_base
+import stack
+from logging_config import logger
 
 def add(a, b):
+    """Add two integers with word size consideration."""
     result = a + b
-    from stack import apply_word_size, current_base  # Lazy import to avoid circular import
-    return result if current_base == "DEC" else apply_word_size(result)
+    if current_base != "DEC":
+        result = stack.apply_word_size(result)
+    logger.info(f"Add: {a} + {b} = {result}")
+    return result
 
 def subtract(a, b):
+    """Subtract two integers with word size consideration."""
     result = a - b
-    from stack import apply_word_size, current_base
-    return result if current_base == "DEC" else apply_word_size(result)
+    if current_base != "DEC":
+        result = stack.apply_word_size(result)
+    logger.info(f"Subtract: {a} - {b} = {result}")
+    return result
 
 def multiply(a, b):
+    """Multiply two integers with word size consideration."""
     result = a * b
-    from stack import apply_word_size, current_base
-    return result if current_base == "DEC" else apply_word_size(result)
+    if current_base != "DEC":
+        result = stack.apply_word_size(result)
+    logger.info(f"Multiply: {a} * {b} = {result}")
+    return result
 
 def divide(a, b):
+    """Divide two integers with word size consideration."""
     if b == 0:
-        from error import DivisionByZeroError
         raise DivisionByZeroError()
-    result = int(a / b)  # Truncate toward zero
-    from stack import apply_word_size, current_base
-    return result if current_base == "DEC" else apply_word_size(result)
+    result = int(a / b)
+    if current_base != "DEC":
+        result = stack.apply_word_size(result)
+    logger.info(f"Divide: {a} / {b} = {result}")
+    return result

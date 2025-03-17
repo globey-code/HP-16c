@@ -4,75 +4,85 @@ base_conversion.py
 Handles base conversion for the HP-16C emulator (DEC, HEX, BIN, OCT).
 """
 
+import stack
+from logging_config import logger
+
 current_base = "DEC"
 
 def interpret_in_current_base(string_value, base=None):
+    """Interpret a string value in the specified or current base."""
     global current_base
     if base is None:
         base = current_base
+    
     if not string_value:
         return 0
+    
     try:
         if base == "DEC":
-            return int(string_value)
+            result = int(string_value)
         elif base == "HEX":
-            return int(string_value, 16)
+            result = int(string_value, 16)
         elif base == "BIN":
-            return int(string_value, 2)
+            result = int(string_value, 2)
         elif base == "OCT":
-            return int(string_value, 8)
+            result = int(string_value, 8)
         else:
-            return int(string_value)
+            result = int(string_value)
+        return result
     except ValueError:
+        logger.info(f"Failed to interpret {string_value} in {base}, defaulting to 0")
         return 0
 
 def format_in_current_base(value, base=None):
-    """Format a value in the specified base, respecting word size."""
+    """Format a value in the specified or current base."""
     global current_base
     if base is None:
         base = current_base
-    import stack
-    value = int(value)  # Ensure we have an integer for non-DEC modes
+    
+    value = int(value)  # Ensure integer for non-FLOAT modes
+    word_size = stack.get_word_size()
+    mask = (1 << word_size) - 1
+    complement_mode = stack.get_complement_mode()
+
     if base == "DEC":
-        from stack import get_complement_mode, get_word_size
-        if get_complement_mode() in {"1S", "2S"}:
-            return str(value)
+        if complement_mode in {"1S", "2S"} and value & (1 << (word_size - 1)):
+            if complement_mode == "1S":
+                signed_val = -((~value) & mask)
+            else:  # 2S
+                signed_val = value - (1 << word_size)
+            result = str(signed_val)
         else:
-            mask = (1 << get_word_size()) - 1
-            unsigned_val = value & mask
-            return str(unsigned_val)
+            result = str(value & mask)
     elif base == "HEX":
-        word_size = stack.get_word_size()
         padding = max(0, (word_size + 3) // 4)
-        return format(value & ((1 << word_size) - 1), f'0{padding}X')
+        result = format(value & mask, f'0{padding}X').lower()
     elif base == "BIN":
-        word_size = stack.get_word_size()
-        return format(value & ((1 << word_size) - 1), f'0{word_size}b')
+        result = format(value & mask, f'0{word_size}b')
     elif base == "OCT":
-        word_size = stack.get_word_size()
         padding = max(0, (word_size + 2) // 3)
-        return format(value & ((1 << word_size) - 1), f'0{padding}o')
+        result = format(value & mask, f'0{padding}o')
     else:
-        return str(value)
+        result = str(value & mask)
+    
+    logger.info(f"Formatted {value} in {base} as {result}")
+    return result
 
 def set_base(new_base, display):
-    """Switch the display mode and reformat the current value."""
+    """Set the current base and update the display."""
     global current_base
     if hasattr(display, 'current_value') and display.current_value is not None:
         num = display.current_value
-        print(f"[DEBUG] Using display.current_value: {num}")
     else:
         if display.raw_value and display.raw_value != "0":
-            print(f"[DEBUG] Using raw_value: '{display.raw_value}' with current base: {current_base}")
             num = interpret_in_current_base(display.raw_value, current_base)
             display.current_value = num
         else:
-            print("[DEBUG] raw_value is '0' or empty; using 0")
             num = 0
             display.current_value = 0
+    
     current_base = new_base
     display.set_mode(new_base)
+    display.raw_value = format_in_current_base(num, new_base)
     display.set_entry(num)
-    new_str = format_in_current_base(num, new_base)
-    display.raw_value = new_str
-    print(f"[base_conversion] Changed base to {new_base}. Now display shows '{new_str}'")
+    logger.info(f"Base set to {new_base}")

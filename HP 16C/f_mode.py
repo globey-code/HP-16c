@@ -9,295 +9,219 @@ import sys
 import os
 import buttons
 import stack
-from base_conversion import format_in_current_base
-from error import HP16CError, IncorrectWordSizeError, NoValueToShiftError, ShiftExceedsWordSizeError, InvalidBitOperationError
+from base_conversion import format_in_current_base, interpret_in_current_base
+from error import (
+    HP16CError, IncorrectWordSizeError, NoValueToShiftError, 
+    ShiftExceedsWordSizeError, InvalidBitOperationError
+)
+from logging_config import logger
 
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-PARENT_DIR = os.path.dirname(CURRENT_DIR)
-sys.path.insert(0, PARENT_DIR)
-
-# f-mode action functions
-# ROW 1
-# ROW 1
 def action_sl(display_widget, controller_obj):
-    try:
-        controller_obj.shift_left()
-        display_widget.set_entry(format_in_current_base(stack.peek(), controller_obj.display.mode))
-        print("Shift Left executed")
-        print(f"[DEBUG] Display value: {display_widget.current_entry}")  # Add this
-    except HP16CError as e:
-        controller_obj.handle_error(e)
+    """Shift Left (SL)."""
+    controller_obj.shift_left()
 
 def action_sr(display_widget, controller_obj):
-    try:
-        controller_obj.shift_right()
-        display_widget.set_entry(format_in_current_base(stack.peek(), controller_obj.display.mode))
-        print("Shift Right executed")
-        print(f"[DEBUG] Display value: {display_widget.current_entry}")  # Add this
-    except HP16CError as e:
-        controller_obj.handle_error(e)
+    """Shift Right (SR)."""
+    controller_obj.shift_right()
 
 def action_rl(display_widget, controller_obj):
-    try:
-        controller_obj.rotate_left()
-        display_widget.set_entry(format_in_current_base(stack.peek(), controller_obj.display.mode))
-        print("Rotate Left executed")
-        print(f"[DEBUG] Display value: {display_widget.current_entry}")  # Add this
-    except HP16CError as e:
-        controller_obj.handle_error(e)
+    """Rotate Left (RL)."""
+    controller_obj.rotate_left()
 
 def action_rr(display_widget, controller_obj):
-    try:
-        controller_obj.rotate_right()
-        display_widget.set_entry(format_in_current_base(stack.peek(), controller_obj.display.mode))
-        print("Rotate Right executed")
-        print(f"[DEBUG] Display value: {display_widget.current_entry}")  # Add this
-    except HP16CError as e:
-        controller_obj.handle_error(e)
+    """Rotate Right (RR)."""
+    controller_obj.rotate_right()
 
 def action_rln(display_widget, controller_obj):
-    try:
-        controller_obj.rotate_left_carry()
-        display_widget.set_entry(format_in_current_base(stack.peek(), controller_obj.display.mode))
-        print("Rotate Left Carry executed")
-        print(f"[DEBUG] Display value: {display_widget.current_entry}")  # Add this
-    except HP16CError as e:
-        controller_obj.handle_error(e)
+    """Rotate Left with Carry (RLn)."""
+    controller_obj.rotate_left_carry()
 
 def action_rrn(display_widget, controller_obj):
-    try:
-        controller_obj.rotate_right_carry()
-        display_widget.set_entry(format_in_current_base(stack.peek(), controller_obj.display.mode))
-        print("Rotate Right Carry executed")
-        print(f"[DEBUG] Display value: {display_widget.current_entry}")  # Add this
-    except HP16CError as e:
-        controller_obj.handle_error(e)
+    """Rotate Right with Carry (RRn)."""
+    controller_obj.rotate_right_carry()
 
 def action_maskl(display_widget, controller_obj):
+    """Mask Left (MASKL)."""
     try:
         bits = int(display_widget.raw_value or "0")
         controller_obj.mask_left(bits)
-        display_widget.set_entry(format_in_current_base(stack.peek(), controller_obj.display.mode))
-        display_widget.raw_value = str(stack.peek())
-        print(f"Mask Left {bits} bits")
-        print(f"[DEBUG] Display value: {display_widget.current_entry}")
-    except HP16CError as e:
-        controller_obj.handle_error(e)
+    except ValueError:
+        controller_obj.handle_error(InvalidBitOperationError("Invalid bit count"))
 
 def action_maskr(display_widget, controller_obj):
+    """Mask Right (MASKR)."""
     try:
         bits = int(display_widget.raw_value or "0")
         controller_obj.mask_right(bits)
-        display_widget.set_entry(format_in_current_base(stack.peek(), controller_obj.display.mode))
-        display_widget.raw_value = str(stack.peek())
-        print(f"Mask Right {bits} bits")
-        print(f"[DEBUG] Display value: {display_widget.current_entry}")  # Add this
-    except HP16CError as e:
-        controller_obj.handle_error(e)
+    except ValueError:
+        controller_obj.handle_error(InvalidBitOperationError("Invalid bit count"))
 
 def action_rmd(display_widget, controller_obj):
-    try:
-        print(f"[DEBUG] Calling double_remainder on {controller_obj}")
-        controller_obj.double_remainder()
-        display_widget.set_entry(format_in_current_base(stack.peek(), controller_obj.display.mode))
-        print("Remainder (RMD) executed")
-        print(f"[DEBUG] Display value: {display_widget.current_entry}")
-    except HP16CError as e:
-        controller_obj.handle_error(e)
+    """Double Remainder (RMD)."""
+    controller_obj.double_remainder()
 
-def action_logical_xor(display_widget, controller_obj, op="xor"):
-    print(f"[DEBUG] Calling enter_operator with op='{op}'")
-    controller_obj.enter_operator(op)
-    print(f"Logical operation {op.upper()} executed")
-    print(f"[DEBUG] Display value: {display_widget.current_entry}")
+def action_logical_xor(display_widget, controller_obj):
+    """Logical XOR."""
+    controller_obj.enter_operator("xor")
 
-# ROW 2
 def action_x_exchange_i(display_widget, controller_obj):
+    """Exchange X with I register (x><(i))."""
     controller_obj.exchange_x_with_i()
-    print("x><(i) executed")
 
 def action_x_exchange_i_gto(display_widget, controller_obj):
+    """Exchange X with I register (x><I)."""
     controller_obj.exchange_x_with_i()
-    print("x><I executed")
 
-def action_show_hex(display_widget, controller_obj, mode):
-    display_widget.toggle_stack_display(mode)
-    print(f"Show {mode} stack")
-    display_widget.widget.after(3000, lambda: display_widget.toggle_stack_display(None))  # Reset after 3s
+def action_show(display_widget, controller_obj, mode):
+    """Show value in specified base (HEX, DEC, OCT, BIN) for 4 seconds."""
+    current_value = display_widget.current_value or interpret_in_current_base(display_widget.raw_value or "0", controller_obj.display.mode)
+    current_mode = controller_obj.display.mode
+    formatted_value = format_in_current_base(current_value, mode)
+    display_widget.set_entry(formatted_value, raw=True)
+    display_widget.mode_label.config(text=display_widget.get_mode_char(mode))
 
-def action_show_dec(display_widget, controller_obj, mode):
-    display_widget.toggle_stack_display(mode)
-    print(f"Show {mode} stack")
-    display_widget.widget.after(3000, lambda: display_widget.toggle_stack_display(None))  # Reset after 3s
+    def revert_display():
+        revert_value = format_in_current_base(current_value, current_mode)
+        display_widget.set_entry(revert_value)
+        display_widget.mode_label.config(text=display_widget.get_mode_char(current_mode))
 
-def action_show_oct(display_widget, controller_obj, mode):
-    display_widget.toggle_stack_display(mode)
-    print(f"Show {mode} stack")
-    display_widget.widget.after(3000, lambda: display_widget.toggle_stack_display(None))  # Reset after 3s
-
-def action_show_bin(display_widget, controller_obj, mode):
-    display_widget.toggle_stack_display(mode)
-    print(f"Show {mode} stack")
-    display_widget.widget.after(3000, lambda: display_widget.toggle_stack_display(None))  # Reset after 3s
+    display_widget.widget.after(4000, revert_display)
 
 def action_sb(display_widget, controller_obj):
-    bit_index = int(display_widget.raw_value or "0")
-    controller_obj.set_bit(bit_index)
-    display_widget.set_entry(format_in_current_base(stack.peek(), controller_obj.display.mode))
-    print(f"Set Bit {bit_index}")
+    """Set Bit (SB)."""
+    try:
+        bit_index = int(display_widget.raw_value or "0")
+        controller_obj.set_bit(bit_index)
+    except ValueError:
+        controller_obj.handle_error(InvalidBitOperationError("Invalid bit index"))
 
 def action_cb(display_widget, controller_obj):
-    bit_index = int(display_widget.raw_value or "0")
-    controller_obj.clear_bit(bit_index)
-    display_widget.set_entry(format_in_current_base(stack.peek(), controller_obj.display.mode))
-    print(f"Clear Bit {bit_index}")
+    """Clear Bit (CB)."""
+    try:
+        bit_index = int(display_widget.raw_value or "0")
+        controller_obj.set_bit(bit_index)
+    except ValueError:
+        controller_obj.handle_error(InvalidBitOperationError("Invalid bit index"))
 
 def action_b_test(display_widget, controller_obj):
-    bit_index = int(display_widget.raw_value or "0")
-    controller_obj.test_bit(bit_index)
-    display_widget.set_entry(format_in_current_base(stack.peek(), controller_obj.display.mode))
-    print(f"Test Bit {bit_index}, Carry={stack.get_carry_flag()}")
+    """Test Bit (B?)."""
+    try:
+        bit_index = int(display_widget.raw_value or "0")
+        result = controller_obj.test_bit(bit_index)
+        display_widget.set_entry(str(result))
+    except ValueError:
+        controller_obj.handle_error(InvalidBitOperationError("Invalid bit index"))
 
-def action_logical_and(display_widget, controller_obj, op="and"):
-    print(f"[DEBUG] Calling enter_operator with op='{op}'")
-    controller_obj.enter_operator(op)
-    print(f"Logical operation {op.upper()} executed")
-    print(f"[DEBUG] Display value: {display_widget.current_entry}")
+def action_logical_and(display_widget, controller_obj):
+    """Logical AND."""
+    controller_obj.enter_operator("and")
 
-# ROW 3
 def action_store_in_i(display_widget, controller_obj):
+    """Store in I register ((i))."""
     controller_obj.store_in_i()
-    print("(i) executed")
 
 def action_recall_i(display_widget, controller_obj):
+    """Recall from I register (I)."""
     controller_obj.recall_i()
-    print("I (recall) executed")
 
 def action_clr_prgm(display_widget, controller_obj):
-    print("Clear Program executed (not implemented)")
+    """Clear Program (CLR PRGM) - Not implemented."""
+    pass
 
 def action_clr_reg(display_widget, controller_obj):
-    print("Clear Registers executed (not implemented)")
+    """Clear Registers (CLR REG)."""
+    stack_state = stack.get_state()
+    for i in range(len(stack_state)):
+        stack.pop()
+        stack.push(0, duplicate_x=False)
+    display_widget.clear_entry()
+    controller_obj.update_stack_display()
 
 def action_clr_prfx(display_widget, controller_obj):
-    print("Clear Prefix executed (not implemented)")
+    """Clear Prefix (CLR PRFX) - Reset modes."""
+    controller_obj.f_mode_active = False
+    controller_obj.g_mode_active = False
 
 def action_window(display_widget, controller_obj):
-    print("Window executed (not implemented)")
+    """Window - Not implemented."""
+    pass
 
 def action_sc_1s(display_widget, controller_obj):
+    """Set Complement Mode to 1's (SC 1'S)."""
     controller_obj.set_complement_mode("1S")
-    display_widget.update_stack_content()
-    print("Set complement mode to 1's")
 
 def action_sc_2s(display_widget, controller_obj):
+    """Set Complement Mode to 2's (SC 2'S)."""
     controller_obj.set_complement_mode("2S")
-    display_widget.update_stack_content()
-    print("Set complement mode to 2's")
 
 def action_sc_unsign(display_widget, controller_obj):
+    """Set Complement Mode to Unsigned (SC UNSGN)."""
     controller_obj.set_complement_mode("UNSIGNED")
-    display_widget.update_stack_content()
-    print("Set complement mode to Unsigned")
 
-def action_logical_not(display_widget, controller_obj, op="not"):
-    print(f"[DEBUG] Calling enter_operator with op='{op}'")
-    controller_obj.enter_operator(op)
-    print(f"Logical operation {op.upper()} executed")
-    print(f"[DEBUG] Display value: {display_widget.current_entry}")
+def action_logical_not(display_widget, controller_obj):
+    """Logical NOT."""
+    controller_obj.enter_operator("not")
 
-# ROW 4
 def action_wsize(display_widget, controller_obj):
+    """Set Word Size (WSIZE)."""
     try:
         bits = int(display_widget.raw_value or "0")
         controller_obj.set_word_size(bits)
         display_widget.clear_entry()
-        display_widget.update_stack_content()
-        print(f"Word size set to {bits} bits")
     except ValueError:
-        error = IncorrectWordSizeError()
-        controller_obj.handle_error(error)
-        display_widget.set_entry(error.display_message, raw=True)
-        print("Incorrect WSIZE error displayed")
+        controller_obj.handle_error(IncorrectWordSizeError())
 
 def action_float(display_widget, controller_obj):
+    """Set Float Mode (FLOAT)."""
     controller_obj.display.mode = "FLOAT"
-    controller_obj.display.set_entry(float(controller_obj.display.raw_value or 0))
-    print("Float mode activated")
+    current_val = float(display_widget.raw_value or "0")
+    display_widget.set_entry(current_val)
+    controller_obj.update_stack_display()
 
 def action_mem(display_widget, controller_obj):
-    print("Memory operation executed (not implemented)")
+    """Memory Info (MEM) - Not implemented."""
+    pass
 
 def action_status(display_widget, controller_obj):
-    print("Status operation executed (not implemented)")
+    """Show Stack Status (STATUS) for 5 seconds."""
+    current_mode = controller_obj.display.mode
+    display_widget.toggle_stack_display(current_mode)
+
+    def hide_stack():
+        display_widget.show_stack = False
+        display_widget.stack_content.config(text="")
+
+    display_widget.widget.after(5000, hide_stack)
 
 def action_eex(display_widget, controller_obj):
+    """Enter Exponent (EEx) in FLOAT mode."""
     if controller_obj.display.mode == "FLOAT":
-        controller_obj.display.raw_value += "E"  # Append exponent indicator
-        controller_obj.display.set_entry(controller_obj.display.raw_value)
-        print("EEx activated for exponent entry")
+        display_widget.raw_value += "E"
+        display_widget.set_entry(display_widget.raw_value)
     else:
-        print("EEx only available in FLOAT mode")
+        controller_obj.handle_error(HP16CError("EEx only in FLOAT mode", "E108"))
 
-def action_logical_or(display_widget, controller_obj, op="or"):
-    print(f"[DEBUG] Calling enter_operator with op='{op}'")
-    controller_obj.enter_operator(op)
-    print(f"Logical operation {op.upper()} executed")
-    print(f"[DEBUG] Display value: {display_widget.current_entry}")
+def action_logical_or(display_widget, controller_obj):
+    """Logical OR."""
+    controller_obj.enter_operator("or")
 
-# f_mode_active: Global flag for f-mode
 F_FUNCTIONS = {
-    # ROW 1
-    "SL": lambda dw, cobj: action_sl(dw, cobj),
-    "SR": lambda dw, cobj: action_sr(dw, cobj),
-    "RL": lambda dw, cobj: action_rl(dw, cobj),
-    "RR": lambda dw, cobj: action_rr(dw, cobj),
-    "RLN": lambda dw, cobj: action_rln(dw, cobj),
-    "RRN": lambda dw, cobj: action_rrn(dw, cobj),
-    "MASKL": lambda dw, cobj: action_maskl(dw, cobj),
-    "MASKR": lambda dw, cobj: action_maskr(dw, cobj),
-    "RMD": lambda dw, cobj: action_rmd(dw, cobj),
-    "XOR": lambda dw, cobj: action_logical_xor(dw, cobj),
+    "SL": action_sl, "SR": action_sr, "RL": action_rl, "RR": action_rr,
+    "RLN": action_rln, "RRN": action_rrn, "MASKL": action_maskl, "MASKR": action_maskr,
+    "RMD": action_rmd, "XOR": action_logical_xor, "X><(I)": action_x_exchange_i,
+    "X><I": action_x_exchange_i_gto, "SHOW HEX": lambda dw, co: action_show(dw, co, "HEX"),
+    "SHOW DEC": lambda dw, co: action_show(dw, co, "DEC"), "SHOW OCT": lambda dw, co: action_show(dw, co, "OCT"),
+    "SHOW BIN": lambda dw, co: action_show(dw, co, "BIN"), "SB": action_sb, "CB": action_cb,
+    "B?": action_b_test, "AND": action_logical_and, "(I)": action_store_in_i, "I": action_recall_i,
+    "CLR PRGM": action_clr_prgm, "CLR REG": action_clr_reg, "CLR PRFX": action_clr_prfx,
+    "WINDOW": action_window, "SC 1'S": action_sc_1s, "SC 2'S": action_sc_2s, "SC UNSGN": action_sc_unsign,
+    "NOT": action_logical_not, "WSIZE": action_wsize, "FLOAT": action_float, "MEM": action_mem,
+    "STATUS": action_status, "EEX": action_eex, "OR": action_logical_or,
+}
 
-    # ROW 2
-    "X><(I)": lambda dw, cobj: action_x_exchange_i(dw, cobj),
-    "X><I": lambda dw, cobj: action_x_exchange_i_gto(dw, cobj),
-    "SHOW HEX": lambda dw, cobj: action_show_hex(dw, cobj),
-    "SHOW DEC": lambda dw, cobj: action_show_dec(dw, cobj),
-    "SHOW OCT": lambda dw, cobj: action_show_oct(dw, cobj),
-    "SHOW BIN": lambda dw, cobj: action_show_bin(dw, cobj),
-    "SB": lambda dw, cobj: action_sb(dw, cobj),
-    "CB": lambda dw, cobj: action_cb(dw, cobj),
-    "B?": lambda dw, cobj: action_b_test(dw, cobj),
-    "AND": lambda dw, cobj: action_logical_and(dw, cobj),
-
-    # ROW3
-    "(I)": lambda dw, cobj: action_store_in_i(dw, cobj),
-    "I": lambda dw, cobj: action_recall_i(dw, cobj),
-    "CLR PRGM": lambda dw, cobj: action_clr_prgm(dw, cobj),
-    "CLR REG": lambda dw, cobj: action_clr_reg(dw, cobj),
-    "CLR PRFX": lambda dw, cobj: action_clr_prfx(dw, cobj),
-    "WINDOW": lambda dw, cobj: action_window(dw, cobj),
-    "SC 1'S": lambda dw, cobj: action_sc_1s(dw, cobj),
-    "SC 2'S": lambda dw, cobj: action_sc_2s(dw, cobj),
-    "SC UNSGN": lambda dw, cobj: action_sc_unsign(dw, cobj),
-    "NOT": lambda dw, cobj: action_logical_not(dw, cobj),
-
-    # ROW 4
-    "WSIZE": lambda dw, cobj: action_wsize(dw, cobj),
-    "FLOAT": lambda dw, cobj: action_float(dw, cobj),
-    "MEM": lambda dw, cobj: action_mem(dw, cobj),
-    "STATUS": lambda dw, cobj: action_status(dw, cobj),
-    "EEX": lambda dw, cobj: action_eex(dw, cobj),
-    "OR": lambda dw, cobj: action_logical_or(dw, cobj),
- }
-
-# f_action: Handle f-mode button actions
 def f_action(button, display_widget, controller_obj):
+    """Execute the f-mode function for a given button."""
     top_text = button.get("orig_top_text", "").strip().upper()
-    print(f"[DEBUG] Top label (orig_top_text): {button.get('orig_top_text', '')}")  # Add this
-    print(f"[DEBUG] Top label (uppercased): {top_text}")  # Add this
+    logger.info(f"f-mode action: {top_text}")
     if top_text in F_FUNCTIONS:
         F_FUNCTIONS[top_text](display_widget, controller_obj)
-    else:
-        print(f"No f function for top label: {top_text}")
