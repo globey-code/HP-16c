@@ -1,0 +1,265 @@
+[2025-03-21 18:00:49,773] INFO: Stack initialized: [0, 0, 0], X=0, word_size=16, complement_mode=UNSIGNED
+[2025-03-21 18:00:49,798] INFO: Script started: main.pyw
+[2025-03-21 18:00:49,798] INFO: Entering function: main
+[2025-03-21 18:00:49,798] INFO: Creating Tk root window
+[2025-03-21 18:00:49,864] INFO: Setting window title: HP 16C Emulator
+[2025-03-21 18:00:49,864] INFO: Configuring root background color: #1e1818
+[2025-03-21 18:00:49,864] INFO: Setting root resizable: False, False
+[2025-03-21 18:00:49,864] INFO: Entering function: load_config
+[2025-03-21 18:00:49,865] INFO: Config loaded and updated: {'display_width': 575, 'display_height': 80, 'margin': 20, 'bg_color': '#1e1818', 'display_font_family': 'Courier', 'display_font_size': 18, 'display_x': 125, 'display_y': 20}
+[2025-03-21 18:00:49,865] INFO: Exiting function: load_config
+[2025-03-21 18:00:49,865] INFO: Custom font created: family=Courier, size=18
+[2025-03-21 18:00:49,865] INFO: Setting up UI: display at x=125, y=20, width=575, height=80, grid=4x10, total=1089x560
+[2025-03-21 18:00:49,865] INFO: Initializing Display: x=125, y=20, width=575, height=80
+[2025-03-21 18:00:49,868] INFO: Stack info updated: 00-16-0000
+[2025-03-21 18:00:49,869] INFO: Display initialized: mode=DEC, entry=0
+[2025-03-21 18:00:49,869] INFO: Setting mode: DEC
+[2025-03-21 18:00:49,869] INFO: Setting entry: value=0, raw=False
+[2025-03-21 18:00:49,869] INFO: Entry set: 0, value=0
+[2025-03-21 18:00:49,869] INFO: Creating buttons from BUTTONS_CONFIG
+[2025-03-21 18:00:49,871] INFO: Button 0,0: SL/A/LJ, 75x75, row=0, col=0, rowspan=1
+[2025-03-21 18:00:49,872] INFO: Button 1,0: x><(i)/GSB/RTN, 75x75, row=1, col=0, rowspan=1
+[2025-03-21 18:00:49,872] INFO: Button 2,0: (i)/R/S/P/R, 75x75, row=2, col=0, rowspan=1
+[2025-03-21 18:00:49,873] INFO: Button 3,0: /ON/, 75x75, row=3, col=0, rowspan=1
+[2025-03-21 18:00:49,874] INFO: Button 0,1: SR/B/ASR, 75x75, row=0, col=1, rowspan=1
+[2025-03-21 18:00:49,874] INFO: Button 1,1: x><I/GTO/LBL, 75x75, row=1, col=1, rowspan=1
+[2025-03-21 18:00:49,875] INFO: Button 2,1: I/SST/BST, 75x75, row=2, col=1, rowspan=1
+[2025-03-21 18:00:49,875] INFO: Button 3,1: /f/, 75x75, row=3, col=1, rowspan=1
+[2025-03-21 18:00:49,876] INFO: Button 0,2: RL/C/DSZ, 75x75, row=0, col=2, rowspan=1
+[2025-03-21 18:00:49,877] INFO: Button 1,2: SHOW HEX/HEX/DSZ, 75x75, row=1, col=2, rowspan=1
+[2025-03-21 18:00:49,879] INFO: Button 2,2: CLR PRGM/R↓/R↑, 75x75, row=2, col=2, rowspan=1
+[2025-03-21 18:00:49,880] INFO: Button 3,2: /g/, 75x75, row=3, col=2, rowspan=1
+[2025-03-21 18:00:49,881] INFO: Button 0,3: RR/D/RRC, 75x75, row=0, col=3, rowspan=1
+[2025-03-21 18:00:49,881] INFO: Button 1,3: SHOW DEC/DEC/ISZ, 75x75, row=1, col=3, rowspan=1
+[2025-03-21 18:00:49,882] INFO: Button 2,3: CLR REG/x><y/PSE, 75x75, row=2, col=3, rowspan=1
+[2025-03-21 18:00:49,987] INFO: Button 3,3: WSIZE/STO/⯇, 75x75, row=3, col=3, rowspan=1
+[2025-03-21 18:00:49,988] INFO: Button 0,4: RLn/E/RLCn, 75x75, row=0, col=4, rowspan=1
+[2025-03-21 18:00:49,989] INFO: Button 1,4: SHOW OCT/OCT/√x, 75x75, row=1, col=4, rowspan=1
+[2025-03-21 18:00:49,990] INFO: Button 2,4: CLR PRFX/BSP/CLX, 75x75, row=2, col=4, rowspan=1
+[2025-03-21 18:00:49,991] INFO: Button 3,4: FLOAT/RCL/⯈, 75x75, row=3, col=4, rowspan=1
+[2025-03-21 18:00:49,992] INFO: Button 0,5: RRn/F/RRCn, 75x75, row=0, col=5, rowspan=1
+[2025-03-21 18:00:49,993] INFO: Button 1,5: SHOW BIN/BIN/1/x, 75x75, row=1, col=5, rowspan=1
+[2025-03-21 18:00:49,994] INFO: Button 2,5: WINDOW/ENTER/LST X, 75x175, row=2, col=5, rowspan=2
+[2025-03-21 18:00:49,994] INFO: Button 0,6: MASKL/7/#B, 75x75, row=0, col=6, rowspan=1
+[2025-03-21 18:00:49,996] INFO: Button 1,6: SB/4/SF, 75x75, row=1, col=6, rowspan=1
+[2025-03-21 18:00:49,996] INFO: Button 2,6: SC 1'S/1/X≤Y, 75x75, row=2, col=6, rowspan=1
+[2025-03-21 18:00:49,997] INFO: Button 3,6: MEM/0/X≠Y, 75x75, row=3, col=6, rowspan=1
+[2025-03-21 18:00:49,998] INFO: Button 0,7: MASKR/8/ABS, 75x75, row=0, col=7, rowspan=1
+[2025-03-21 18:00:49,999] INFO: Button 1,7: CB/5/CF, 75x75, row=1, col=7, rowspan=1
+[2025-03-21 18:00:50,000] INFO: Button 2,7: SC 2'S/2/X<0, 75x75, row=2, col=7, rowspan=1
+[2025-03-21 18:00:50,001] INFO: Button 3,7: STATUS/./X≠0, 75x75, row=3, col=7, rowspan=1
+[2025-03-21 18:00:50,002] INFO: Button 0,8: RMD/9/DBLR, 75x75, row=0, col=8, rowspan=1
+[2025-03-21 18:00:50,002] INFO: Button 1,8: B?/6/F?, 75x75, row=1, col=8, rowspan=1
+[2025-03-21 18:00:50,003] INFO: Button 2,8: SC UNSGN/3/X>Y, 75x75, row=2, col=8, rowspan=1
+[2025-03-21 18:00:50,004] INFO: Button 3,8: EEx/CHS/X=Y, 75x75, row=3, col=8, rowspan=1
+[2025-03-21 18:00:50,005] INFO: Button 0,9: XOR///DBL/, 75x75, row=0, col=9, rowspan=1
+[2025-03-21 18:00:50,006] INFO: Button 1,9: AND/*/DBL*, 75x75, row=1, col=9, rowspan=1
+[2025-03-21 18:00:50,006] INFO: Button 2,9: NOT/-/X>0, 75x75, row=2, col=9, rowspan=1
+[2025-03-21 18:00:50,007] INFO: Button 3,9: OR/+/X=0, 75x75, row=3, col=9, rowspan=1
+[2025-03-21 18:00:50,007] INFO: Total buttons created: 39
+[2025-03-21 18:00:50,007] INFO: Grid configured: 10 cols, 4 rows, minsize=75
+[2025-03-21 18:00:50,035] INFO: Initializing HP16CController with display and buttons
+[2025-03-21 18:00:50,035] INFO: Initializing HP16CController
+[2025-03-21 18:00:50,035] INFO: Binding buttons to controller actions
+[2025-03-21 18:00:50,035] INFO: Binding actions to all buttons
+[2025-03-21 18:00:50,037] INFO: Starting periodic stack updates
+[2025-03-21 18:00:50,039] INFO: Setting entry: value=0, raw=False
+[2025-03-21 18:00:50,039] INFO: Entry set: 0, value=0
+[2025-03-21 18:00:50,285] INFO: Root window size: 1089x560+156+156
+[2025-03-21 18:00:50,285] INFO: Entering Tkinter mainloop
+[2025-03-21 18:00:53,026] INFO: Handling command: 
+[2025-03-21 18:00:53,026] INFO: Handling normal command: 1
+[2025-03-21 18:00:53,026] INFO: Entering digit: 1
+[2025-03-21 18:00:53,026] INFO: Appending character: 1
+[2025-03-21 18:00:53,026] INFO: Setting entry: value=1, raw=False
+[2025-03-21 18:00:53,026] INFO: Entry set: 1, value=1
+[2025-03-21 18:00:53,026] INFO: Pushed value: 1, X=1, stack=[0, 0, 0]
+[2025-03-21 18:00:53,026] INFO: Setting entry: value=1, raw=False
+[2025-03-21 18:00:53,027] INFO: Entry set: 1, value=1
+[2025-03-21 18:01:00,608] INFO: Handling command: 
+[2025-03-21 18:01:00,608] INFO: Handling normal command: 2
+[2025-03-21 18:01:00,608] INFO: Entering digit: 2
+[2025-03-21 18:01:00,608] INFO: Appending character: 2
+[2025-03-21 18:01:00,608] INFO: Setting entry: value=12, raw=False
+[2025-03-21 18:01:00,608] INFO: Entry set: 12, value=12
+[2025-03-21 18:01:00,608] INFO: Pushed value: 12, X=12, stack=[0, 0, 1]
+[2025-03-21 18:01:00,608] INFO: Setting entry: value=12, raw=False
+[2025-03-21 18:01:00,609] INFO: Entry set: 12, value=12
+[2025-03-21 18:01:02,715] INFO: Handling command: 
+[2025-03-21 18:01:02,715] INFO: Handling normal command: BSP
+[2025-03-21 18:01:02,715] INFO: Performing backspace
+[2025-03-21 18:01:02,715] INFO: Setting entry: value=1, raw=False
+[2025-03-21 18:01:02,715] INFO: Entry set: 1, value=1
+[2025-03-21 18:01:03,915] INFO: Handling command: 
+[2025-03-21 18:01:03,915] INFO: Handling normal command: ENTER
+[2025-03-21 18:01:03,915] INFO: Entering value
+[2025-03-21 18:01:03,915] INFO: Pushed value: 1, X=1, stack=[0, 1, 12]
+[2025-03-21 18:01:03,915] INFO: Clearing entry
+[2025-03-21 18:01:04,981] INFO: Handling command: 
+[2025-03-21 18:01:04,981] INFO: Handling normal command: 2
+[2025-03-21 18:01:04,981] INFO: Entering digit: 2
+[2025-03-21 18:01:04,981] INFO: Clearing entry
+[2025-03-21 18:01:04,981] INFO: Appending character: 2
+[2025-03-21 18:01:04,981] INFO: Setting entry: value=2, raw=False
+[2025-03-21 18:01:04,981] INFO: Entry set: 2, value=2
+[2025-03-21 18:01:04,981] INFO: Pushed value: 2, X=2, stack=[1, 12, 1]
+[2025-03-21 18:01:04,981] INFO: Setting entry: value=2, raw=False
+[2025-03-21 18:01:04,981] INFO: Entry set: 2, value=2
+[2025-03-21 18:01:06,106] INFO: Handling command: 
+[2025-03-21 18:01:06,106] INFO: Handling normal command: ENTER
+[2025-03-21 18:01:06,106] INFO: Entering value
+[2025-03-21 18:01:06,106] INFO: Pushed value: 2, X=2, stack=[12, 1, 2]
+[2025-03-21 18:01:06,106] INFO: Clearing entry
+[2025-03-21 18:01:07,051] INFO: Handling command: 
+[2025-03-21 18:01:07,051] INFO: Handling normal command: 3
+[2025-03-21 18:01:07,051] INFO: Entering digit: 3
+[2025-03-21 18:01:07,051] INFO: Clearing entry
+[2025-03-21 18:01:07,051] INFO: Appending character: 3
+[2025-03-21 18:01:07,051] INFO: Setting entry: value=3, raw=False
+[2025-03-21 18:01:07,051] INFO: Entry set: 3, value=3
+[2025-03-21 18:01:07,051] INFO: Pushed value: 3, X=3, stack=[1, 2, 2]
+[2025-03-21 18:01:07,052] INFO: Setting entry: value=3, raw=False
+[2025-03-21 18:01:07,052] INFO: Entry set: 3, value=3
+[2025-03-21 18:01:08,085] INFO: Handling command: 
+[2025-03-21 18:01:08,086] INFO: Handling normal command: ENTER
+[2025-03-21 18:01:08,086] INFO: Entering value
+[2025-03-21 18:01:08,086] INFO: Pushed value: 3, X=3, stack=[2, 2, 3]
+[2025-03-21 18:01:08,086] INFO: Clearing entry
+[2025-03-21 18:01:08,670] INFO: Handling command: 
+[2025-03-21 18:01:08,671] INFO: Handling normal command: 4
+[2025-03-21 18:01:08,671] INFO: Entering digit: 4
+[2025-03-21 18:01:08,671] INFO: Clearing entry
+[2025-03-21 18:01:08,671] INFO: Appending character: 4
+[2025-03-21 18:01:08,671] INFO: Setting entry: value=4, raw=False
+[2025-03-21 18:01:08,671] INFO: Entry set: 4, value=4
+[2025-03-21 18:01:08,671] INFO: Pushed value: 4, X=4, stack=[2, 3, 3]
+[2025-03-21 18:01:08,671] INFO: Setting entry: value=4, raw=False
+[2025-03-21 18:01:08,671] INFO: Entry set: 4, value=4
+[2025-03-21 18:01:09,826] INFO: Handling command: 
+[2025-03-21 18:01:09,827] INFO: Handling normal command: R↓
+[2025-03-21 18:01:09,827] INFO: Entering operator: R↓
+[2025-03-21 18:01:09,827] INFO: Stack rolled down: X=3, stack=[4, 2, 3]
+[2025-03-21 18:01:09,827] INFO: Formatted 3 in DEC as 3
+[2025-03-21 18:01:09,827] INFO: Setting entry: value=3, raw=False
+[2025-03-21 18:01:09,827] INFO: Entry set: 3, value=3
+[2025-03-21 18:01:09,827] INFO: Performed R↓: stack rotated down
+[2025-03-21 18:01:10,268] INFO: Handling command: 
+[2025-03-21 18:01:10,269] INFO: Handling normal command: R↓
+[2025-03-21 18:01:10,269] INFO: Entering operator: R↓
+[2025-03-21 18:01:10,269] INFO: Stack rolled down: X=3, stack=[3, 4, 2]
+[2025-03-21 18:01:10,269] INFO: Formatted 3 in DEC as 3
+[2025-03-21 18:01:10,269] INFO: Setting entry: value=3, raw=False
+[2025-03-21 18:01:10,269] INFO: Entry set: 3, value=3
+[2025-03-21 18:01:10,269] INFO: Performed R↓: stack rotated down
+[2025-03-21 18:01:10,567] INFO: Handling command: 
+[2025-03-21 18:01:10,568] INFO: Handling normal command: R↓
+[2025-03-21 18:01:10,568] INFO: Entering operator: R↓
+[2025-03-21 18:01:10,568] INFO: Stack rolled down: X=2, stack=[3, 3, 4]
+[2025-03-21 18:01:10,568] INFO: Formatted 2 in DEC as 2
+[2025-03-21 18:01:10,568] INFO: Setting entry: value=2, raw=False
+[2025-03-21 18:01:10,568] INFO: Entry set: 2, value=2
+[2025-03-21 18:01:10,568] INFO: Performed R↓: stack rotated down
+[2025-03-21 18:01:11,393] INFO: Handling command: 
+[2025-03-21 18:01:11,394] INFO: Handling normal command: R↓
+[2025-03-21 18:01:11,394] INFO: Entering operator: R↓
+[2025-03-21 18:01:11,394] INFO: Stack rolled down: X=4, stack=[2, 3, 3]
+[2025-03-21 18:01:11,394] INFO: Formatted 4 in DEC as 4
+[2025-03-21 18:01:11,394] INFO: Setting entry: value=4, raw=False
+[2025-03-21 18:01:11,394] INFO: Entry set: 4, value=4
+[2025-03-21 18:01:11,394] INFO: Performed R↓: stack rotated down
+[2025-03-21 18:01:12,226] INFO: Handling command: 
+[2025-03-21 18:01:12,226] INFO: Handling normal command: R↓
+[2025-03-21 18:01:12,227] INFO: Entering operator: R↓
+[2025-03-21 18:01:12,227] INFO: Stack rolled down: X=3, stack=[4, 2, 3]
+[2025-03-21 18:01:12,227] INFO: Formatted 3 in DEC as 3
+[2025-03-21 18:01:12,227] INFO: Setting entry: value=3, raw=False
+[2025-03-21 18:01:12,227] INFO: Entry set: 3, value=3
+[2025-03-21 18:01:12,227] INFO: Performed R↓: stack rotated down
+[2025-03-21 18:01:12,751] INFO: Handling command: 
+[2025-03-21 18:01:12,752] INFO: Handling normal command: R↓
+[2025-03-21 18:01:12,752] INFO: Entering operator: R↓
+[2025-03-21 18:01:12,752] INFO: Stack rolled down: X=3, stack=[3, 4, 2]
+[2025-03-21 18:01:12,752] INFO: Formatted 3 in DEC as 3
+[2025-03-21 18:01:12,752] INFO: Setting entry: value=3, raw=False
+[2025-03-21 18:01:12,752] INFO: Entry set: 3, value=3
+[2025-03-21 18:01:12,752] INFO: Performed R↓: stack rotated down
+[2025-03-21 18:01:13,321] INFO: Handling command: 
+[2025-03-21 18:01:13,321] INFO: Handling normal command: R↓
+[2025-03-21 18:01:13,321] INFO: Entering operator: R↓
+[2025-03-21 18:01:13,321] INFO: Stack rolled down: X=2, stack=[3, 3, 4]
+[2025-03-21 18:01:13,321] INFO: Formatted 2 in DEC as 2
+[2025-03-21 18:01:13,321] INFO: Setting entry: value=2, raw=False
+[2025-03-21 18:01:13,321] INFO: Entry set: 2, value=2
+[2025-03-21 18:01:13,321] INFO: Performed R↓: stack rotated down
+[2025-03-21 18:01:14,077] INFO: Handling command: 
+[2025-03-21 18:01:14,078] INFO: Handling normal command: R↓
+[2025-03-21 18:01:14,078] INFO: Entering operator: R↓
+[2025-03-21 18:01:14,078] INFO: Stack rolled down: X=4, stack=[2, 3, 3]
+[2025-03-21 18:01:14,078] INFO: Formatted 4 in DEC as 4
+[2025-03-21 18:01:14,078] INFO: Setting entry: value=4, raw=False
+[2025-03-21 18:01:14,078] INFO: Entry set: 4, value=4
+[2025-03-21 18:01:14,078] INFO: Performed R↓: stack rotated down
+[2025-03-21 18:01:14,827] INFO: Handling command: 
+[2025-03-21 18:01:14,828] INFO: Handling normal command: R↓
+[2025-03-21 18:01:14,828] INFO: Entering operator: R↓
+[2025-03-21 18:01:14,828] INFO: Stack rolled down: X=3, stack=[4, 2, 3]
+[2025-03-21 18:01:14,828] INFO: Formatted 3 in DEC as 3
+[2025-03-21 18:01:14,828] INFO: Setting entry: value=3, raw=False
+[2025-03-21 18:01:14,828] INFO: Entry set: 3, value=3
+[2025-03-21 18:01:14,828] INFO: Performed R↓: stack rotated down
+[2025-03-21 18:01:15,788] INFO: Handling command: 
+[2025-03-21 18:01:15,788] INFO: Handling normal command: R↓
+[2025-03-21 18:01:15,788] INFO: Entering operator: R↓
+[2025-03-21 18:01:15,788] INFO: Stack rolled down: X=3, stack=[3, 4, 2]
+[2025-03-21 18:01:15,788] INFO: Formatted 3 in DEC as 3
+[2025-03-21 18:01:15,789] INFO: Setting entry: value=3, raw=False
+[2025-03-21 18:01:15,789] INFO: Entry set: 3, value=3
+[2025-03-21 18:01:15,789] INFO: Performed R↓: stack rotated down
+[2025-03-21 18:01:18,292] INFO: Handling command: 
+[2025-03-21 18:01:18,292] INFO: Handling normal command: R↓
+[2025-03-21 18:01:18,293] INFO: Entering operator: R↓
+[2025-03-21 18:01:18,293] INFO: Stack rolled down: X=2, stack=[3, 3, 4]
+[2025-03-21 18:01:18,293] INFO: Formatted 2 in DEC as 2
+[2025-03-21 18:01:18,293] INFO: Setting entry: value=2, raw=False
+[2025-03-21 18:01:18,293] INFO: Entry set: 2, value=2
+[2025-03-21 18:01:18,293] INFO: Performed R↓: stack rotated down
+[2025-03-21 18:01:19,695] INFO: Handling command: 
+[2025-03-21 18:01:19,696] INFO: Handling normal command: R↓
+[2025-03-21 18:01:19,696] INFO: Entering operator: R↓
+[2025-03-21 18:01:19,696] INFO: Stack rolled down: X=4, stack=[2, 3, 3]
+[2025-03-21 18:01:19,696] INFO: Formatted 4 in DEC as 4
+[2025-03-21 18:01:19,696] INFO: Setting entry: value=4, raw=False
+[2025-03-21 18:01:19,696] INFO: Entry set: 4, value=4
+[2025-03-21 18:01:19,696] INFO: Performed R↓: stack rotated down
+[2025-03-21 18:01:20,873] INFO: Handling command: 
+[2025-03-21 18:01:20,873] INFO: Handling normal command: R↓
+[2025-03-21 18:01:20,873] INFO: Entering operator: R↓
+[2025-03-21 18:01:20,873] INFO: Stack rolled down: X=3, stack=[4, 2, 3]
+[2025-03-21 18:01:20,873] INFO: Formatted 3 in DEC as 3
+[2025-03-21 18:01:20,873] INFO: Setting entry: value=3, raw=False
+[2025-03-21 18:01:20,874] INFO: Entry set: 3, value=3
+[2025-03-21 18:01:20,874] INFO: Performed R↓: stack rotated down
+[2025-03-21 18:01:22,366] INFO: Handling command: 
+[2025-03-21 18:01:22,366] INFO: Handling normal command: R↓
+[2025-03-21 18:01:22,366] INFO: Entering operator: R↓
+[2025-03-21 18:01:22,366] INFO: Stack rolled down: X=3, stack=[3, 4, 2]
+[2025-03-21 18:01:22,366] INFO: Formatted 3 in DEC as 3
+[2025-03-21 18:01:22,366] INFO: Setting entry: value=3, raw=False
+[2025-03-21 18:01:22,367] INFO: Entry set: 3, value=3
+[2025-03-21 18:01:22,367] INFO: Performed R↓: stack rotated down
+[2025-03-21 18:01:24,338] INFO: Handling command: 
+[2025-03-21 18:01:24,338] INFO: Handling normal command: R↓
+[2025-03-21 18:01:24,338] INFO: Entering operator: R↓
+[2025-03-21 18:01:24,338] INFO: Stack rolled down: X=2, stack=[3, 3, 4]
+[2025-03-21 18:01:24,338] INFO: Formatted 2 in DEC as 2
+[2025-03-21 18:01:24,338] INFO: Setting entry: value=2, raw=False
+[2025-03-21 18:01:24,338] INFO: Entry set: 2, value=2
+[2025-03-21 18:01:24,339] INFO: Performed R↓: stack rotated down
+[2025-03-21 18:01:25,681] INFO: Handling command: yellow_f_function
+[2025-03-21 18:01:25,681] INFO: Toggling mode: f, f_active=False, g_active=False
+[2025-03-21 18:01:25,713] INFO: Mode set: f
+[2025-03-21 18:01:26,490] INFO: f-mode action: STATUS
+[2025-03-21 18:01:26,490] INFO: Toggling stack display: show=True, mode=DEC
+[2025-03-21 18:01:26,491] INFO: Stack displayed: ['2', '3', '3', '4']
+[2025-03-21 18:01:26,491] INFO: Toggling mode: f, f_active=True, g_active=False
+[2025-03-21 18:01:26,498] INFO: Mode reset to normal

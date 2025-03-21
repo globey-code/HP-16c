@@ -20,11 +20,14 @@ from logging_config import logger
 class HP16CController:
     def __init__(self, display, buttons):
         logger.info("Initializing HP16CController")
-        self.display = display
+        self.display = display  # Use the passed display object
         self.buttons = buttons
+        self.is_user_entry = False
+        self.result_displayed = True  # Initially displaying 0
         self.post_enter = False
         self.f_mode_active = False
         self.g_mode_active = False
+        # Note: Removed redundant self.is_user_entry = False
 
     def toggle_mode(self, mode):
         """Toggle f or g mode, updating button appearance and bindings."""
@@ -86,31 +89,40 @@ class HP16CController:
 
     def enter_digit(self, digit):
         logger.info(f"Entering digit: {digit}")
-        if self.post_enter:
+        # If displaying a result from an operation, start a new entry
+        if self.result_displayed:
             self.display.clear_entry()
-            self.post_enter = False
+            self.result_displayed = False
         self.display.append_entry(digit)
+        self.is_user_entry = True  # Mark as uncommitted
 
     def enter_value(self):
         logger.info("Entering value")
         entry = self.display.get_entry()
         val = interpret_in_current_base(entry, current_base)
-        stack.push(val)
+        stack.push(val)  # Push to stack
         self.post_enter = True
-        self.result_displayed = False
-        self.display.set_entry(val)
+        self.is_user_entry = False  # Entry is committed, not user input anymore
+        self.display.clear_entry()
+        self.update_stack_display()
 
     def enter_operator(self, operator):
         logger.info(f"Entering operator: {operator}")
+        if self.is_user_entry:
+            entry = self.display.get_entry()
+            val = interpret_in_current_base(entry, current_base)
+            stack.push(val)  # Commit the entry to X (replaces old X)
+            self.is_user_entry = False
+            self.display.clear_entry()
+
         if operator == "R↓":
             stack.roll_down()
             result = stack.peek()
-            self.display.set_entry(result)
+            self.display.set_entry(format_in_current_base(result, self.display.mode))
+            self.result_displayed = True  # Mark as a displayed result
+            self.update_stack_display()
             logger.info(f"Performed R↓: stack rotated down")
         else:
-            entry = self.display.get_entry()
-            val = interpret_in_current_base(entry, current_base)
-            stack.push(val)
             try:
                 y = stack.pop()
                 x = stack.pop()
@@ -138,7 +150,8 @@ class HP16CController:
                     stack.push(y)
                     raise InvalidOperandError(f"Unsupported operator: {operator}")
                 stack.push(result)
-                self.display.set_entry(result)
+                self.display.set_entry(format_in_current_base(result, self.display.mode))
+                self.display.raw_value = str(result)
                 logger.info(f"Performed {operator}: result={result}")
             except HP16CError as e:
                 self.handle_error(e)
