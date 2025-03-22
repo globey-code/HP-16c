@@ -82,6 +82,11 @@ class HP16CController:
             self.f_mode_active = False
             self.g_mode_active = False
             logger.info("Mode reset to normal")
+            # Only update display if no error is being displayed
+            if not self.display.is_error_displayed:
+                self.display.set_entry(stack.peek())
+            else:
+                logger.info("Display update deferred due to active error")
             return
 
         for btn in self.buttons:
@@ -133,15 +138,12 @@ class HP16CController:
         """Handle the ENTER key press to push the current value or duplicate X."""
         logger.info("Entering value")
         if self.is_user_entry:
-            # Interpret the current entry and push it to the stack
             entry = self.display.raw_value
             val = interpret_in_base(entry, self.display.mode)
             stack.push(val)
             self.is_user_entry = False
         else:
-            # Duplicate the current X register
             stack.push(stack.peek())
-        # Update the display to show the new X register
         self.display.set_entry(stack.peek())
         self.result_displayed = True
         self.update_stack_display()
@@ -150,8 +152,8 @@ class HP16CController:
         """Perform an operation, committing user entry if present."""
         logger.info(f"Entering operator: {operator}")
         if self.is_user_entry:
-            entry = self.display.raw_value  # Use raw input
-            val = interpret_in_base(entry, self.display.mode)  # Interpret in current mode
+            entry = self.display.raw_value
+            val = interpret_in_base(entry, self.display.mode)
             stack.push(val)
             self.is_user_entry = False
             self.display.clear_entry()
@@ -225,10 +227,12 @@ class HP16CController:
         logger.info(f"Sign changed: {negated}")
 
     def handle_error(self, exc: HP16CError):
-        """Display an error message for 3 seconds."""
         logger.info(f"Handling error: {exc.display_message}")
+        # Save the current display value before showing the error
+        original_value = self.display.current_entry
         self.display.set_entry(exc.display_message, raw=True)
-        self.display.widget.after(3000, lambda: self.display.set_entry(0))
+        # Schedule to restore the original value after 3 seconds
+        self.display.widget.after(3000, lambda: self.display.set_entry(original_value))
 
     def pop_value(self):
         """Pop a value from the stack and update the display."""
@@ -487,7 +491,6 @@ class HP16CController:
             return False
 
     def set_word_size(self, bits):
-        """Set the stack word size."""
         logger.info(f"Setting word size: {bits}")
         try:
             stack.set_word_size(bits)
@@ -495,8 +498,10 @@ class HP16CController:
             top_val = stack.peek()
             self.display.set_entry(format_in_current_base(top_val, self.display.mode))
             self.display.raw_value = str(top_val)
+            return True
         except HP16CError as e:
             self.handle_error(e)
+            return False
 
     def set_complement_mode(self, mode):
         """Set the stack complement mode."""

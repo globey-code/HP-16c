@@ -36,13 +36,13 @@ class DivisionByZeroError(HP16CError):
 
 class IncorrectWordSizeError(HP16CError):
     """Raised when an invalid word size is set."""
-    def __init__(self, message="Incorrect WSIZE", error_code="E104"):
+    def __init__(self, message="Incorrect WORDSIZE", error_code="E104"):
         super().__init__(message, error_code)
 
     @property
     def display_message(self):
         """Override display message for specific format."""
-        return "Incorrect WSIZE"
+        return "Incorrect WORDSIZE"
 
 class ShiftExceedsWordSizeError(HP16CError):
     """Raised when a shift exceeds the word size."""

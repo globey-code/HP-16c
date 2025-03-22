@@ -58,9 +58,12 @@ def format_in_current_base(value, base, pad=False):
     elif base == "HEX":
         if pad:
             hex_digits = (word_size + 3) // 4
-            result = format(value, f'0{hex_digits}x').lower()
+            hex_str = format(value, f'0{hex_digits}x')
         else:
-            result = format(value, 'x').lower() if value != 0 else '0'
+            hex_str = format(value, 'x') if value != 0 else '0'
+        # Apply HP-16C custom casing
+        mapping = {'a': 'A', 'c': 'C', 'e': 'E', 'f': 'F'}
+        result = ''.join(mapping.get(c, c) for c in hex_str)
     else:
         result = str(value)
     return result
