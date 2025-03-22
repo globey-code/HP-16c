@@ -8,7 +8,7 @@ Matches HP-16C display behavior per Owner's Handbook.
 import tkinter as tk
 import tkinter.font as tkFont
 import stack
-from base_conversion import interpret_in_base  # Updated import
+from base_conversion import interpret_in_base, format_in_current_base  # Updated import
 from logging_config import logger
 
 class Display:
@@ -62,6 +62,7 @@ class Display:
         """Set the display entry, formatting based on mode."""
         logger.info(f"Setting entry: value={entry}, raw={raw}")
     
+        # Handle raw display (e.g., for temporary messages or SHOW functions)
         if raw:
             self.current_entry = entry
             self.widget.config(text=entry, anchor="e")
@@ -71,46 +72,31 @@ class Display:
             self.master.after(1000, lambda: self.clear_entry())
             return
 
+        # Parse the input value
         try:
             if isinstance(entry, str):
-                val = interpret_in_base(entry, self.mode)  # Use updated function
+                val = interpret_in_base(entry, self.mode)
             else:
                 val = float(entry) if self.mode == "FLOAT" else int(entry or 0)
         except (ValueError, TypeError):
             val = 0
             entry = "0"
 
+        # Format the value based on the current mode
         if self.mode == "FLOAT":
+            # FLOAT mode: Format with up to 9 decimal places, remove trailing zeros
             entry_str = "{:.9f}".format(val).rstrip("0").rstrip(".")
             if "." not in entry_str:
                 entry_str += ".0"
             anchor = "w"
         else:
+            # Non-FLOAT modes (HEX, OCT, BIN, DEC): Use format_in_current_base without padding
             val_int = stack.apply_word_size(int(val))
-            word_size = stack.get_word_size()
-
-            if self.mode == "HEX":
-                hex_digits = (word_size + 3) // 4
-                entry_str = format(val_int, f"0{hex_digits}X").lower()
-            elif self.mode == "BIN":
-                entry_str = format(val_int, f"0{word_size}b")
-            elif self.mode == "OCT":
-                oct_digits = (word_size + 2) // 3
-                entry_str = format(val_int, f"0{oct_digits}o")
-            else:  # DEC
-                complement_mode = stack.get_complement_mode()
-                if complement_mode == "UNSIGNED":
-                    entry_str = str(val_int)
-                elif complement_mode == "1S" and val_int & (1 << (word_size - 1)):
-                    entry_str = str(-((~val_int) & ((1 << word_size) - 1)))
-                elif complement_mode == "2S" and val_int & (1 << (word_size - 1)):
-                    entry_str = str(val_int - (1 << word_size))
-                else:
-                    entry_str = str(val_int)
+            entry_str = format_in_current_base(val_int, self.mode, pad=False)
             anchor = "e"
-
             self.error_displayed = False
 
+        # Update the display and internal state
         self.current_entry = entry_str
         self.current_value = val if self.mode == "FLOAT" else val_int
         self.widget.config(text=entry_str, anchor=anchor)

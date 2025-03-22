@@ -28,18 +28,25 @@ def interpret_in_base(string_value, base):
         logger.info(f"Failed to interpret {string_value} in {base}, defaulting to 0")
         return 0
 
-def format_in_current_base(value, base):
-    """Format a value in the specified base without unnecessary leading zeros."""
-    value = int(value)  # Ensure integer for non-FLOAT modes
+def format_in_current_base(value, base, pad=False):
+    value = int(value)
     word_size = stack.get_word_size()
     mask = (1 << word_size) - 1
-    complement_mode = stack.get_complement_mode()
+    value = value & mask
 
     if base == "BIN":
-        result = format(value & mask, f'0{word_size}b')
+        if pad:
+            result = format(value, f'0{word_size}b')
+        else:
+            result = format(value, 'b') if value != 0 else '0'
     elif base == "OCT":
-        result = format(value & mask, 'o')
+        if pad:
+            oct_digits = (word_size + 2) // 3
+            result = format(value, f'0{oct_digits}o')
+        else:
+            result = format(value, 'o') if value != 0 else '0'
     elif base == "DEC":
+        complement_mode = stack.get_complement_mode()
         if complement_mode in {"1S", "2S"} and value & (1 << (word_size - 1)):
             if complement_mode == "1S":
                 signed_val = -((~value) & mask)
@@ -47,13 +54,15 @@ def format_in_current_base(value, base):
                 signed_val = value - (1 << word_size)
             result = str(signed_val)
         else:
-            result = str(value & mask)
+            result = str(value)
     elif base == "HEX":
-        result = format(value & mask, 'x')
+        if pad:
+            hex_digits = (word_size + 3) // 4
+            result = format(value, f'0{hex_digits}x').lower()
+        else:
+            result = format(value, 'x').lower() if value != 0 else '0'
     else:
-        result = str(value & mask)
-    
-    logger.info(f"Formatted {value} in {base} as {result}")
+        result = str(value)
     return result
 
 def set_base(new_base, display):
