@@ -162,6 +162,8 @@ def action_wsize(display_widget, controller_obj):
     """Set Word Size (WSIZE)."""
     try:
         bits = int(display_widget.raw_value or "0")
+        if bits == 0:
+            bits = 64
         controller_obj.set_word_size(bits)
         display_widget.clear_entry()
     except ValueError:
