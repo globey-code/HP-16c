@@ -28,7 +28,7 @@ def get_state():
     return [_x_register] + _stack.copy()
 
 def push(value):
-    """Push a value into X, shifting stack up (Y→Z, Z→T, X→Y)."""
+    """Push a value into X, shifting stack up: T=Z, Z=Y, Y=X, X=value."""
     global _x_register
     if isinstance(value, float) and not value.is_integer():
         value = int(value)
@@ -38,9 +38,11 @@ def push(value):
         value = (1 << _word_size) + value
     value = value & ((1 << _word_size) - 1)
     
-    _stack.pop(0)          # Remove T
-    _stack.append(_x_register)  # X → Y
-    _x_register = value    # New X
+    # Shift stack: T = Z, Z = Y, Y = X
+    _stack[2] = _stack[1]  # T = Z
+    _stack[1] = _stack[0]  # Z = Y
+    _stack[0] = _x_register  # Y = X
+    _x_register = value    # X = new value
     logger.info(f"Pushed value: {value}, X={_x_register}, stack={_stack}")
 
 def pop():
