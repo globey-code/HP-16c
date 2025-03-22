@@ -8,7 +8,7 @@ Matches HP-16C display behavior per Owner's Handbook.
 import tkinter as tk
 import tkinter.font as tkFont
 import stack
-from base_conversion import interpret_in_current_base, current_base
+from base_conversion import interpret_in_base  # Updated import
 from logging_config import logger
 
 class Display:
@@ -17,7 +17,7 @@ class Display:
         self.master = master
         self.current_entry = "0"
         self.raw_value = "0"
-        self.mode = "DEC"
+        self.mode = "DEC"  # Base is managed here
         self.current_value = None
         self.error_displayed = False
         self.result_displayed = False
@@ -61,6 +61,7 @@ class Display:
     def set_entry(self, entry, raw=False):
         """Set the display entry, formatting based on mode."""
         logger.info(f"Setting entry: value={entry}, raw={raw}")
+    
         if raw:
             self.current_entry = entry
             self.widget.config(text=entry, anchor="e")
@@ -72,7 +73,7 @@ class Display:
 
         try:
             if isinstance(entry, str):
-                val = interpret_in_current_base(entry, self.mode)
+                val = interpret_in_base(entry, self.mode)  # Use updated function
             else:
                 val = float(entry) if self.mode == "FLOAT" else int(entry or 0)
         except (ValueError, TypeError):
@@ -87,14 +88,15 @@ class Display:
         else:
             val_int = stack.apply_word_size(int(val))
             word_size = stack.get_word_size()
+
             if self.mode == "HEX":
-                padding = max(0, (word_size + 3) // 4)
-                entry_str = format(val_int, f"0{padding}X").lower()
+                hex_digits = (word_size + 3) // 4
+                entry_str = format(val_int, f"0{hex_digits}X").lower()
             elif self.mode == "BIN":
                 entry_str = format(val_int, f"0{word_size}b")
             elif self.mode == "OCT":
-                padding = max(0, (word_size + 2) // 3)
-                entry_str = format(val_int, f"0{padding}o")
+                oct_digits = (word_size + 2) // 3
+                entry_str = format(val_int, f"0{oct_digits}o")
             else:  # DEC
                 complement_mode = stack.get_complement_mode()
                 if complement_mode == "UNSIGNED":
@@ -107,14 +109,7 @@ class Display:
                     entry_str = str(val_int)
             anchor = "e"
 
-            max_length = word_size if self.mode in ("BIN", "OCT") else (word_size // 4 if self.mode == "HEX" else 10)
-            if len(entry_str) > max_length and self.mode != "FLOAT":
-                entry_str = "Error"
-                self.error_displayed = True
-                logger.info("Scheduling reset in 1 second")
-                self.master.after(1000, lambda: self.clear_entry())
-            else:
-                self.error_displayed = False
+            self.error_displayed = False
 
         self.current_entry = entry_str
         self.current_value = val if self.mode == "FLOAT" else val_int
@@ -131,7 +126,7 @@ class Display:
         else:
             self.raw_value += ch
         try:
-            self.current_value = interpret_in_current_base(self.raw_value, self.mode)
+            self.current_value = interpret_in_base(self.raw_value, self.mode)  # Use updated function
             self.set_entry(self.current_value)
         except ValueError:
             self.current_value = 0
@@ -163,7 +158,7 @@ class Display:
         self.widget.config(text=self.current_entry)
 
     def update_stack_content(self):
-        """Update the stack content display with word size, complement mode, and carry flag, logging only on change."""
+        """Update the stack content display with word size, complement mode, and carry flag."""
         complement_mode = stack.get_complement_mode()
         word_size = stack.get_word_size()
         carry_flag = stack.get_carry_flag()
@@ -180,7 +175,7 @@ class Display:
         logger.info(f"Toggling stack display: show={not self.show_stack}, mode={mode}")
         self.show_stack = not self.show_stack
         if self.show_stack and mode:
-            stack_state = stack.get_state()  # [X, Y, Z, T]
+            stack_state = stack.get_state()
             word_size = stack.get_word_size()
             mask = (1 << word_size) - 1
             if mode == "BIN":

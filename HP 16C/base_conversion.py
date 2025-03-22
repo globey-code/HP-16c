@@ -7,14 +7,8 @@ Handles base conversion for the HP-16C emulator (DEC, HEX, BIN, OCT).
 import stack
 from logging_config import logger
 
-current_base = "DEC"
-
-def interpret_in_current_base(string_value, base=None):
-    """Interpret a string value in the specified or current base."""
-    global current_base
-    if base is None:
-        base = current_base
-    
+def interpret_in_base(string_value, base):
+    """Interpret a string value in the specified base."""
     if not string_value:
         return 0
     
@@ -28,24 +22,24 @@ def interpret_in_current_base(string_value, base=None):
         elif base == "OCT":
             result = int(string_value, 8)
         else:
-            result = int(string_value)
+            result = int(string_value)  # Default to DEC
         return result
     except ValueError:
         logger.info(f"Failed to interpret {string_value} in {base}, defaulting to 0")
         return 0
 
-def format_in_current_base(value, base=None):
-    """Format a value in the specified or current base."""
-    global current_base
-    if base is None:
-        base = current_base
-    
+def format_in_current_base(value, base):
+    """Format a value in the specified base without unnecessary leading zeros."""
     value = int(value)  # Ensure integer for non-FLOAT modes
     word_size = stack.get_word_size()
     mask = (1 << word_size) - 1
     complement_mode = stack.get_complement_mode()
 
-    if base == "DEC":
+    if base == "BIN":
+        result = format(value & mask, f'0{word_size}b')
+    elif base == "OCT":
+        result = format(value & mask, 'o')
+    elif base == "DEC":
         if complement_mode in {"1S", "2S"} and value & (1 << (word_size - 1)):
             if complement_mode == "1S":
                 signed_val = -((~value) & mask)
@@ -55,13 +49,7 @@ def format_in_current_base(value, base=None):
         else:
             result = str(value & mask)
     elif base == "HEX":
-        padding = max(0, (word_size + 3) // 4)
-        result = format(value & mask, f'0{padding}X').lower()
-    elif base == "BIN":
-        result = format(value & mask, f'0{word_size}b')
-    elif base == "OCT":
-        padding = max(0, (word_size + 2) // 3)
-        result = format(value & mask, f'0{padding}o')
+        result = format(value & mask, 'x')
     else:
         result = str(value & mask)
     
@@ -69,19 +57,17 @@ def format_in_current_base(value, base=None):
     return result
 
 def set_base(new_base, display):
-    """Set the current base and update the display."""
-    global current_base
+    """Set the display mode and update the display."""
     if hasattr(display, 'current_value') and display.current_value is not None:
         num = display.current_value
     else:
         if display.raw_value and display.raw_value != "0":
-            num = interpret_in_current_base(display.raw_value, current_base)
+            num = interpret_in_base(display.raw_value, display.mode)  # Use current mode
             display.current_value = num
         else:
             num = 0
             display.current_value = 0
     
-    current_base = new_base
     display.set_mode(new_base)
     display.raw_value = format_in_current_base(num, new_base)
     display.set_entry(num)

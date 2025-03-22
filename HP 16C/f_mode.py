@@ -9,7 +9,7 @@ import sys
 import os
 import buttons
 import stack
-from base_conversion import format_in_current_base, interpret_in_current_base
+from base_conversion import format_in_current_base, interpret_in_base
 from error import (
     HP16CError, IncorrectWordSizeError, NoValueToShiftError, 
     ShiftExceedsWordSizeError, InvalidBitOperationError
@@ -74,7 +74,7 @@ def action_x_exchange_i_gto(display_widget, controller_obj):
 
 def action_show(display_widget, controller_obj, mode):
     """Show value in specified base (HEX, DEC, OCT, BIN) for 4 seconds."""
-    current_value = display_widget.current_value or interpret_in_current_base(display_widget.raw_value or "0", controller_obj.display.mode)
+    current_value = display_widget.current_value or interpret_in_base(display_widget.raw_value or "0", controller_obj.display.mode)
     current_mode = controller_obj.display.mode
     formatted_value = format_in_current_base(current_value, mode)
     display_widget.set_entry(formatted_value, raw=True)

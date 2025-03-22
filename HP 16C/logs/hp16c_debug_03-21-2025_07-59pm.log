@@ -1,0 +1,245 @@
+[2025-03-21 19:59:07,740] INFO: Stack initialized: [0, 0, 0], X=0, word_size=16, complement_mode=UNSIGNED
+[2025-03-21 19:59:07,744] INFO: Script started: main.pyw
+[2025-03-21 19:59:07,745] INFO: Entering function: main
+[2025-03-21 19:59:07,745] INFO: Creating Tk root window
+[2025-03-21 19:59:07,802] INFO: Setting window title: HP 16C Emulator
+[2025-03-21 19:59:07,803] INFO: Configuring root background color: #1e1818
+[2025-03-21 19:59:07,803] INFO: Setting root resizable: False, False
+[2025-03-21 19:59:07,803] INFO: Entering function: load_config
+[2025-03-21 19:59:07,803] INFO: Config loaded and updated: {'display_width': 575, 'display_height': 80, 'margin': 20, 'bg_color': '#1e1818', 'display_font_family': 'Courier', 'display_font_size': 18, 'display_x': 125, 'display_y': 20}
+[2025-03-21 19:59:07,803] INFO: Exiting function: load_config
+[2025-03-21 19:59:07,803] INFO: Custom font created: family=Courier, size=18
+[2025-03-21 19:59:07,803] INFO: Setting up UI: display at x=125, y=20, width=575, height=80, grid=4x10, total=1089x560
+[2025-03-21 19:59:07,803] INFO: Initializing Display: x=125, y=20, width=575, height=80
+[2025-03-21 19:59:07,806] INFO: Stack info updated: 00-16-0000
+[2025-03-21 19:59:07,806] INFO: Display initialized: mode=DEC, entry=0
+[2025-03-21 19:59:07,806] INFO: Setting mode: DEC
+[2025-03-21 19:59:07,806] INFO: Setting entry: value=0, raw=False
+[2025-03-21 19:59:07,806] INFO: Entry set: 0, value=0
+[2025-03-21 19:59:07,806] INFO: Creating buttons from BUTTONS_CONFIG
+[2025-03-21 19:59:07,808] INFO: Button 0,0: SL/A/LJ, 75x75, row=0, col=0, rowspan=1
+[2025-03-21 19:59:07,808] INFO: Button 1,0: x><(i)/GSB/RTN, 75x75, row=1, col=0, rowspan=1
+[2025-03-21 19:59:07,809] INFO: Button 2,0: (i)/R/S/P/R, 75x75, row=2, col=0, rowspan=1
+[2025-03-21 19:59:07,809] INFO: Button 3,0: /ON/, 75x75, row=3, col=0, rowspan=1
+[2025-03-21 19:59:07,810] INFO: Button 0,1: SR/B/ASR, 75x75, row=0, col=1, rowspan=1
+[2025-03-21 19:59:07,811] INFO: Button 1,1: x><I/GTO/LBL, 75x75, row=1, col=1, rowspan=1
+[2025-03-21 19:59:07,812] INFO: Button 2,1: I/SST/BST, 75x75, row=2, col=1, rowspan=1
+[2025-03-21 19:59:07,812] INFO: Button 3,1: /f/, 75x75, row=3, col=1, rowspan=1
+[2025-03-21 19:59:07,813] INFO: Button 0,2: RL/C/DSZ, 75x75, row=0, col=2, rowspan=1
+[2025-03-21 19:59:07,814] INFO: Button 1,2: SHOW HEX/HEX/DSZ, 75x75, row=1, col=2, rowspan=1
+[2025-03-21 19:59:07,816] INFO: Button 2,2: CLR PRGM/R↓/R↑, 75x75, row=2, col=2, rowspan=1
+[2025-03-21 19:59:07,816] INFO: Button 3,2: /g/, 75x75, row=3, col=2, rowspan=1
+[2025-03-21 19:59:07,817] INFO: Button 0,3: RR/D/RRC, 75x75, row=0, col=3, rowspan=1
+[2025-03-21 19:59:07,818] INFO: Button 1,3: SHOW DEC/DEC/ISZ, 75x75, row=1, col=3, rowspan=1
+[2025-03-21 19:59:07,818] INFO: Button 2,3: CLR REG/x><y/PSE, 75x75, row=2, col=3, rowspan=1
+[2025-03-21 19:59:07,837] INFO: Button 3,3: WSIZE/STO/⯇, 75x75, row=3, col=3, rowspan=1
+[2025-03-21 19:59:07,838] INFO: Button 0,4: RLn/E/RLCn, 75x75, row=0, col=4, rowspan=1
+[2025-03-21 19:59:07,839] INFO: Button 1,4: SHOW OCT/OCT/√x, 75x75, row=1, col=4, rowspan=1
+[2025-03-21 19:59:07,839] INFO: Button 2,4: CLR PRFX/BSP/CLX, 75x75, row=2, col=4, rowspan=1
+[2025-03-21 19:59:07,840] INFO: Button 3,4: FLOAT/RCL/⯈, 75x75, row=3, col=4, rowspan=1
+[2025-03-21 19:59:07,841] INFO: Button 0,5: RRn/F/RRCn, 75x75, row=0, col=5, rowspan=1
+[2025-03-21 19:59:07,842] INFO: Button 1,5: SHOW BIN/BIN/1/x, 75x75, row=1, col=5, rowspan=1
+[2025-03-21 19:59:07,842] INFO: Button 2,5: WINDOW/ENTER/LST X, 75x175, row=2, col=5, rowspan=2
+[2025-03-21 19:59:07,843] INFO: Button 0,6: MASKL/7/#B, 75x75, row=0, col=6, rowspan=1
+[2025-03-21 19:59:07,844] INFO: Button 1,6: SB/4/SF, 75x75, row=1, col=6, rowspan=1
+[2025-03-21 19:59:07,845] INFO: Button 2,6: SC 1'S/1/X≤Y, 75x75, row=2, col=6, rowspan=1
+[2025-03-21 19:59:07,845] INFO: Button 3,6: MEM/0/X≠Y, 75x75, row=3, col=6, rowspan=1
+[2025-03-21 19:59:07,846] INFO: Button 0,7: MASKR/8/ABS, 75x75, row=0, col=7, rowspan=1
+[2025-03-21 19:59:07,847] INFO: Button 1,7: CB/5/CF, 75x75, row=1, col=7, rowspan=1
+[2025-03-21 19:59:07,847] INFO: Button 2,7: SC 2'S/2/X<0, 75x75, row=2, col=7, rowspan=1
+[2025-03-21 19:59:07,848] INFO: Button 3,7: STATUS/./X≠0, 75x75, row=3, col=7, rowspan=1
+[2025-03-21 19:59:07,849] INFO: Button 0,8: RMD/9/DBLR, 75x75, row=0, col=8, rowspan=1
+[2025-03-21 19:59:07,850] INFO: Button 1,8: B?/6/F?, 75x75, row=1, col=8, rowspan=1
+[2025-03-21 19:59:07,850] INFO: Button 2,8: SC UNSGN/3/X>Y, 75x75, row=2, col=8, rowspan=1
+[2025-03-21 19:59:07,851] INFO: Button 3,8: EEx/CHS/X=Y, 75x75, row=3, col=8, rowspan=1
+[2025-03-21 19:59:07,852] INFO: Button 0,9: XOR///DBL/, 75x75, row=0, col=9, rowspan=1
+[2025-03-21 19:59:07,852] INFO: Button 1,9: AND/*/DBL*, 75x75, row=1, col=9, rowspan=1
+[2025-03-21 19:59:07,853] INFO: Button 2,9: NOT/-/X>0, 75x75, row=2, col=9, rowspan=1
+[2025-03-21 19:59:07,854] INFO: Button 3,9: OR/+/X=0, 75x75, row=3, col=9, rowspan=1
+[2025-03-21 19:59:07,854] INFO: Total buttons created: 39
+[2025-03-21 19:59:07,854] INFO: Grid configured: 10 cols, 4 rows, minsize=75
+[2025-03-21 19:59:07,878] INFO: Initializing HP16CController with display and buttons
+[2025-03-21 19:59:07,878] INFO: Initializing HP16CController
+[2025-03-21 19:59:07,878] INFO: Binding buttons to controller actions
+[2025-03-21 19:59:07,878] INFO: Binding actions to all buttons
+[2025-03-21 19:59:07,879] INFO: Starting periodic stack updates
+[2025-03-21 19:59:07,880] INFO: Setting entry: value=0, raw=False
+[2025-03-21 19:59:07,881] INFO: Entry set: 0, value=0
+[2025-03-21 19:59:08,087] INFO: Root window size: 1089x560+208+208
+[2025-03-21 19:59:08,087] INFO: Entering Tkinter mainloop
+[2025-03-21 19:59:09,877] INFO: Handling command: set_base_hex
+[2025-03-21 19:59:09,877] INFO: Handling normal command: HEX
+[2025-03-21 19:59:09,877] INFO: Setting mode: HEX
+[2025-03-21 19:59:09,877] INFO: Setting entry: value=0, raw=False
+[2025-03-21 19:59:09,878] INFO: Entry set: 0000, value=0
+[2025-03-21 19:59:09,878] INFO: Formatted 0 in HEX as 0
+[2025-03-21 19:59:09,878] INFO: Setting entry: value=0, raw=False
+[2025-03-21 19:59:09,878] INFO: Entry set: 0000, value=0
+[2025-03-21 19:59:09,878] INFO: Base set to HEX
+[2025-03-21 19:59:11,909] INFO: Handling command: 
+[2025-03-21 19:59:11,909] INFO: Handling normal command: 1
+[2025-03-21 19:59:11,909] INFO: Entering digit: 1
+[2025-03-21 19:59:11,909] INFO: Clearing entry
+[2025-03-21 19:59:11,909] INFO: Appending character: 1
+[2025-03-21 19:59:11,909] INFO: Setting entry: value=1, raw=False
+[2025-03-21 19:59:11,910] INFO: Entry set: 0001, value=1
+[2025-03-21 19:59:13,019] INFO: Handling command: 
+[2025-03-21 19:59:13,019] INFO: Handling normal command: F
+[2025-03-21 19:59:13,019] INFO: Entering digit: F
+[2025-03-21 19:59:13,019] INFO: Appending character: F
+[2025-03-21 19:59:13,019] INFO: Setting entry: value=31, raw=False
+[2025-03-21 19:59:13,019] INFO: Entry set: 001f, value=31
+[2025-03-21 19:59:13,297] INFO: Handling command: 
+[2025-03-21 19:59:13,297] INFO: Handling normal command: F
+[2025-03-21 19:59:13,297] INFO: Entering digit: F
+[2025-03-21 19:59:13,297] INFO: Appending character: F
+[2025-03-21 19:59:13,297] INFO: Setting entry: value=511, raw=False
+[2025-03-21 19:59:13,297] INFO: Entry set: 01ff, value=511
+[2025-03-21 19:59:14,962] INFO: Handling command: 
+[2025-03-21 19:59:14,962] INFO: Handling normal command: DEC
+[2025-03-21 19:59:14,962] INFO: Setting mode: DEC
+[2025-03-21 19:59:14,962] INFO: Setting entry: value=511, raw=False
+[2025-03-21 19:59:14,962] INFO: Entry set: 511, value=511
+[2025-03-21 19:59:14,962] INFO: Formatted 511 in DEC as 511
+[2025-03-21 19:59:14,963] INFO: Setting entry: value=511, raw=False
+[2025-03-21 19:59:14,963] INFO: Entry set: 511, value=511
+[2025-03-21 19:59:14,963] INFO: Base set to DEC
+[2025-03-21 19:59:19,882] INFO: Handling command: 
+[2025-03-21 19:59:19,882] INFO: Handling normal command: OCT
+[2025-03-21 19:59:19,882] INFO: Setting mode: OCT
+[2025-03-21 19:59:19,882] INFO: Setting entry: value=511, raw=False
+[2025-03-21 19:59:19,883] INFO: Entry set: 000777, value=511
+[2025-03-21 19:59:19,883] INFO: Formatted 511 in OCT as 777
+[2025-03-21 19:59:19,883] INFO: Setting entry: value=511, raw=False
+[2025-03-21 19:59:19,883] INFO: Entry set: 000777, value=511
+[2025-03-21 19:59:19,883] INFO: Base set to OCT
+[2025-03-21 19:59:21,075] INFO: Handling command: 
+[2025-03-21 19:59:21,075] INFO: Handling normal command: BIN
+[2025-03-21 19:59:21,075] INFO: Setting mode: BIN
+[2025-03-21 19:59:21,075] INFO: Setting entry: value=511, raw=False
+[2025-03-21 19:59:21,075] INFO: Entry set: 0000000111111111, value=511
+[2025-03-21 19:59:21,075] INFO: Formatted 511 in BIN as 0000000111111111
+[2025-03-21 19:59:21,075] INFO: Setting entry: value=511, raw=False
+[2025-03-21 19:59:21,075] INFO: Entry set: 0000000111111111, value=511
+[2025-03-21 19:59:21,075] INFO: Base set to BIN
+[2025-03-21 19:59:30,464] INFO: Handling command: 
+[2025-03-21 19:59:30,465] INFO: Handling normal command: DEC
+[2025-03-21 19:59:30,465] INFO: Setting mode: DEC
+[2025-03-21 19:59:30,465] INFO: Setting entry: value=511, raw=False
+[2025-03-21 19:59:30,465] INFO: Entry set: 511, value=511
+[2025-03-21 19:59:30,465] INFO: Formatted 511 in DEC as 511
+[2025-03-21 19:59:30,465] INFO: Setting entry: value=511, raw=False
+[2025-03-21 19:59:30,465] INFO: Entry set: 511, value=511
+[2025-03-21 19:59:30,465] INFO: Base set to DEC
+[2025-03-21 19:59:31,335] INFO: Handling command: 
+[2025-03-21 19:59:31,335] INFO: Handling normal command: BSP
+[2025-03-21 19:59:31,335] INFO: Performing backspace
+[2025-03-21 19:59:31,335] INFO: Setting entry: value=51, raw=False
+[2025-03-21 19:59:31,335] INFO: Entry set: 51, value=51
+[2025-03-21 19:59:31,536] INFO: Handling command: 
+[2025-03-21 19:59:31,536] INFO: Handling normal command: BSP
+[2025-03-21 19:59:31,536] INFO: Performing backspace
+[2025-03-21 19:59:31,537] INFO: Setting entry: value=5, raw=False
+[2025-03-21 19:59:31,537] INFO: Entry set: 5, value=5
+[2025-03-21 19:59:31,731] INFO: Handling command: 
+[2025-03-21 19:59:31,731] INFO: Handling normal command: BSP
+[2025-03-21 19:59:31,731] INFO: Performing backspace
+[2025-03-21 19:59:31,732] INFO: Setting entry: value=0, raw=False
+[2025-03-21 19:59:31,732] INFO: Entry set: 0, value=0
+[2025-03-21 19:59:32,490] INFO: Handling command: 
+[2025-03-21 19:59:32,490] INFO: Handling normal command: 9
+[2025-03-21 19:59:32,490] INFO: Entering digit: 9
+[2025-03-21 19:59:32,490] INFO: Appending character: 9
+[2025-03-21 19:59:32,490] INFO: Setting entry: value=9, raw=False
+[2025-03-21 19:59:32,490] INFO: Entry set: 9, value=9
+[2025-03-21 19:59:33,209] INFO: Handling command: yellow_f_function
+[2025-03-21 19:59:33,209] INFO: Toggling mode: f, f_active=False, g_active=False
+[2025-03-21 19:59:33,239] INFO: Mode set: f
+[2025-03-21 19:59:33,876] INFO: f-mode action: WSIZE
+[2025-03-21 19:59:33,876] INFO: Setting word size: 9
+[2025-03-21 19:59:33,877] INFO: Word size changed: 16 -> 9, X=0, stack=[0, 0, 0]
+[2025-03-21 19:59:33,877] INFO: Stack info updated: 00-09-0000
+[2025-03-21 19:59:33,877] INFO: Formatted 0 in DEC as 0
+[2025-03-21 19:59:33,877] INFO: Setting entry: value=0, raw=False
+[2025-03-21 19:59:33,877] INFO: Entry set: 0, value=0
+[2025-03-21 19:59:33,877] INFO: Clearing entry
+[2025-03-21 19:59:33,877] INFO: Toggling mode: f, f_active=True, g_active=False
+[2025-03-21 19:59:33,883] INFO: Mode reset to normal
+[2025-03-21 19:59:36,390] INFO: Handling normal command: HEX
+[2025-03-21 19:59:36,390] INFO: Setting mode: HEX
+[2025-03-21 19:59:36,390] INFO: Setting entry: value=0, raw=False
+[2025-03-21 19:59:36,390] INFO: Scheduling reset in 1 second
+[2025-03-21 19:59:36,390] INFO: Entry set: Error, value=0
+[2025-03-21 19:59:36,390] INFO: Formatted 0 in HEX as 0
+[2025-03-21 19:59:36,391] INFO: Setting entry: value=0, raw=False
+[2025-03-21 19:59:36,391] INFO: Scheduling reset in 1 second
+[2025-03-21 19:59:36,391] INFO: Entry set: Error, value=0
+[2025-03-21 19:59:36,391] INFO: Base set to HEX
+[2025-03-21 19:59:37,394] INFO: Clearing entry
+[2025-03-21 19:59:37,394] INFO: Clearing entry
+[2025-03-21 20:02:23,383] INFO: Handling normal command: DEC
+[2025-03-21 20:02:23,383] INFO: Setting mode: DEC
+[2025-03-21 20:02:23,383] INFO: Setting entry: value=0, raw=False
+[2025-03-21 20:02:23,383] INFO: Entry set: 0, value=0
+[2025-03-21 20:02:23,384] INFO: Formatted 0 in DEC as 0
+[2025-03-21 20:02:23,384] INFO: Setting entry: value=0, raw=False
+[2025-03-21 20:02:23,384] INFO: Entry set: 0, value=0
+[2025-03-21 20:02:23,384] INFO: Base set to DEC
+[2025-03-21 20:02:24,711] INFO: Handling normal command: 1
+[2025-03-21 20:02:24,711] INFO: Entering digit: 1
+[2025-03-21 20:02:24,711] INFO: Appending character: 1
+[2025-03-21 20:02:24,711] INFO: Setting entry: value=1, raw=False
+[2025-03-21 20:02:24,711] INFO: Entry set: 1, value=1
+[2025-03-21 20:02:25,303] INFO: Handling normal command: 0
+[2025-03-21 20:02:25,303] INFO: Entering digit: 0
+[2025-03-21 20:02:25,303] INFO: Appending character: 0
+[2025-03-21 20:02:25,303] INFO: Setting entry: value=10, raw=False
+[2025-03-21 20:02:25,303] INFO: Entry set: 10, value=10
+[2025-03-21 20:02:26,136] INFO: Handling command: yellow_f_function
+[2025-03-21 20:02:26,136] INFO: Toggling mode: f, f_active=False, g_active=False
+[2025-03-21 20:02:26,169] INFO: Mode set: f
+[2025-03-21 20:02:26,736] INFO: f-mode action: WSIZE
+[2025-03-21 20:02:26,736] INFO: Setting word size: 10
+[2025-03-21 20:02:26,736] INFO: Word size changed: 9 -> 10, X=0, stack=[0, 0, 0]
+[2025-03-21 20:02:26,736] INFO: Stack info updated: 00-10-0000
+[2025-03-21 20:02:26,736] INFO: Formatted 0 in DEC as 0
+[2025-03-21 20:02:26,737] INFO: Setting entry: value=0, raw=False
+[2025-03-21 20:02:26,737] INFO: Entry set: 0, value=0
+[2025-03-21 20:02:26,737] INFO: Clearing entry
+[2025-03-21 20:02:26,737] INFO: Toggling mode: f, f_active=True, g_active=False
+[2025-03-21 20:02:26,743] INFO: Mode reset to normal
+[2025-03-21 20:02:32,474] INFO: Handling normal command: 1
+[2025-03-21 20:02:32,474] INFO: Entering digit: 1
+[2025-03-21 20:02:32,474] INFO: Appending character: 1
+[2025-03-21 20:02:32,474] INFO: Setting entry: value=1, raw=False
+[2025-03-21 20:02:32,474] INFO: Entry set: 1, value=1
+[2025-03-21 20:02:32,879] INFO: Handling normal command: 0
+[2025-03-21 20:02:32,879] INFO: Entering digit: 0
+[2025-03-21 20:02:32,879] INFO: Appending character: 0
+[2025-03-21 20:02:32,879] INFO: Setting entry: value=10, raw=False
+[2025-03-21 20:02:32,879] INFO: Entry set: 10, value=10
+[2025-03-21 20:02:33,584] INFO: Handling normal command: 2
+[2025-03-21 20:02:33,584] INFO: Entering digit: 2
+[2025-03-21 20:02:33,584] INFO: Appending character: 2
+[2025-03-21 20:02:33,584] INFO: Setting entry: value=102, raw=False
+[2025-03-21 20:02:33,584] INFO: Entry set: 102, value=102
+[2025-03-21 20:02:34,139] INFO: Handling normal command: 4
+[2025-03-21 20:02:34,139] INFO: Entering digit: 4
+[2025-03-21 20:02:34,139] INFO: Ignoring digit 4: value 1024 exceeds max 1023
+[2025-03-21 20:02:35,196] INFO: Handling normal command: 3
+[2025-03-21 20:02:35,196] INFO: Entering digit: 3
+[2025-03-21 20:02:35,196] INFO: Appending character: 3
+[2025-03-21 20:02:35,196] INFO: Setting entry: value=1023, raw=False
+[2025-03-21 20:02:35,196] INFO: Entry set: 1023, value=1023
+[2025-03-21 20:02:36,524] INFO: Handling normal command: HEX
+[2025-03-21 20:02:36,524] INFO: Setting mode: HEX
+[2025-03-21 20:02:36,524] INFO: Setting entry: value=1023, raw=False
+[2025-03-21 20:02:36,524] INFO: Scheduling reset in 1 second
+[2025-03-21 20:02:36,524] INFO: Entry set: Error, value=1023
+[2025-03-21 20:02:36,524] INFO: Formatted 1023 in HEX as 3ff
+[2025-03-21 20:02:36,524] INFO: Setting entry: value=1023, raw=False
+[2025-03-21 20:02:36,524] INFO: Scheduling reset in 1 second
+[2025-03-21 20:02:36,524] INFO: Entry set: Error, value=1023
+[2025-03-21 20:02:36,524] INFO: Base set to HEX
+[2025-03-21 20:02:37,524] INFO: Clearing entry
+[2025-03-21 20:02:37,525] INFO: Clearing entry

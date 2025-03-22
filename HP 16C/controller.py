@@ -7,7 +7,7 @@ Matches HP-16C RPN behavior per Owner's Handbook.
 
 import stack
 import buttons
-from buttons import VALID_CHARS  # Import VALID_CHARS for digit validation
+from buttons import VALID_CHARS
 from buttons import revert_to_normal
 from f_mode import f_action
 from g_mode import g_action
@@ -15,19 +15,61 @@ from error import (
     HP16CError, StackUnderflowError, InvalidOperandError, 
     ShiftExceedsWordSizeError, InvalidBitOperationError
 )
-from base_conversion import format_in_current_base, current_base, interpret_in_current_base
+from base_conversion import format_in_current_base, interpret_in_base  # Updated imports
 from logging_config import logger
 
 class HP16CController:
     def __init__(self, display, buttons):
         logger.info("Initializing HP16CController")
-        self.display = display  # Use the passed display object
+        self.display = display
         self.buttons = buttons
         self.is_user_entry = False
-        self.result_displayed = True  # Initially displaying 0
+        self.result_displayed = True
         self.post_enter = False
         self.f_mode_active = False
         self.g_mode_active = False
+
+    def get_max_value(self):
+        """Calculate the maximum decimal value for the current word size."""
+        word_size = stack.get_word_size()
+        return (1 << word_size) - 1
+
+    def enter_digit(self, digit):
+        """Enter a digit, validating it doesn't exceed the maximum value."""
+        logger.info(f"Entering digit: {digit}")
+        digit = digit.upper()
+        if digit not in VALID_CHARS[self.display.mode]:
+            logger.info(f"Ignoring invalid digit {digit} for base {self.display.mode}")
+            return
+        if self.result_displayed:
+            self.display.clear_entry()
+            self.result_displayed = False
+
+        if self.display.mode == "BIN":
+            if len(self.display.raw_value) >= stack.get_word_size():
+                logger.info(f"Ignoring digit {digit}: max digits ({stack.get_word_size()}) reached in binary")
+                return
+        else:
+            test_input = self.display.raw_value + digit
+            try:
+                if self.display.mode == "OCT":
+                    value = int(test_input, 8)
+                elif self.display.mode == "DEC":
+                    value = int(test_input, 10)
+                elif self.display.mode == "HEX":
+                    value = int(test_input, 16)
+                else:
+                    value = int(test_input, 10)
+                max_value = self.get_max_value()
+                if value > max_value:
+                    logger.info(f"Ignoring digit {digit}: value {value} exceeds max {max_value}")
+                    return
+            except ValueError:
+                logger.info(f"Invalid input {test_input} for base {self.display.mode}")
+                return
+
+        self.display.append_entry(digit)
+        self.is_user_entry = True
 
     def toggle_mode(self, mode):
         """Toggle f or g mode, updating button appearance and bindings."""
@@ -87,38 +129,24 @@ class HP16CController:
             if w:
                 w.bind("<Button-1>", on_click)
 
-    def enter_digit(self, digit):
-        """Enter a digit, validating it against the current base using VALID_CHARS."""
-        logger.info(f"Entering digit: {digit}")
-        # Convert digit to uppercase for consistency with VALID_CHARS
-        digit = digit.upper()
-        # Validate digit against the current base
-        if digit not in VALID_CHARS[self.display.mode]:
-            logger.info(f"Ignoring invalid digit {digit} for base {self.display.mode}")
-            return
-        # If displaying a result from an operation, start a new entry
-        if self.result_displayed:
-            self.display.clear_entry()
-            self.result_displayed = False
-        self.display.append_entry(digit)
-        self.is_user_entry = True  # Mark as uncommitted
-
     def enter_value(self):
+        """Push the current raw input to the stack using the display's mode."""
         logger.info("Entering value")
-        entry = self.display.get_entry()
-        val = interpret_in_current_base(entry, current_base)
-        stack.push(val)  # Push to stack
+        entry = self.display.raw_value  # Use raw input, not formatted entry
+        val = interpret_in_base(entry, self.display.mode)  # Interpret in current mode
+        stack.push(val)
         self.post_enter = True
-        self.is_user_entry = False  # Entry is committed
+        self.is_user_entry = False
         self.display.clear_entry()
         self.update_stack_display()
 
     def enter_operator(self, operator):
+        """Perform an operation, committing user entry if present."""
         logger.info(f"Entering operator: {operator}")
         if self.is_user_entry:
-            entry = self.display.get_entry()
-            val = interpret_in_current_base(entry, current_base)
-            stack.push(val)  # Commit the entry to X
+            entry = self.display.raw_value  # Use raw input
+            val = interpret_in_base(entry, self.display.mode)  # Interpret in current mode
+            stack.push(val)
             self.is_user_entry = False
             self.display.clear_entry()
 
