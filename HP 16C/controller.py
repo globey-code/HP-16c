@@ -130,14 +130,20 @@ class HP16CController:
                 w.bind("<Button-1>", on_click)
 
     def enter_value(self):
-        """Push the current raw input to the stack using the display's mode."""
+        """Handle the ENTER key press to push the current value or duplicate X."""
         logger.info("Entering value")
-        entry = self.display.raw_value  # Use raw input, not formatted entry
-        val = interpret_in_base(entry, self.display.mode)  # Interpret in current mode
-        stack.push(val)
-        self.post_enter = True
-        self.is_user_entry = False
-        self.display.clear_entry()
+        if self.is_user_entry:
+            # Interpret the current entry and push it to the stack
+            entry = self.display.raw_value
+            val = interpret_in_base(entry, self.display.mode)
+            stack.push(val)
+            self.is_user_entry = False
+        else:
+            # Duplicate the current X register
+            stack.push(stack.peek())
+        # Update the display to show the new X register
+        self.display.set_entry(stack.peek())
+        self.result_displayed = True
         self.update_stack_display()
 
     def enter_operator(self, operator):
