@@ -74,14 +74,18 @@ def action_x_exchange_i_gto(display_widget, controller_obj):
 
 def action_show(display_widget, controller_obj, mode):
     current_mode = controller_obj.display.mode
-    logger.info(f"Showing in {mode} mode")
     display_widget.set_mode(mode)
-
+    
     def revert_display():
-        logger.info(f"Reverting to {current_mode} mode")
+        import buttons  # Import here to avoid circular import
         display_widget.set_mode(current_mode)
-
+        controller_obj.f_mode_active = False
+        for btn in controller_obj.buttons:
+            if btn.get("command_name") not in ("yellow_f_function", "blue_g_function"):
+                buttons.revert_to_normal(btn, controller_obj.buttons, display_widget, controller_obj)
+    
     display_widget.widget.after(4000, revert_display)
+    return True  # Indicate that mode toggle is handled
 
 def action_sb(display_widget, controller_obj):
     """Set Bit (SB)."""
@@ -217,8 +221,8 @@ F_FUNCTIONS = {
 }
 
 def f_action(button, display_widget, controller_obj):
-    """Execute the f-mode function for a given button."""
     top_text = button.get("orig_top_text", "").strip().upper()
     logger.info(f"f-mode action: {top_text}")
     if top_text in F_FUNCTIONS:
-        F_FUNCTIONS[top_text](display_widget, controller_obj)
+        return F_FUNCTIONS[top_text](display_widget, controller_obj)
+    return False

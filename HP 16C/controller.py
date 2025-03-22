@@ -123,13 +123,14 @@ class HP16CController:
         logger.info(f"Mode set: {mode}")
 
     def _bind_mode_action(self, btn, mode):
-        """Bind mode-specific actions to buttons."""
         def on_click(e, b=btn):
             if mode == "f":
-                f_action(b, self.display, self)
+                handled = f_action(b, self.display, self)
+                if not handled:
+                    self.display.master.after(0, lambda: self.toggle_mode(mode))
             elif mode == "g":
                 g_action(b, self.display, self)
-            self.display.master.after(0, lambda: self.toggle_mode(mode))
+                self.display.master.after(0, lambda: self.toggle_mode(mode))
         for w in [btn["frame"], btn.get("top_label"), btn.get("main_label"), btn.get("sub_label")]:
             if w:
                 w.bind("<Button-1>", on_click)
