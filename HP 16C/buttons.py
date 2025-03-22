@@ -13,7 +13,10 @@ from error import HP16CError
 from logging_config import logger
 
 VALID_CHARS = {
-    "BIN": set("01"), "OCT": set("01234567"), "DEC": set("0123456789"), "HEX": set("0123456789ABCDEF")
+    "BIN": set("01"), 
+    "OCT": set("01234567"), 
+    "DEC": set("0123456789"), 
+    "HEX": set("0123456789ABCDEF")
 }
 
 def normal_action_digit(digit, display_widget):
@@ -36,7 +39,7 @@ def handle_normal_command_by_label(btn, display, controller_obj):
     if label_text == "ENTER":
         controller_obj.enter_value()
     elif label_text.isdigit() or label_text in "ABCDEF":
-        controller_obj.enter_digit(label_text)
+        controller_obj.enter_digit(label_text)  # Pass digit as string
     elif label_text in {"+", "-", "*", "/", "AND", "OR", "XOR", "NOT", "RMD", "R↓"}:
         controller_obj.enter_operator(label_text)
     elif label_text == "BSP":

@@ -1,0 +1,166 @@
+[2025-03-21 19:01:10,601] INFO: Stack initialized: [0, 0, 0], X=0, word_size=16, complement_mode=UNSIGNED
+[2025-03-21 19:01:10,609] INFO: Script started: main.pyw
+[2025-03-21 19:01:10,610] INFO: Entering function: main
+[2025-03-21 19:01:10,610] INFO: Creating Tk root window
+[2025-03-21 19:01:10,673] INFO: Setting window title: HP 16C Emulator
+[2025-03-21 19:01:10,673] INFO: Configuring root background color: #1e1818
+[2025-03-21 19:01:10,673] INFO: Setting root resizable: False, False
+[2025-03-21 19:01:10,673] INFO: Entering function: load_config
+[2025-03-21 19:01:10,674] INFO: Config loaded and updated: {'display_width': 575, 'display_height': 80, 'margin': 20, 'bg_color': '#1e1818', 'display_font_family': 'Courier', 'display_font_size': 18, 'display_x': 125, 'display_y': 20}
+[2025-03-21 19:01:10,674] INFO: Exiting function: load_config
+[2025-03-21 19:01:10,674] INFO: Custom font created: family=Courier, size=18
+[2025-03-21 19:01:10,674] INFO: Setting up UI: display at x=125, y=20, width=575, height=80, grid=4x10, total=1089x560
+[2025-03-21 19:01:10,674] INFO: Initializing Display: x=125, y=20, width=575, height=80
+[2025-03-21 19:01:10,677] INFO: Stack info updated: 00-16-0000
+[2025-03-21 19:01:10,677] INFO: Display initialized: mode=DEC, entry=0
+[2025-03-21 19:01:10,677] INFO: Setting mode: DEC
+[2025-03-21 19:01:10,678] INFO: Setting entry: value=0, raw=False
+[2025-03-21 19:01:10,678] INFO: Entry set: 0, value=0
+[2025-03-21 19:01:10,678] INFO: Creating buttons from BUTTONS_CONFIG
+[2025-03-21 19:01:10,680] INFO: Button 0,0: SL/A/LJ, 75x75, row=0, col=0, rowspan=1
+[2025-03-21 19:01:10,680] INFO: Button 1,0: x><(i)/GSB/RTN, 75x75, row=1, col=0, rowspan=1
+[2025-03-21 19:01:10,681] INFO: Button 2,0: (i)/R/S/P/R, 75x75, row=2, col=0, rowspan=1
+[2025-03-21 19:01:10,681] INFO: Button 3,0: /ON/, 75x75, row=3, col=0, rowspan=1
+[2025-03-21 19:01:10,682] INFO: Button 0,1: SR/B/ASR, 75x75, row=0, col=1, rowspan=1
+[2025-03-21 19:01:10,683] INFO: Button 1,1: x><I/GTO/LBL, 75x75, row=1, col=1, rowspan=1
+[2025-03-21 19:01:10,684] INFO: Button 2,1: I/SST/BST, 75x75, row=2, col=1, rowspan=1
+[2025-03-21 19:01:10,684] INFO: Button 3,1: /f/, 75x75, row=3, col=1, rowspan=1
+[2025-03-21 19:01:10,685] INFO: Button 0,2: RL/C/DSZ, 75x75, row=0, col=2, rowspan=1
+[2025-03-21 19:01:10,685] INFO: Button 1,2: SHOW HEX/HEX/DSZ, 75x75, row=1, col=2, rowspan=1
+[2025-03-21 19:01:10,688] INFO: Button 2,2: CLR PRGM/R↓/R↑, 75x75, row=2, col=2, rowspan=1
+[2025-03-21 19:01:10,688] INFO: Button 3,2: /g/, 75x75, row=3, col=2, rowspan=1
+[2025-03-21 19:01:10,689] INFO: Button 0,3: RR/D/RRC, 75x75, row=0, col=3, rowspan=1
+[2025-03-21 19:01:10,690] INFO: Button 1,3: SHOW DEC/DEC/ISZ, 75x75, row=1, col=3, rowspan=1
+[2025-03-21 19:01:10,691] INFO: Button 2,3: CLR REG/x><y/PSE, 75x75, row=2, col=3, rowspan=1
+[2025-03-21 19:01:10,796] INFO: Button 3,3: WSIZE/STO/⯇, 75x75, row=3, col=3, rowspan=1
+[2025-03-21 19:01:10,796] INFO: Button 0,4: RLn/E/RLCn, 75x75, row=0, col=4, rowspan=1
+[2025-03-21 19:01:10,797] INFO: Button 1,4: SHOW OCT/OCT/√x, 75x75, row=1, col=4, rowspan=1
+[2025-03-21 19:01:10,798] INFO: Button 2,4: CLR PRFX/BSP/CLX, 75x75, row=2, col=4, rowspan=1
+[2025-03-21 19:01:10,799] INFO: Button 3,4: FLOAT/RCL/⯈, 75x75, row=3, col=4, rowspan=1
+[2025-03-21 19:01:10,799] INFO: Button 0,5: RRn/F/RRCn, 75x75, row=0, col=5, rowspan=1
+[2025-03-21 19:01:10,800] INFO: Button 1,5: SHOW BIN/BIN/1/x, 75x75, row=1, col=5, rowspan=1
+[2025-03-21 19:01:10,801] INFO: Button 2,5: WINDOW/ENTER/LST X, 75x175, row=2, col=5, rowspan=2
+[2025-03-21 19:01:10,802] INFO: Button 0,6: MASKL/7/#B, 75x75, row=0, col=6, rowspan=1
+[2025-03-21 19:01:10,803] INFO: Button 1,6: SB/4/SF, 75x75, row=1, col=6, rowspan=1
+[2025-03-21 19:01:10,803] INFO: Button 2,6: SC 1'S/1/X≤Y, 75x75, row=2, col=6, rowspan=1
+[2025-03-21 19:01:10,804] INFO: Button 3,6: MEM/0/X≠Y, 75x75, row=3, col=6, rowspan=1
+[2025-03-21 19:01:10,806] INFO: Button 0,7: MASKR/8/ABS, 75x75, row=0, col=7, rowspan=1
+[2025-03-21 19:01:10,807] INFO: Button 1,7: CB/5/CF, 75x75, row=1, col=7, rowspan=1
+[2025-03-21 19:01:10,808] INFO: Button 2,7: SC 2'S/2/X<0, 75x75, row=2, col=7, rowspan=1
+[2025-03-21 19:01:10,809] INFO: Button 3,7: STATUS/./X≠0, 75x75, row=3, col=7, rowspan=1
+[2025-03-21 19:01:10,809] INFO: Button 0,8: RMD/9/DBLR, 75x75, row=0, col=8, rowspan=1
+[2025-03-21 19:01:10,810] INFO: Button 1,8: B?/6/F?, 75x75, row=1, col=8, rowspan=1
+[2025-03-21 19:01:10,811] INFO: Button 2,8: SC UNSGN/3/X>Y, 75x75, row=2, col=8, rowspan=1
+[2025-03-21 19:01:10,812] INFO: Button 3,8: EEx/CHS/X=Y, 75x75, row=3, col=8, rowspan=1
+[2025-03-21 19:01:10,812] INFO: Button 0,9: XOR///DBL/, 75x75, row=0, col=9, rowspan=1
+[2025-03-21 19:01:10,813] INFO: Button 1,9: AND/*/DBL*, 75x75, row=1, col=9, rowspan=1
+[2025-03-21 19:01:10,814] INFO: Button 2,9: NOT/-/X>0, 75x75, row=2, col=9, rowspan=1
+[2025-03-21 19:01:10,815] INFO: Button 3,9: OR/+/X=0, 75x75, row=3, col=9, rowspan=1
+[2025-03-21 19:01:10,815] INFO: Total buttons created: 39
+[2025-03-21 19:01:10,815] INFO: Grid configured: 10 cols, 4 rows, minsize=75
+[2025-03-21 19:01:10,840] INFO: Initializing HP16CController with display and buttons
+[2025-03-21 19:01:10,840] INFO: Initializing HP16CController
+[2025-03-21 19:01:10,840] INFO: Binding buttons to controller actions
+[2025-03-21 19:01:10,840] INFO: Binding actions to all buttons
+[2025-03-21 19:01:10,843] INFO: Starting periodic stack updates
+[2025-03-21 19:01:10,845] INFO: Setting entry: value=0, raw=False
+[2025-03-21 19:01:10,845] INFO: Entry set: 0, value=0
+[2025-03-21 19:01:11,065] INFO: Root window size: 1089x560+234+234
+[2025-03-21 19:01:11,065] INFO: Entering Tkinter mainloop
+[2025-03-21 19:01:12,320] INFO: Handling command: 
+[2025-03-21 19:01:12,320] INFO: Handling normal command: 4
+[2025-03-21 19:01:12,320] INFO: Entering digit: 4
+[2025-03-21 19:01:12,320] INFO: Clearing entry
+[2025-03-21 19:01:12,320] INFO: Appending character: 4
+[2025-03-21 19:01:12,321] INFO: Setting entry: value=4, raw=False
+[2025-03-21 19:01:12,321] INFO: Entry set: 4, value=4
+[2025-03-21 19:01:12,559] INFO: Handling command: 
+[2025-03-21 19:01:12,559] INFO: Handling normal command: 4
+[2025-03-21 19:01:12,560] INFO: Entering digit: 4
+[2025-03-21 19:01:12,560] INFO: Appending character: 4
+[2025-03-21 19:01:12,560] INFO: Setting entry: value=44, raw=False
+[2025-03-21 19:01:12,560] INFO: Entry set: 44, value=44
+[2025-03-21 19:01:13,541] INFO: Handling command: set_base_hex
+[2025-03-21 19:01:13,541] INFO: Handling normal command: HEX
+[2025-03-21 19:01:13,542] INFO: Setting mode: HEX
+[2025-03-21 19:01:13,542] INFO: Setting entry: value=44, raw=False
+[2025-03-21 19:01:13,542] INFO: Entry set: 002c, value=44
+[2025-03-21 19:01:13,542] INFO: Formatted 44 in HEX as 002c
+[2025-03-21 19:01:13,542] INFO: Setting entry: value=44, raw=False
+[2025-03-21 19:01:13,542] INFO: Entry set: 002c, value=44
+[2025-03-21 19:01:13,542] INFO: Base set to HEX
+[2025-03-21 19:01:14,816] INFO: Handling command: 
+[2025-03-21 19:01:14,816] INFO: Handling normal command: BIN
+[2025-03-21 19:01:14,816] INFO: Setting mode: BIN
+[2025-03-21 19:01:14,817] INFO: Setting entry: value=44, raw=False
+[2025-03-21 19:01:14,817] INFO: Entry set: 0000000000101100, value=44
+[2025-03-21 19:01:14,817] INFO: Formatted 44 in BIN as 0000000000101100
+[2025-03-21 19:01:14,817] INFO: Setting entry: value=44, raw=False
+[2025-03-21 19:01:14,817] INFO: Entry set: 0000000000101100, value=44
+[2025-03-21 19:01:14,817] INFO: Base set to BIN
+[2025-03-21 19:01:15,649] INFO: Handling command: 
+[2025-03-21 19:01:15,649] INFO: Handling normal command: OCT
+[2025-03-21 19:01:15,649] INFO: Setting mode: OCT
+[2025-03-21 19:01:15,649] INFO: Setting entry: value=44, raw=False
+[2025-03-21 19:01:15,650] INFO: Entry set: 000054, value=44
+[2025-03-21 19:01:15,650] INFO: Formatted 44 in OCT as 000054
+[2025-03-21 19:01:15,650] INFO: Setting entry: value=44, raw=False
+[2025-03-21 19:01:15,650] INFO: Entry set: 000054, value=44
+[2025-03-21 19:01:15,650] INFO: Base set to OCT
+[2025-03-21 19:01:16,451] INFO: Handling command: 
+[2025-03-21 19:01:16,451] INFO: Handling normal command: DEC
+[2025-03-21 19:01:16,451] INFO: Setting mode: DEC
+[2025-03-21 19:01:16,452] INFO: Setting entry: value=44, raw=False
+[2025-03-21 19:01:16,452] INFO: Entry set: 44, value=44
+[2025-03-21 19:01:16,452] INFO: Formatted 44 in DEC as 44
+[2025-03-21 19:01:16,452] INFO: Setting entry: value=44, raw=False
+[2025-03-21 19:01:16,452] INFO: Entry set: 44, value=44
+[2025-03-21 19:01:16,452] INFO: Base set to DEC
+[2025-03-21 19:01:17,074] INFO: Handling command: set_base_hex
+[2025-03-21 19:01:17,074] INFO: Handling normal command: HEX
+[2025-03-21 19:01:17,074] INFO: Setting mode: HEX
+[2025-03-21 19:01:17,074] INFO: Setting entry: value=44, raw=False
+[2025-03-21 19:01:17,075] INFO: Entry set: 002c, value=44
+[2025-03-21 19:01:17,075] INFO: Formatted 44 in HEX as 002c
+[2025-03-21 19:01:17,075] INFO: Setting entry: value=44, raw=False
+[2025-03-21 19:01:17,075] INFO: Entry set: 002c, value=44
+[2025-03-21 19:01:17,075] INFO: Base set to HEX
+[2025-03-21 19:01:18,626] INFO: Handling command: 
+[2025-03-21 19:01:18,626] INFO: Handling normal command: DEC
+[2025-03-21 19:01:18,626] INFO: Setting mode: DEC
+[2025-03-21 19:01:18,626] INFO: Setting entry: value=44, raw=False
+[2025-03-21 19:01:18,626] INFO: Entry set: 44, value=44
+[2025-03-21 19:01:18,627] INFO: Formatted 44 in DEC as 44
+[2025-03-21 19:01:18,627] INFO: Setting entry: value=44, raw=False
+[2025-03-21 19:01:18,627] INFO: Entry set: 44, value=44
+[2025-03-21 19:01:18,627] INFO: Base set to DEC
+[2025-03-21 19:01:20,036] INFO: Handling command: yellow_f_function
+[2025-03-21 19:01:20,036] INFO: Toggling mode: f, f_active=False, g_active=False
+[2025-03-21 19:01:20,071] INFO: Mode set: f
+[2025-03-21 19:01:20,764] INFO: f-mode action: SHOW BIN
+[2025-03-21 19:01:20,764] INFO: Formatted 44 in BIN as 0000000000101100
+[2025-03-21 19:01:20,764] INFO: Setting entry: value=0000000000101100, raw=True
+[2025-03-21 19:01:20,765] INFO: Raw entry set: 0000000000101100
+[2025-03-21 19:01:20,765] INFO: Scheduling reset in 1 second
+[2025-03-21 19:01:20,765] INFO: Toggling mode: f, f_active=True, g_active=False
+[2025-03-21 19:01:20,772] INFO: Mode reset to normal
+[2025-03-21 19:01:21,766] INFO: Clearing entry
+[2025-03-21 19:01:24,769] INFO: Formatted 44 in DEC as 44
+[2025-03-21 19:01:24,769] INFO: Setting entry: value=44, raw=False
+[2025-03-21 19:01:24,769] INFO: Entry set: 44, value=44
+[2025-03-21 19:01:25,384] INFO: Handling command: yellow_f_function
+[2025-03-21 19:01:25,384] INFO: Toggling mode: f, f_active=False, g_active=False
+[2025-03-21 19:01:25,416] INFO: Mode set: f
+[2025-03-21 19:01:26,119] INFO: f-mode action: SHOW HEX
+[2025-03-21 19:01:26,119] INFO: Formatted 44 in HEX as 002c
+[2025-03-21 19:01:26,119] INFO: Setting entry: value=002c, raw=True
+[2025-03-21 19:01:26,119] INFO: Raw entry set: 002c
+[2025-03-21 19:01:26,119] INFO: Scheduling reset in 1 second
+[2025-03-21 19:01:26,120] INFO: Toggling mode: f, f_active=True, g_active=False
+[2025-03-21 19:01:26,127] INFO: Mode reset to normal
+[2025-03-21 19:01:27,121] INFO: Clearing entry
+[2025-03-21 19:01:30,123] INFO: Formatted 44 in DEC as 44
+[2025-03-21 19:01:30,123] INFO: Setting entry: value=44, raw=False
+[2025-03-21 19:01:30,123] INFO: Entry set: 44, value=44
+[2025-03-21 19:01:32,947] INFO: Exiting function: main
+[2025-03-21 19:01:32,947] INFO: Script ended: main.pyw

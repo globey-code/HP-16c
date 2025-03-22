@@ -1,0 +1,100 @@
+[2025-03-21 19:05:34,383] INFO: Stack initialized: [0, 0, 0], X=0, word_size=16, complement_mode=UNSIGNED
+[2025-03-21 19:05:34,391] INFO: Script started: main.pyw
+[2025-03-21 19:05:34,391] INFO: Entering function: main
+[2025-03-21 19:05:34,391] INFO: Creating Tk root window
+[2025-03-21 19:05:34,456] INFO: Setting window title: HP 16C Emulator
+[2025-03-21 19:05:34,456] INFO: Configuring root background color: #1e1818
+[2025-03-21 19:05:34,457] INFO: Setting root resizable: False, False
+[2025-03-21 19:05:34,457] INFO: Entering function: load_config
+[2025-03-21 19:05:34,457] INFO: Config loaded and updated: {'display_width': 575, 'display_height': 80, 'margin': 20, 'bg_color': '#1e1818', 'display_font_family': 'Courier', 'display_font_size': 18, 'display_x': 125, 'display_y': 20}
+[2025-03-21 19:05:34,457] INFO: Exiting function: load_config
+[2025-03-21 19:05:34,458] INFO: Custom font created: family=Courier, size=18
+[2025-03-21 19:05:34,458] INFO: Setting up UI: display at x=125, y=20, width=575, height=80, grid=4x10, total=1089x560
+[2025-03-21 19:05:34,458] INFO: Initializing Display: x=125, y=20, width=575, height=80
+[2025-03-21 19:05:34,461] INFO: Stack info updated: 00-16-0000
+[2025-03-21 19:05:34,462] INFO: Display initialized: mode=DEC, entry=0
+[2025-03-21 19:05:34,462] INFO: Setting mode: DEC
+[2025-03-21 19:05:34,462] INFO: Setting entry: value=0, raw=False
+[2025-03-21 19:05:34,462] INFO: Entry set: 0, value=0
+[2025-03-21 19:05:34,462] INFO: Creating buttons from BUTTONS_CONFIG
+[2025-03-21 19:05:34,464] INFO: Button 0,0: SL/A/LJ, 75x75, row=0, col=0, rowspan=1
+[2025-03-21 19:05:34,465] INFO: Button 1,0: x><(i)/GSB/RTN, 75x75, row=1, col=0, rowspan=1
+[2025-03-21 19:05:34,465] INFO: Button 2,0: (i)/R/S/P/R, 75x75, row=2, col=0, rowspan=1
+[2025-03-21 19:05:34,466] INFO: Button 3,0: /ON/, 75x75, row=3, col=0, rowspan=1
+[2025-03-21 19:05:34,466] INFO: Button 0,1: SR/B/ASR, 75x75, row=0, col=1, rowspan=1
+[2025-03-21 19:05:34,467] INFO: Button 1,1: x><I/GTO/LBL, 75x75, row=1, col=1, rowspan=1
+[2025-03-21 19:05:34,468] INFO: Button 2,1: I/SST/BST, 75x75, row=2, col=1, rowspan=1
+[2025-03-21 19:05:34,468] INFO: Button 3,1: /f/, 75x75, row=3, col=1, rowspan=1
+[2025-03-21 19:05:34,469] INFO: Button 0,2: RL/C/DSZ, 75x75, row=0, col=2, rowspan=1
+[2025-03-21 19:05:34,470] INFO: Button 1,2: SHOW HEX/HEX/DSZ, 75x75, row=1, col=2, rowspan=1
+[2025-03-21 19:05:34,472] INFO: Button 2,2: CLR PRGM/R↓/R↑, 75x75, row=2, col=2, rowspan=1
+[2025-03-21 19:05:34,473] INFO: Button 3,2: /g/, 75x75, row=3, col=2, rowspan=1
+[2025-03-21 19:05:34,473] INFO: Button 0,3: RR/D/RRC, 75x75, row=0, col=3, rowspan=1
+[2025-03-21 19:05:34,474] INFO: Button 1,3: SHOW DEC/DEC/ISZ, 75x75, row=1, col=3, rowspan=1
+[2025-03-21 19:05:34,475] INFO: Button 2,3: CLR REG/x><y/PSE, 75x75, row=2, col=3, rowspan=1
+[2025-03-21 19:05:34,581] INFO: Button 3,3: WSIZE/STO/⯇, 75x75, row=3, col=3, rowspan=1
+[2025-03-21 19:05:34,582] INFO: Button 0,4: RLn/E/RLCn, 75x75, row=0, col=4, rowspan=1
+[2025-03-21 19:05:34,583] INFO: Button 1,4: SHOW OCT/OCT/√x, 75x75, row=1, col=4, rowspan=1
+[2025-03-21 19:05:34,584] INFO: Button 2,4: CLR PRFX/BSP/CLX, 75x75, row=2, col=4, rowspan=1
+[2025-03-21 19:05:34,584] INFO: Button 3,4: FLOAT/RCL/⯈, 75x75, row=3, col=4, rowspan=1
+[2025-03-21 19:05:34,585] INFO: Button 0,5: RRn/F/RRCn, 75x75, row=0, col=5, rowspan=1
+[2025-03-21 19:05:34,586] INFO: Button 1,5: SHOW BIN/BIN/1/x, 75x75, row=1, col=5, rowspan=1
+[2025-03-21 19:05:34,587] INFO: Button 2,5: WINDOW/ENTER/LST X, 75x175, row=2, col=5, rowspan=2
+[2025-03-21 19:05:34,587] INFO: Button 0,6: MASKL/7/#B, 75x75, row=0, col=6, rowspan=1
+[2025-03-21 19:05:34,588] INFO: Button 1,6: SB/4/SF, 75x75, row=1, col=6, rowspan=1
+[2025-03-21 19:05:34,589] INFO: Button 2,6: SC 1'S/1/X≤Y, 75x75, row=2, col=6, rowspan=1
+[2025-03-21 19:05:34,590] INFO: Button 3,6: MEM/0/X≠Y, 75x75, row=3, col=6, rowspan=1
+[2025-03-21 19:05:34,591] INFO: Button 0,7: MASKR/8/ABS, 75x75, row=0, col=7, rowspan=1
+[2025-03-21 19:05:34,591] INFO: Button 1,7: CB/5/CF, 75x75, row=1, col=7, rowspan=1
+[2025-03-21 19:05:34,593] INFO: Button 2,7: SC 2'S/2/X<0, 75x75, row=2, col=7, rowspan=1
+[2025-03-21 19:05:34,594] INFO: Button 3,7: STATUS/./X≠0, 75x75, row=3, col=7, rowspan=1
+[2025-03-21 19:05:34,594] INFO: Button 0,8: RMD/9/DBLR, 75x75, row=0, col=8, rowspan=1
+[2025-03-21 19:05:34,595] INFO: Button 1,8: B?/6/F?, 75x75, row=1, col=8, rowspan=1
+[2025-03-21 19:05:34,596] INFO: Button 2,8: SC UNSGN/3/X>Y, 75x75, row=2, col=8, rowspan=1
+[2025-03-21 19:05:34,597] INFO: Button 3,8: EEx/CHS/X=Y, 75x75, row=3, col=8, rowspan=1
+[2025-03-21 19:05:34,598] INFO: Button 0,9: XOR///DBL/, 75x75, row=0, col=9, rowspan=1
+[2025-03-21 19:05:34,598] INFO: Button 1,9: AND/*/DBL*, 75x75, row=1, col=9, rowspan=1
+[2025-03-21 19:05:34,599] INFO: Button 2,9: NOT/-/X>0, 75x75, row=2, col=9, rowspan=1
+[2025-03-21 19:05:34,600] INFO: Button 3,9: OR/+/X=0, 75x75, row=3, col=9, rowspan=1
+[2025-03-21 19:05:34,600] INFO: Total buttons created: 39
+[2025-03-21 19:05:34,600] INFO: Grid configured: 10 cols, 4 rows, minsize=75
+[2025-03-21 19:05:34,625] INFO: Initializing HP16CController with display and buttons
+[2025-03-21 19:05:34,625] INFO: Initializing HP16CController
+[2025-03-21 19:05:34,625] INFO: Binding buttons to controller actions
+[2025-03-21 19:05:34,625] INFO: Binding actions to all buttons
+[2025-03-21 19:05:34,627] INFO: Starting periodic stack updates
+[2025-03-21 19:05:34,628] INFO: Setting entry: value=0, raw=False
+[2025-03-21 19:05:34,628] INFO: Entry set: 0, value=0
+[2025-03-21 19:05:34,845] INFO: Root window size: 1089x560+104+104
+[2025-03-21 19:05:34,845] INFO: Entering Tkinter mainloop
+[2025-03-21 19:05:37,964] INFO: Handling command: 
+[2025-03-21 19:05:37,964] INFO: Handling normal command: BIN
+[2025-03-21 19:05:37,964] INFO: Setting mode: BIN
+[2025-03-21 19:05:37,965] INFO: Setting entry: value=0, raw=False
+[2025-03-21 19:05:37,965] INFO: Entry set: 0000000000000000, value=0
+[2025-03-21 19:05:37,965] INFO: Formatted 0 in BIN as 0000000000000000
+[2025-03-21 19:05:37,965] INFO: Setting entry: value=0, raw=False
+[2025-03-21 19:05:37,965] INFO: Entry set: 0000000000000000, value=0
+[2025-03-21 19:05:37,965] INFO: Base set to BIN
+[2025-03-21 19:05:38,669] INFO: Handling command: 
+[2025-03-21 19:05:38,669] INFO: Handling normal command: 4
+[2025-03-21 19:05:38,669] INFO: Entering digit: 4
+[2025-03-21 19:05:38,669] INFO: Clearing entry
+[2025-03-21 19:05:38,669] INFO: Appending character: 4
+[2025-03-21 19:05:38,669] INFO: Failed to interpret 4 in BIN, defaulting to 0
+[2025-03-21 19:05:38,669] INFO: Setting entry: value=0, raw=False
+[2025-03-21 19:05:38,669] INFO: Entry set: 0000000000000000, value=0
+[2025-03-21 19:05:39,081] INFO: Handling command: 
+[2025-03-21 19:05:39,081] INFO: Handling normal command: 5
+[2025-03-21 19:05:39,081] INFO: Entering digit: 5
+[2025-03-21 19:05:39,081] INFO: Appending character: 5
+[2025-03-21 19:05:39,081] INFO: Failed to interpret 45 in BIN, defaulting to 0
+[2025-03-21 19:05:39,081] INFO: Setting entry: value=0, raw=False
+[2025-03-21 19:05:39,081] INFO: Entry set: 0000000000000000, value=0
+[2025-03-21 19:05:39,591] INFO: Handling command: 
+[2025-03-21 19:05:39,591] INFO: Handling normal command: 2
+[2025-03-21 19:05:39,591] INFO: Entering digit: 2
+[2025-03-21 19:05:39,591] INFO: Appending character: 2
+[2025-03-21 19:05:39,591] INFO: Failed to interpret 452 in BIN, defaulting to 0
+[2025-03-21 19:05:39,591] INFO: Setting entry: value=0, raw=False
+[2025-03-21 19:05:39,591] INFO: Entry set: 0000000000000000, value=0

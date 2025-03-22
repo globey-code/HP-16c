@@ -7,6 +7,7 @@ Matches HP-16C RPN behavior per Owner's Handbook.
 
 import stack
 import buttons
+from buttons import VALID_CHARS  # Import VALID_CHARS for digit validation
 from buttons import revert_to_normal
 from f_mode import f_action
 from g_mode import g_action
@@ -27,7 +28,6 @@ class HP16CController:
         self.post_enter = False
         self.f_mode_active = False
         self.g_mode_active = False
-        # Note: Removed redundant self.is_user_entry = False
 
     def toggle_mode(self, mode):
         """Toggle f or g mode, updating button appearance and bindings."""
@@ -88,7 +88,14 @@ class HP16CController:
                 w.bind("<Button-1>", on_click)
 
     def enter_digit(self, digit):
+        """Enter a digit, validating it against the current base using VALID_CHARS."""
         logger.info(f"Entering digit: {digit}")
+        # Convert digit to uppercase for consistency with VALID_CHARS
+        digit = digit.upper()
+        # Validate digit against the current base
+        if digit not in VALID_CHARS[self.display.mode]:
+            logger.info(f"Ignoring invalid digit {digit} for base {self.display.mode}")
+            return
         # If displaying a result from an operation, start a new entry
         if self.result_displayed:
             self.display.clear_entry()
@@ -102,7 +109,7 @@ class HP16CController:
         val = interpret_in_current_base(entry, current_base)
         stack.push(val)  # Push to stack
         self.post_enter = True
-        self.is_user_entry = False  # Entry is committed, not user input anymore
+        self.is_user_entry = False  # Entry is committed
         self.display.clear_entry()
         self.update_stack_display()
 
@@ -111,7 +118,7 @@ class HP16CController:
         if self.is_user_entry:
             entry = self.display.get_entry()
             val = interpret_in_current_base(entry, current_base)
-            stack.push(val)  # Commit the entry to X (replaces old X)
+            stack.push(val)  # Commit the entry to X
             self.is_user_entry = False
             self.display.clear_entry()
 
@@ -119,7 +126,7 @@ class HP16CController:
             stack.roll_down()
             result = stack.peek()
             self.display.set_entry(format_in_current_base(result, self.display.mode))
-            self.result_displayed = True  # Mark as a displayed result
+            self.result_displayed = True
             self.update_stack_display()
             logger.info(f"Performed R↓: stack rotated down")
         else:
