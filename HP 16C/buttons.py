@@ -1,9 +1,9 @@
-﻿"""
-buttons.py
-
-Consolidates button logic for the HP-16C emulator.
-Handles normal actions, f/g mode toggling, and binding button commands.
-"""
+﻿# buttons.py
+# Consolidates button logic for the HP-16C emulator, including normal actions, f/g mode toggling, and button command binding.
+# Author: GlobeyCode
+# License: MIT
+# Date: 3/23/2025
+# Dependencies: Python 3.6+, HP-16C emulator modules (stack, base_conversion, f_mode, g_mode, error)
 
 import stack
 import base_conversion

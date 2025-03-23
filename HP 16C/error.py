@@ -1,8 +1,9 @@
-"""
-error.py
-
-Custom exceptions for HP16C. Raised by stack or arithmetic code; caught by controller/UI.
-"""
+# error.py
+# Custom exceptions for the HP-16C emulator, raised by stack or arithmetic code and caught by the controller or UI.
+# Author: GlobeyCode
+# License: MIT
+# Date: 3/23/2025
+# Dependencies: Python 3.6+, HP-16C emulator modules (logging_config)
 
 from logging_config import logger
 

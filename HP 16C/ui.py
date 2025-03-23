@@ -1,9 +1,9 @@
-"""
-ui.py
-
-Builds the main window geometry, places the display, and creates button frames.
-Uses a grid layout for buttons based on BUTTONS_CONFIG.
-"""
+# ui.py
+# Builds the UI components for the HP-16C emulator, including the display and button grid.
+# Author: GlobeyCode
+# License: MIT
+# Date: 3/23/2025
+# Dependencies: Python 3.6+ with tkinter, HP-16C emulator modules (buttons, display, controller)
 
 import tkinter as tk
 import buttons

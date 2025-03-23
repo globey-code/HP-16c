@@ -1,9 +1,9 @@
-"""
-f_mode.py
-
-Consolidated button logic for HP-16C emulator:
-- f_mode_active, toggle_f_mode
-"""
+# f_mode.py
+# Consolidates button logic for the f-mode in the HP-16C emulator, handling operations like shifting, rotating, and masking.
+# Author: GlobeyCode
+# License: MIT
+# Date: 3/23/2025
+# Dependencies: Python 3.6+, HP-16C emulator modules (sys, os, buttons, stack, base_conversion, error, logging_config)
 
 import sys
 import os

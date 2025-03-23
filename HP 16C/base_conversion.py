@@ -1,20 +1,39 @@
-"""
-base_conversion.py
-
-Handles base conversion for the HP-16C emulator (DEC, HEX, BIN, OCT).
-"""
+# base_conversion.py
+# Handles base conversion for the HP-16C emulator (DEC, HEX, BIN, OCT).
+# Author: GlobeyCode
+# License: MIT
+# Date: 3/23/2025
+# Dependencies: Python 3.6+, HP-16C emulator modules (stack)
 
 import stack
 from logging_config import logger
 
 def interpret_in_base(string_value, base):
-    """Interpret a string value in the specified base."""
     if not string_value:
         return 0
     
     try:
         if base == "DEC":
-            result = int(string_value)
+            val = int(string_value)
+            complement_mode = stack.get_complement_mode()
+            word_size = stack.get_word_size()
+            mask = (1 << word_size) - 1
+            if complement_mode == "UNSIGNED":
+                if val < 0:
+                    raise ValueError("Negative numbers not allowed in unsigned mode")
+                result = val & mask
+            elif complement_mode == "1S":
+                if val < 0:
+                    magnitude = -val
+                    result = (~magnitude) & mask
+                else:
+                    result = val & mask
+            else:  # 2S
+                if val < 0:
+                    result = (1 << word_size) + val
+                    result &= mask
+                else:
+                    result = val & mask
         elif base == "HEX":
             result = int(string_value, 16)
         elif base == "BIN":
@@ -47,7 +66,7 @@ def format_in_current_base(value, base, pad=False):
             result = format(value, 'o') if value != 0 else '0'
     elif base == "DEC":
         complement_mode = stack.get_complement_mode()
-        if complement_mode in {"1S", "2S"} and value & (1 << (word_size - 1)):
+        if complement_mode in {"1S", "2S"} and value & (1 << (word_size - 1)):  # Check if MSB is set
             if complement_mode == "1S":
                 signed_val = -((~value) & mask)
             else:  # 2S

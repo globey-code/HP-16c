@@ -1,9 +1,9 @@
-﻿"""
-stack.py
-
-Implements a 3-level stack (Y, Z, T) plus display entry (X) for the HP-16C emulator.
-Matches HP-16C stack behavior per Owner's Handbook.
-"""
+﻿# stack.py
+# Implements the stack for the HP-16C emulator, including push, pop, and various bit operations.
+# Author: GlobeyCode
+# License: MIT
+# Date: 3/23/2025
+# Dependencies: Python 3.6+, HP-16C emulator modules (arithmetic, error)
 
 from arithmetic import add, subtract, multiply, divide
 from error import (

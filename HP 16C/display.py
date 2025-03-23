@@ -1,14 +1,16 @@
-"""
-display.py
-
-Pure UI component that shows the current entry, mode, and stack content.
-Matches HP-16C display behavior per Owner's Handbook.
-"""
+# display.py
+# Pure UI component that shows the current entry, mode, and stack content.
+# Matches HP-16C display behavior per Owner's Handbook.
+# Author: GlobeyCode
+# License: MIT
+# Date: 3/23/2025
+# Dependencies: Python 3.6+, HP-16C emulator modules (tkinter, stack, traceback, error)
 
 import tkinter as tk
 import tkinter.font as tkFont
 import stack
 import traceback
+import error
 from base_conversion import interpret_in_base, format_in_current_base  # Updated import
 from logging_config import logger
 
@@ -83,7 +85,7 @@ class Display:
     def set_entry(self, entry, raw=False):
         """Set the display entry, formatting based on mode."""
         logger.info(f"Setting entry: value={entry}, raw={raw}")
-        
+    
         # Prevent updates while an error is displayed, unless it's a raw update
         if self.is_error_displayed and not raw:
             logger.info("Ignoring update while error is displayed")
@@ -115,14 +117,15 @@ class Display:
             if "." not in entry_str:
                 entry_str += ".0"
             anchor = "w"
+            self.current_value = val
         else:
             val_int = stack.apply_word_size(int(val))
             entry_str = format_in_current_base(val_int, self.mode, pad=False)
             anchor = "e"
+            self.current_value = val_int
 
         # Update the display
         self.current_entry = entry_str
-        self.current_value = val if self.mode == "FLOAT" else val_int
         self.widget.config(text=entry_str, anchor=anchor)
         logger.info(f"Entry set: {entry_str}, value={self.current_value}")
         self.is_error_displayed = False

@@ -29,6 +29,7 @@
     <Compile Include="buttons.py" />
     <Compile Include="button_config.py" />
     <Compile Include="f_mode.py" />
+    <Compile Include="tests\chs_stress_test.py" />
     <Compile Include="tests\f_mode_rmd_xor_test.py" />
     <Compile Include="g_mode.py" />
     <Compile Include="tests\configuration.py" />

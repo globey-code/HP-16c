@@ -1,8 +1,9 @@
-"""
-main.pyw
-
-The main entry point. Builds the UI, sets up the controller, and binds buttons.
-"""
+# main.pyw
+# Main entry point for the HP-16C emulator, responsible for building the UI, setting up the controller, and binding buttons.
+# Author: GlobeyCode
+# License: MIT
+# Date: 3/23/2025
+# Dependencies: Python 3.6+ with tkinter, HP-16C emulator modules (ui, controller, buttons, logging_config)
 
 import tkinter as tk
 import tkinter.font as tkFont

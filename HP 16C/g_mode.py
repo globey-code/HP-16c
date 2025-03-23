@@ -1,9 +1,9 @@
-﻿"""
-g_mode.py
-
-Consolidated button logic for HP-16C emulator:
-- g_mode_active, toggle_g_mode
-"""
+﻿# g_mode.py
+# Consolidates button logic for the g-mode in the HP-16C emulator, handling operations like left justification, reciprocal, and flag management.
+# Author: GlobeyCode
+# License: MIT
+# Date: 3/23/2025
+# Dependencies: Python 3.6+, HP-16C emulator modules (sys, os, stack, base_conversion, buttons, error, logging_config)
 
 import sys
 import os

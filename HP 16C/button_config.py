@@ -1,10 +1,9 @@
-﻿"""
-button_config.py
-
-Layout data for all buttons using a dynamic grid system (row, col).
-Each button is defined with row and column indices instead of absolute x, y coordinates.
-Width and height remain as pixel values for consistency with the original design.
-"""
+﻿# button_config.py
+# Defines the layout configuration for all buttons in the HP-16C emulator using a grid system.
+# Author: GlobeyCode
+# License: MIT
+# Date: 3/23/2025
+# Dependencies: Python 3.6+
 
 BUTTONS_CONFIG = [
     # COLUMN 0 (leftmost column, originally x=0)
