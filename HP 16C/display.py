@@ -37,7 +37,7 @@ class Display:
         self.error_displayed = False
         self.result_displayed = False
         self.show_stack = False
-        self.last_stack_info = None
+        self.last_stack_info = ""
 
         # Set up the font
         if font is None:
@@ -174,13 +174,15 @@ class Display:
         self.widget.config(text=self.current_entry)
 
     def update_stack_content(self):
-        """Update the stack content display with word size, complement mode, and carry flag."""
+        """Update the stack content display with word size, complement mode, and carry flag, only if changed."""
         complement_mode = stack.get_complement_mode()
         word_size = stack.get_word_size()
         carry_flag = stack.get_carry_flag()
         complement_code = {"UNSIGNED": "00", "1S": "01", "2S": "02"}
         comp_str = complement_code.get(complement_mode, "00")
         stack_info = f"{comp_str}-{word_size:02d}-{carry_flag:04d}"
+    
+        # Only update if the info has changed
         if stack_info != self.last_stack_info:
             self.word_size_label.config(text=stack_info)
             logger.info(f"Stack info updated: {stack_info}")

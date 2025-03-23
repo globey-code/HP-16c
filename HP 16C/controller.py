@@ -38,22 +38,23 @@ class HP16CController:
         return (1 << word_size) - 1
 
     def enter_digit(self, digit):
-        """Enter a digit, lifting the stack only when stack_lift_enabled and starting a new entry."""
+        """Enter a digit, lifting the stack only when starting a new entry and appending subsequent digits."""
         logger.info(f"Entering digit: {digit}")
         digit = digit.upper()
         if digit not in VALID_CHARS[self.display.mode]:
             logger.info(f"Ignoring invalid digit {digit} for base {self.display.mode}")
             return
     
-        # Lift stack only at the start of a new entry if stack lift is enabled
+        # Lift stack and clear entry only at the start of a new entry
         if not self.is_user_entry and self.stack_lift_enabled:
             stack.stack_lift()  # Push X to Y, Y to Z, Z to T
-            self.stack_lift_enabled = False  # Disable stack lift after lifting
+            self.stack_lift_enabled = False
             self.display.clear_entry()
-        elif not self.is_user_entry:
-            # If not lifting, clear the entry to start fresh
+            self.result_displayed = False  # Reset result_displayed here
+        elif self.result_displayed:  # Clear after a result (e.g., WSIZE)
             self.display.clear_entry()
-
+            self.result_displayed = False
+    
         # Validate digit based on the current mode
         if self.display.mode == "BIN":
             if len(self.display.raw_value) >= stack.get_word_size():
@@ -287,6 +288,7 @@ class HP16CController:
         if self.stack_display:
             y, z, t = [format_in_current_base(val, self.display.mode) for val in stack._stack[:3]]
             self.stack_display.config(text=f"Y: {y} Z: {z} T: {t}")
+        self.display.update_stack_content()  # Ensure word_size_label stays current
 
     def shift_left(self):
         """Shift the top stack value left."""
@@ -520,14 +522,22 @@ class HP16CController:
             return False
 
     def set_word_size(self, bits):
-        """Set the word size and update displays."""
+        """Set the word size and revert X to previous stack value."""
         logger.info(f"Setting word size: {bits}")
         try:
+            old_x = stack.peek()
             stack.set_word_size(bits)
+            if stack._stack[0] != old_x:
+                stack._x_register = stack._stack[0]
+            else:
+                stack._x_register = 0
+            self.display.update_stack_content()
             self.update_stack_display()
-            top_val = stack.peek()
-            self.display.set_entry(format_in_current_base(top_val, self.display.mode))
-            self.display.raw_value = str(top_val)
+            self.display.set_entry(format_in_current_base(stack.peek(), self.display.mode))
+            self.display.raw_value = "0"  # Reset raw_value for new entry
+            self.is_user_entry = False  # Ensure next digit starts fresh
+            self.result_displayed = True  # Mark as result to clear on next digit
+            self.stack_lift_enabled = True
             return True
         except HP16CError as e:
             self.handle_error(e)

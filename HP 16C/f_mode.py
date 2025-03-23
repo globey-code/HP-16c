@@ -168,7 +168,8 @@ def action_wsize(display_widget, controller_obj):
         if bits == 0:
             bits = 64
         if controller_obj.set_word_size(bits):
-            display_widget.clear_entry()
+            # No need to clear_entry() here; set_word_size handles display
+            pass
     except ValueError:
         controller_obj.handle_error(IncorrectWordSizeError())
 
