@@ -61,13 +61,12 @@ def peek():
     return _x_register
 
 def roll_down():
-    """Rotate stack downward: T→X, X→Y, Y→Z, Z→T."""
-    global _x_register
-    new_x = _stack[2]          # T → X
-    _stack[2] = _stack[1]      # Z → T
-    _stack[1] = _stack[0]      # Y → Z
-    _stack[0] = _x_register    # X → Y
-    _x_register = new_x
+    """Roll down the stack: Y→X, Z→Y, T→Z, X→T"""
+    global _x_register, _stack
+    # Perform the downward rotation: Y becomes X, Z becomes Y, T becomes Z, X becomes T
+    old_x = _x_register
+    _x_register = _stack[0]  # Y moves to X
+    _stack = [_stack[1], _stack[2], old_x]  # Z→Y, T→Z, X→T
     logger.info(f"Stack rolled down: X={_x_register}, stack={_stack}")
 
 def perform_operation(op):
@@ -369,3 +368,24 @@ def recall_i():
     """Push the I register value into X."""
     push(_i_register)
     logger.info(f"Recalled I register: {_i_register}, X={_x_register}, stack={_stack}")
+
+
+### g-mode functions ###
+
+def roll_up():
+    """Rotate stack upward: X→Y, Y→Z, Z→T, T→X."""
+    global _x_register
+    temp = _stack[2]
+    _stack[2] = _stack[1]
+    _stack[1] = _stack[0]
+    _stack[0] = _x_register
+    _x_register = temp
+    logger.info(f"Stack rolled up: X={_x_register}, stack={_stack}")
+
+def stack_lift():
+    """Lift the stack: T = Z, Z = Y, Y = X, X remains unchanged."""
+    global _stack, _x_register
+    _stack[2] = _stack[1]  # T = Z
+    _stack[1] = _stack[0]  # Z = Y
+    _stack[0] = _x_register  # Y = X
+    logger.info(f"Stack lifted: X={_x_register}, stack={_stack}")

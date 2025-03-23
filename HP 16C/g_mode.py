@@ -1,4 +1,4 @@
-"""
+﻿"""
 g_mode.py
 
 Consolidated button logic for HP-16C emulator:
@@ -64,6 +64,28 @@ def action_test_flag(display_widget, controller_obj):
     result = controller_obj.test_flag("CF")
     display_widget.set_entry(str(result))
 
+def action_r_up(display_widget, controller_obj):
+    """Rotate stack upward (R↑) to match real HP-16C behavior."""
+    if controller_obj.is_user_entry:
+        # Commit the pending entry to X without lifting the stack
+        entry = controller_obj.display.raw_value
+        val = base_conversion.interpret_in_base(entry, controller_obj.display.mode)
+        stack._x_register = val  # Set X to the entered value
+        controller_obj.is_user_entry = False
+    
+    # Perform the roll-up operation
+    stack.roll_up()
+    
+    # Update the display with the new X value
+    top_val = stack.peek()
+    display_widget.set_entry(base_conversion.format_in_current_base(top_val, display_widget.mode))
+    controller_obj.update_stack_display()
+    
+    # Enable stack lift after R↑
+    controller_obj.stack_lift_enabled = True  # R↑ enables stack lift
+    controller_obj.result_displayed = True
+    logger.info("Performed R↑: stack rotated up")
+
 G_FUNCTIONS = {
     "LJ": action_lj,
     "1/X": action_reciprocal,
@@ -73,6 +95,7 @@ G_FUNCTIONS = {
     "SF": action_set_flag,
     "CF": action_clear_flag,
     "F?": action_test_flag,
+    "R↑": action_r_up,
 }
 
 def g_action(button, display_widget, controller_obj):

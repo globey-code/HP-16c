@@ -15,16 +15,19 @@ from error import (
     HP16CError, StackUnderflowError, InvalidOperandError, 
     ShiftExceedsWordSizeError, InvalidBitOperationError
 )
-from base_conversion import format_in_current_base, interpret_in_base  # Updated imports
+from base_conversion import format_in_current_base, interpret_in_base
 from logging_config import logger
 
 class HP16CController:
-    def __init__(self, display, buttons):
+    def __init__(self, display, buttons, stack_display):
+        """Initialize the controller with display, buttons, and stack display widgets."""
         logger.info("Initializing HP16CController")
         self.display = display
         self.buttons = buttons
+        self.stack_display = stack_display
         self.is_user_entry = False
-        self.result_displayed = True
+        self.result_displayed = True  # Still used for display state, but not for stack lifting
+        self.stack_lift_enabled = True  # New flag: stack lift enabled initially
         self.post_enter = False
         self.f_mode_active = False
         self.g_mode_active = False
@@ -35,16 +38,23 @@ class HP16CController:
         return (1 << word_size) - 1
 
     def enter_digit(self, digit):
-        """Enter a digit, validating it doesn't exceed the maximum value."""
+        """Enter a digit, lifting the stack only when stack_lift_enabled and starting a new entry."""
         logger.info(f"Entering digit: {digit}")
         digit = digit.upper()
         if digit not in VALID_CHARS[self.display.mode]:
             logger.info(f"Ignoring invalid digit {digit} for base {self.display.mode}")
             return
-        if self.result_displayed:
+    
+        # Lift stack only at the start of a new entry if stack lift is enabled
+        if not self.is_user_entry and self.stack_lift_enabled:
+            stack.stack_lift()  # Push X to Y, Y to Z, Z to T
+            self.stack_lift_enabled = False  # Disable stack lift after lifting
             self.display.clear_entry()
-            self.result_displayed = False
+        elif not self.is_user_entry:
+            # If not lifting, clear the entry to start fresh
+            self.display.clear_entry()
 
+        # Validate digit based on the current mode
         if self.display.mode == "BIN":
             if len(self.display.raw_value) >= stack.get_word_size():
                 logger.info(f"Ignoring digit {digit}: max digits ({stack.get_word_size()}) reached in binary")
@@ -68,8 +78,12 @@ class HP16CController:
                 logger.info(f"Invalid input {test_input} for base {self.display.mode}")
                 return
 
+        # Append digit, update X, and set user entry flag
         self.display.append_entry(digit)
+        val = interpret_in_base(self.display.raw_value, self.display.mode)
+        stack._x_register = val  # Update X immediately
         self.is_user_entry = True
+        self.update_stack_display()
 
     def toggle_mode(self, mode):
         """Toggle f or g mode, updating button appearance and bindings."""
@@ -82,9 +96,9 @@ class HP16CController:
             self.f_mode_active = False
             self.g_mode_active = False
             logger.info("Mode reset to normal")
-            # Only update display if no error is being displayed
             if not self.display.is_error_displayed:
                 self.display.set_entry(stack.peek())
+                self.result_displayed = True
             else:
                 logger.info("Display update deferred due to active error")
             return
@@ -123,6 +137,7 @@ class HP16CController:
         logger.info(f"Mode set: {mode}")
 
     def _bind_mode_action(self, btn, mode):
+        """Bind mode-specific actions to button clicks."""
         def on_click(e, b=btn):
             if mode == "f":
                 handled = f_action(b, self.display, self)
@@ -136,74 +151,86 @@ class HP16CController:
                 w.bind("<Button-1>", on_click)
 
     def enter_value(self):
-        """Handle the ENTER key press to push the current value or duplicate X."""
-        logger.info("Entering value")
+        """Handle the ENTER key press to lift the stack and duplicate X, then disable stack lift."""
+        logger.info("Entering value (lifting stack)")
         if self.is_user_entry:
             entry = self.display.raw_value
             val = interpret_in_base(entry, self.display.mode)
-            stack.push(val)
+            stack._x_register = val
             self.is_user_entry = False
-        else:
-            stack.push(stack.peek())
-        self.display.set_entry(stack.peek())
+        stack.stack_lift()
+        self.display.set_entry(format_in_current_base(stack.peek(), self.display.mode))
+        self.stack_lift_enabled = False  # ENTER disables stack lift
         self.result_displayed = True
         self.update_stack_display()
 
     def enter_operator(self, operator):
-        """Perform an operation, committing user entry if present."""
-        logger.info(f"Entering operator: {operator}")
-        if self.is_user_entry:
-            entry = self.display.raw_value
-            val = interpret_in_base(entry, self.display.mode)
-            stack.push(val)
-            self.is_user_entry = False
-            self.display.clear_entry()
-
+        """Handle operator input, setting stack_lift_enabled based on operation type."""
         if operator == "R↓":
+            if self.is_user_entry:
+                # Commit the pending entry to X
+                entry = self.display.raw_value
+                val = interpret_in_base(entry, self.display.mode)
+                stack._x_register = val
+                self.is_user_entry = False
+            # Perform roll down
+            logger.info(f"Before roll_down: X={stack.peek()}, stack={stack._stack}")
             stack.roll_down()
-            result = stack.peek()
-            self.display.set_entry(format_in_current_base(result, self.display.mode))
+            logger.info(f"After roll_down: X={stack.peek()}, stack={stack._stack}")
+            # Update display
+            self.display.set_entry(format_in_current_base(stack.peek(), self.display.mode))
+            self.stack_lift_enabled = True  # R↓ enables stack lift
             self.result_displayed = True
             self.update_stack_display()
-            logger.info(f"Performed R↓: stack rotated down")
+        elif operator == "ENTER":  # Included for completeness, typically called via enter_value
+            self.enter_value()
         else:
+            if self.is_user_entry:
+                # Commit the pending entry by pushing it onto the stack
+                entry = self.display.raw_value
+                val = interpret_in_base(entry, self.display.mode)
+                stack.push(val)
+                self.is_user_entry = False
+                self.display.clear_entry()
+        
             try:
-                y = stack.pop()
-                x = stack.pop()
-                if operator == "+":
-                    result = stack.add(x, y)
-                elif operator == "-":
-                    result = stack.subtract(x, y)
-                elif operator == "*":
-                    result = stack.multiply(x, y)
-                elif operator == "/":
-                    result = stack.divide(x, y)
-                elif operator == "AND":
-                    result = x & y
-                elif operator == "OR":
-                    result = x | y
-                elif operator == "XOR":
-                    result = x ^ y
+                if operator in {"+", "-", "*", "/", "AND", "OR", "XOR", "RMD"}:
+                    y = stack.pop()
+                    x = stack.pop()
+                    if operator == "+":
+                        result = stack.add(x, y)
+                    elif operator == "-":
+                        result = stack.subtract(x, y)
+                    elif operator == "*":
+                        result = stack.multiply(x, y)
+                    elif operator == "/":
+                        result = stack.divide(x, y)
+                    elif operator == "AND":
+                        result = x & y
+                    elif operator == "OR":
+                        result = x | y
+                    elif operator == "XOR":
+                        result = x ^ y
+                    elif operator == "RMD":
+                        result = x % y
+                    stack.push(result)
                 elif operator == "NOT":
-                    result = ~x
-                    stack.push(y)
-                elif operator == "RMD":
-                    result = x % y
+                    x = stack.pop()
+                    result = ~x & ((1 << stack.get_word_size()) - 1)
+                    stack.push(result)
                 else:
-                    stack.push(x)
-                    stack.push(y)
                     raise InvalidOperandError(f"Unsupported operator: {operator}")
-                stack.push(result)
                 self.display.set_entry(format_in_current_base(result, self.display.mode))
                 self.display.raw_value = str(result)
                 logger.info(f"Performed {operator}: result={result}")
+                self.stack_lift_enabled = True  # Arithmetic/logical ops enable stack lift
+                self.result_displayed = True
             except HP16CError as e:
                 self.handle_error(e)
             except Exception as e:
                 self.handle_error(HP16CError(str(e)))
-
+    
         self.post_enter = False
-        self.result_displayed = operator != "R↓"
 
     def change_sign(self):
         """Change the sign of the current value based on complement mode."""
@@ -228,11 +255,10 @@ class HP16CController:
         logger.info(f"Sign changed: {negated}")
 
     def handle_error(self, exc: HP16CError):
+        """Handle errors by displaying them temporarily."""
         logger.info(f"Handling error: {exc.display_message}")
-        # Save the current display value before showing the error
         original_value = self.display.current_entry
         self.display.set_entry(exc.display_message, raw=True)
-        # Schedule to restore the original value after 3 seconds
         self.display.widget.after(3000, lambda: self.display.set_entry(original_value))
 
     def pop_value(self):
@@ -250,15 +276,17 @@ class HP16CController:
             self.handle_error(e)
             return 0
 
-    def update_stack_display(self):
-        """Update the stack content on the display."""
-        self.display.update_stack_content()
-
     def push_value(self, value):
         """Push a value onto the stack and update the display."""
         logger.info(f"Pushing value: {value}")
         stack.push(value)
         self.update_stack_display()
+
+    def update_stack_display(self):
+        """Update the stack display with Y, Z, T register values."""
+        if self.stack_display:
+            y, z, t = [format_in_current_base(val, self.display.mode) for val in stack._stack[:3]]
+            self.stack_display.config(text=f"Y: {y} Z: {z} T: {t}")
 
     def shift_left(self):
         """Shift the top stack value left."""
@@ -492,6 +520,7 @@ class HP16CController:
             return False
 
     def set_word_size(self, bits):
+        """Set the word size and update displays."""
         logger.info(f"Setting word size: {bits}")
         try:
             stack.set_word_size(bits)
