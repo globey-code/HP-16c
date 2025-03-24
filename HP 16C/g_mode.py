@@ -86,6 +86,10 @@ def action_r_up(display_widget, controller_obj):
     controller_obj.result_displayed = True
     logger.info("Performed R↑: stack rotated up")
 
+def action_clx(display_widget, controller_obj):
+    """Clear the X register (CLX) in g-mode."""
+    controller_obj.clear_x()
+
 G_FUNCTIONS = {
     "LJ": action_lj,
     "1/X": action_reciprocal,
@@ -96,6 +100,7 @@ G_FUNCTIONS = {
     "CF": action_clear_flag,
     "F?": action_test_flag,
     "R↑": action_r_up,
+    "CLX": action_clx,
 }
 
 def g_action(button, display_widget, controller_obj):

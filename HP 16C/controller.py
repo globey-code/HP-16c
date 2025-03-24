@@ -7,6 +7,7 @@
 
 import stack
 import buttons
+import base_conversion
 from buttons import VALID_CHARS
 from buttons import revert_to_normal
 from f_mode import f_action
@@ -148,6 +149,7 @@ class HP16CController:
     def enter_operator(self, operator):
         logger.info(f"Entering operator: {operator}, X={stack.peek()}, stack={stack._stack}")
 
+        # Handle user entry before processing the operator
         if self.is_user_entry:
             entry = self.display.raw_value
             val = interpret_in_base(entry, self.display.mode)
@@ -155,16 +157,19 @@ class HP16CController:
             self.is_user_entry = False
             self.display.clear_entry()
 
+        # Skip operation if an error is currently displayed
         if self.display.is_error_displayed:
             logger.info("Operation skipped due to existing error state")
             return
 
         try:
             if operator in {"+", "-", "*", "/", "AND", "OR", "XOR", "RMD"}:
+                # Check for sufficient operands
                 if len(stack._stack) < 1:
                     raise StackUnderflowError("Insufficient operands on stack")
                 y = stack._stack[0]  # Y from stack
                 x = stack._x_register  # X from register
+                # Perform the operation
                 if operator == "+":
                     result = add(x, y)
                 elif operator == "-":
@@ -206,27 +211,15 @@ class HP16CController:
             else:
                 raise InvalidOperandError(f"Unsupported operator: {operator}")
         except HP16CError as e:
-            self.handle_error(e)
-            self.display.set_error()
+            # Display the error message using the new set_error method
+            self.display.set_error(str(e))
+            logger.info(f"Error occurred: {e}")
         except Exception as e:
-            self.handle_error(HP16CError(str(e)))
-            self.display.set_error()
+            # Handle unexpected errors
+            self.display.set_error(str(e))
+            logger.info(f"Unexpected error: {e}")
 
         self.post_enter = False
-
-    def change_sign(self):
-        val = self.display.current_value or 0
-        complement_mode = stack.get_complement_mode()
-        word_size = stack.get_word_size()
-        mask = (1 << word_size) - 1
-        if complement_mode == "UNSIGNED":
-            negated = (-val) & mask
-        elif complement_mode == "1S":
-            negated = (~val) & mask
-        else:  # 2S
-            negated = ((~val) + 1) & mask
-        self.display.set_entry(negated)
-        stack._x_register = negated
 
     def handle_error(self, exc: HP16CError):
         logger.info(f"Handling error: {exc.display_message}")
@@ -259,10 +252,10 @@ class HP16CController:
             self.stack_display.config(text=f"Y: {y} Z: {z} T: {t}")
         self.display.update_stack_content()
 
-    def shift_left(self):
-        logger.info("Shifting left")
+    def count_bits(self):
+        logger.info("Counting bits")
         try:
-            stack.shift_left()
+            stack.count_bits()
             top_val = stack.peek()
             self.display.set_entry(format_in_current_base(top_val, self.display.mode))
             self.display.raw_value = str(top_val)
@@ -270,10 +263,181 @@ class HP16CController:
         except HP16CError as e:
             self.handle_error(e)
 
-    def shift_right(self):
-        logger.info("Shifting right")
+    def set_bit(self, bit_index):
+        logger.info(f"Setting bit: {bit_index}")
         try:
-            stack.shift_right()
+            stack.set_bit(bit_index)
+            top_val = stack.peek()
+            self.display.set_entry(format_in_current_base(top_val, self.display.mode))
+            self.display.raw_value = str(top_val)
+            self.update_stack_display()
+        except HP16CError as e:
+            self.handle_error(e)
+
+    def clear_bit(self, bit_index):
+        logger.info(f"Clearing bit: {bit_index}")
+        try:
+            stack.clear_bit(bit_index)
+            top_val = stack.peek()
+            self.display.set_entry(format_in_current_base(top_val, self.display.mode))
+            self.display.raw_value = str(top_val)
+            self.update_stack_display()
+        except HP16CError as e:
+            self.handle_error(e)
+
+    def test_bit(self, bit_index):
+        logger.info(f"Testing bit: {bit_index}")
+        try:
+            result = stack.test_bit(bit_index)
+            self.update_stack_display()
+            return result
+        except HP16CError as e:
+            self.handle_error(e)
+            return 0
+
+    def absolute(self):
+        logger.info("Computing absolute value")
+        try:
+            stack.absolute()
+            top_val = stack.peek()
+            self.display.set_entry(format_in_current_base(top_val, self.display.mode))
+            self.display.raw_value = str(top_val)
+            self.update_stack_display()
+        except HP16CError as e:
+            self.handle_error(e)
+
+
+
+# Normal Mode Functions 
+
+    def roll_down(self):
+        if self.is_user_entry:
+            val = interpret_in_base(self.display.raw_value, self.display.mode)
+            stack._x_register = val  # Changed from self.stack to stack
+            self.is_user_entry = False
+
+        # Roll the stack down: X → T, Y → X, Z → Y, T → Z
+        old_x = stack._x_register  # Changed from self.stack to stack
+        stack._x_register = stack._stack[0]  # Y → X
+        stack._stack[0] = stack._stack[1]    # Z → Y
+        stack._stack[1] = stack._stack[2]    # T → Z
+        stack._stack[2] = old_x              # X → T
+
+        # Update the display with the new X value
+        self.display.set_entry(format_in_current_base(stack._x_register, self.display.mode))
+
+    def swap_xy(self):
+        # If user is entering a value, interpret and set it to X register
+        if self.is_user_entry:
+            val = interpret_in_base(self.display.raw_value, self.display.mode)
+            stack._x_register = val  # Update X register using global stack
+            self.is_user_entry = False
+
+        # Perform the swap between X and Y
+        temp = stack._x_register        # Store current X
+        stack._x_register = stack._stack[0]  # Move Y to X
+        stack._stack[0] = temp          # Move old X to Y
+
+        # Update the display with the new X value
+        self.display.set_entry(format_in_current_base(stack._x_register, self.display.mode))
+
+    def change_sign(self):
+        val = self.display.current_value or 0
+        complement_mode = stack.get_complement_mode()
+        word_size = stack.get_word_size()
+        mask = (1 << word_size) - 1
+        if complement_mode == "UNSIGNED":
+            negated = (-val) & mask
+        elif complement_mode == "1S":
+            negated = (~val) & mask
+        else:  # 2S
+            negated = ((~val) + 1) & mask
+        self.display.set_entry(negated)
+        stack._x_register = negated
+
+
+
+# f Mode Functions
+ 
+    def set_word_size(self, bits):
+        logger.info(f"Setting word size: {bits}")
+        try:
+            old_x = stack.peek()
+            stack.set_word_size(bits)
+            if stack._stack[0] != old_x:
+                stack._x_register = stack._stack[0]
+            else:
+                stack._x_register = 0
+            self.display.update_stack_content()
+            self.update_stack_display()
+            self.display.set_entry(format_in_current_base(stack.peek(), self.display.mode))
+            self.display.raw_value = "0"
+            self.is_user_entry = False
+            self.result_displayed = True
+            self.stack_lift_enabled = True
+            return True
+        except HP16CError as e:
+            self.handle_error(e)
+            return False
+
+    def set_complement_mode(self, mode):
+        logger.info(f"Setting complement mode: {mode}")
+        try:
+            stack.set_complement_mode(mode)
+            self.update_stack_display()
+            top_val = stack.peek()
+            self.display.set_entry(format_in_current_base(top_val, self.display.mode))
+            self.display.raw_value = str(top_val)
+        except HP16CError as e:
+            self.handle_error(e)
+
+    def recall_i(self):
+        logger.info("Recalling I register")
+        try:
+            stack.recall_i()
+            top_val = stack.peek()
+            self.display.set_entry(format_in_current_base(top_val, self.display.mode))
+            self.display.raw_value = str(top_val)
+            self.update_stack_display()
+        except HP16CError as e:
+            self.handle_error(e)
+
+    def exchange_x_with_i(self):
+            logger.info("Exchanging X with I register")
+            try:
+                top_val = stack.pop()
+                i_val = stack.get_i()
+                stack.push(i_val, duplicate_x=False)
+                stack.store_in_i(top_val)
+                self.display.set_entry(format_in_current_base(stack.peek(), self.display.mode))
+                self.display.raw_value = str(stack.peek())
+                self.update_stack_display()
+            except HP16CError as e:
+                self.handle_error(e)
+
+    def store_in_i(self):
+        logger.info("Storing in I register")
+        try:
+            stack.store_in_i()
+            self.update_stack_display()
+        except HP16CError as e:
+            self.handle_error(e)
+
+    def double_remainder(self):
+        logger.info("Double remainder")
+        try:
+            stack.double_remainder()
+            top_val = stack.peek()
+            self.display.set_entry(format_in_current_base(top_val, self.display.mode))
+            self.display.raw_value = str(top_val)
+            self.update_stack_display()
+        except HP16CError as e:
+            self.handle_error(e)
+
+    def mask_right(self, bits):
+        logger.info(f"Masking right: {bits} bits")
+        try:
+            stack.mask_right(bits)
             top_val = stack.peek()
             self.display.set_entry(format_in_current_base(top_val, self.display.mode))
             self.display.raw_value = str(top_val)
@@ -336,10 +500,10 @@ class HP16CController:
         except HP16CError as e:
             self.handle_error(e)
 
-    def mask_right(self, bits):
-        logger.info(f"Masking right: {bits} bits")
+    def shift_left(self):
+        logger.info("Shifting left")
         try:
-            stack.mask_right(bits)
+            stack.shift_left()
             top_val = stack.peek()
             self.display.set_entry(format_in_current_base(top_val, self.display.mode))
             self.display.raw_value = str(top_val)
@@ -347,10 +511,10 @@ class HP16CController:
         except HP16CError as e:
             self.handle_error(e)
 
-    def count_bits(self):
-        logger.info("Counting bits")
+    def shift_right(self):
+        logger.info("Shifting right")
         try:
-            stack.count_bits()
+            stack.shift_right()
             top_val = stack.peek()
             self.display.set_entry(format_in_current_base(top_val, self.display.mode))
             self.display.raw_value = str(top_val)
@@ -358,60 +522,20 @@ class HP16CController:
         except HP16CError as e:
             self.handle_error(e)
 
-    def set_bit(self, bit_index):
-        logger.info(f"Setting bit: {bit_index}")
-        try:
-            stack.set_bit(bit_index)
-            top_val = stack.peek()
-            self.display.set_entry(format_in_current_base(top_val, self.display.mode))
-            self.display.raw_value = str(top_val)
-            self.update_stack_display()
-        except HP16CError as e:
-            self.handle_error(e)
 
-    def clear_bit(self, bit_index):
-        logger.info(f"Clearing bit: {bit_index}")
-        try:
-            stack.clear_bit(bit_index)
-            top_val = stack.peek()
-            self.display.set_entry(format_in_current_base(top_val, self.display.mode))
-            self.display.raw_value = str(top_val)
-            self.update_stack_display()
-        except HP16CError as e:
-            self.handle_error(e)
 
-    def test_bit(self, bit_index):
-        logger.info(f"Testing bit: {bit_index}")
-        try:
-            result = stack.test_bit(bit_index)
-            self.update_stack_display()
-            return result
-        except HP16CError as e:
-            self.handle_error(e)
-            return 0
-
-    def left_justify(self):
-        logger.info("Left justifying")
-        try:
-            stack.left_justify()
-            top_val = stack.peek()
-            self.display.set_entry(format_in_current_base(top_val, self.display.mode))
-            self.display.raw_value = str(top_val)
-            self.update_stack_display()
-        except HP16CError as e:
-            self.handle_error(e)
-
-    def absolute(self):
-        logger.info("Computing absolute value")
-        try:
-            stack.absolute()
-            top_val = stack.peek()
-            self.display.set_entry(format_in_current_base(top_val, self.display.mode))
-            self.display.raw_value = str(top_val)
-            self.update_stack_display()
-        except HP16CError as e:
-            self.handle_error(e)
-
+# g Mode Functions    
+# CLX
+    def clear_x(self):
+        """Clear the X register to 0 and enable stack lift."""
+        stack._x_register = 0
+        self.display.set_entry("0")
+        self.display.raw_value = "0"
+        self.is_user_entry = False
+        self.stack_lift_enabled = True
+        self.update_stack_display()
+        logger.info("Cleared X register")
+# DBL×
     def double_multiply(self):
         logger.info("Double multiplying")
         try:
@@ -422,7 +546,7 @@ class HP16CController:
             self.update_stack_display()
         except HP16CError as e:
             self.handle_error(e)
-
+# DBL÷
     def double_divide(self):
         logger.info("Double dividing")
         try:
@@ -433,18 +557,31 @@ class HP16CController:
             self.update_stack_display()
         except HP16CError as e:
             self.handle_error(e)
-
-    def double_remainder(self):
-        logger.info("Double remainder")
+# LJ
+    def left_justify(self):
+        """
+        Perform left justification on the X register, handling user entry and display updates.
+        """
+        # If there's an ongoing user entry, commit it to the X register
+        if self.is_user_entry:
+            entry = self.display.raw_value  # Current display string
+            val = interpret_in_base(entry, self.display.mode)  # Convert to integer based on display mode
+            self.stack._x_register = val
+            self.is_user_entry = False
+    
+        # Perform the left justify operation
         try:
-            stack.double_remainder()
-            top_val = stack.peek()
+            self.stack.left_justify()
+            top_val = self.stack.peek()  # Get the new X register value
+            # Update the display with the result in the current base (e.g., hex, bin)
             self.display.set_entry(format_in_current_base(top_val, self.display.mode))
             self.display.raw_value = str(top_val)
-            self.update_stack_display()
-        except HP16CError as e:
+            self.update_stack_display()  # Refresh stack UI if present
+            self.stack_lift_enabled = True  # Enable stack lift for next entry
+            self.result_displayed = True  # Indicate a result is shown
+        except Exception as e:  # Replace HP16CError with appropriate exception if defined
             self.handle_error(e)
-
+# SF
     def set_flag(self, flag_type):
         logger.info(f"Setting flag: {flag_type}")
         try:
@@ -452,7 +589,7 @@ class HP16CController:
             self.update_stack_display()
         except HP16CError as e:
             self.handle_error(e)
-
+# CF
     def clear_flag(self, flag_type):
         logger.info(f"Clearing flag: {flag_type}")
         try:
@@ -460,7 +597,7 @@ class HP16CController:
             self.update_stack_display()
         except HP16CError as e:
             self.handle_error(e)
-
+# F?
     def test_flag(self, flag_type):
         logger.info(f"Testing flag: {flag_type}")
         try:
@@ -469,67 +606,3 @@ class HP16CController:
         except HP16CError as e:
             self.handle_error(e)
             return False
-
-    def set_word_size(self, bits):
-        logger.info(f"Setting word size: {bits}")
-        try:
-            old_x = stack.peek()
-            stack.set_word_size(bits)
-            if stack._stack[0] != old_x:
-                stack._x_register = stack._stack[0]
-            else:
-                stack._x_register = 0
-            self.display.update_stack_content()
-            self.update_stack_display()
-            self.display.set_entry(format_in_current_base(stack.peek(), self.display.mode))
-            self.display.raw_value = "0"
-            self.is_user_entry = False
-            self.result_displayed = True
-            self.stack_lift_enabled = True
-            return True
-        except HP16CError as e:
-            self.handle_error(e)
-            return False
-
-    def set_complement_mode(self, mode):
-        logger.info(f"Setting complement mode: {mode}")
-        try:
-            stack.set_complement_mode(mode)
-            self.update_stack_display()
-            top_val = stack.peek()
-            self.display.set_entry(format_in_current_base(top_val, self.display.mode))
-            self.display.raw_value = str(top_val)
-        except HP16CError as e:
-            self.handle_error(e)
-
-    def store_in_i(self):
-        logger.info("Storing in I register")
-        try:
-            stack.store_in_i()
-            self.update_stack_display()
-        except HP16CError as e:
-            self.handle_error(e)
-
-    def recall_i(self):
-        logger.info("Recalling I register")
-        try:
-            stack.recall_i()
-            top_val = stack.peek()
-            self.display.set_entry(format_in_current_base(top_val, self.display.mode))
-            self.display.raw_value = str(top_val)
-            self.update_stack_display()
-        except HP16CError as e:
-            self.handle_error(e)
-
-    def exchange_x_with_i(self):
-        logger.info("Exchanging X with I register")
-        try:
-            top_val = stack.pop()
-            i_val = stack.get_i()
-            stack.push(i_val, duplicate_x=False)
-            stack.store_in_i(top_val)
-            self.display.set_entry(format_in_current_base(stack.peek(), self.display.mode))
-            self.display.raw_value = str(stack.peek())
-            self.update_stack_display()
-        except HP16CError as e:
-            self.handle_error(e)

@@ -29,16 +29,9 @@
     <Compile Include="buttons.py" />
     <Compile Include="button_config.py" />
     <Compile Include="f_mode.py" />
-    <Compile Include="tests\chs_stress_test.py" />
-    <Compile Include="tests\f_mode_rmd_xor_test.py" />
     <Compile Include="g_mode.py" />
-    <Compile Include="tests\configuration.py" />
     <Compile Include="controller.py" />
     <Compile Include="logging_config.py" />
-    <Compile Include="tests\test_base_conversion.py" />
-    <Compile Include="tests\test_shift_left.py" />
-    <Compile Include="tests\__init__.py" />
-    <Compile Include="tests\f_mode_row_1_test.py" />
     <Compile Include="ui.py" />
     <Compile Include="display.py" />
     <Compile Include="error.py" />
@@ -47,9 +40,6 @@
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="Global|PythonCore|3.13" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="tests\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

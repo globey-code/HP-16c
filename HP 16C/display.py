@@ -35,7 +35,8 @@ class Display:
         self.raw_value = "0"
         self.mode = "DEC"  # Base is managed here
         self.is_error_displayed = False  # Flag to protect error display
-        self.current_value = None
+        self.current_value = 0
+        self.raw_value = "0"
         self.error_displayed = False
         self.result_displayed = False
         self.show_stack = False
@@ -82,23 +83,36 @@ class Display:
         mode_map = {"HEX": "h", "DEC": "d", "OCT": "o", "BIN": "b", "FLOAT": "f"}
         return mode_map.get(mode, "d")
 
+    def set_error(self, error_message):
+            """Set the display to show an error message temporarily."""
+            self.is_error_displayed = True
+            self.widget.config(text=error_message, anchor="e")
+            logger.info(f"Error displayed: {error_message}")
+            # Schedule reset after 3 seconds
+            self.master.after(3000, self.reset_error)
+
+    def reset_error(self):
+        """Reset the display to the previous value after showing an error."""
+        if self.is_error_displayed:
+            self.is_error_displayed = False
+            self.set_entry(self.current_value)
+            logger.info("Error cleared, display reset to previous value")
+
     def set_entry(self, entry, raw=False):
         """Set the display entry, formatting based on mode."""
         logger.info(f"Setting entry: value={entry}, raw={raw}")
-    
-        # Prevent updates while an error is displayed, unless it's a raw update
-        if self.is_error_displayed and not raw:
-            logger.info("Ignoring update while error is displayed")
-            return
 
         # Handle raw display (e.g., for error messages)
         if raw:
-            self.current_entry = entry
             self.widget.config(text=entry, anchor="e")
             self.is_error_displayed = True
             logger.info(f"Raw entry set: {entry}")
-            logger.info("Scheduling reset in 3 seconds")
-            self.master.after(3000, lambda: self.clear_error())
+            self.master.after(3000, self.reset_error)
+            return
+
+        # Prevent updates while an error is displayed
+        if self.is_error_displayed:
+            logger.info("Ignoring update while error is displayed")
             return
 
         # Parse the input value
@@ -125,15 +139,14 @@ class Display:
             self.current_value = val_int
 
         # Update the display
-        self.current_entry = entry_str
         self.widget.config(text=entry_str, anchor=anchor)
         logger.info(f"Entry set: {entry_str}, value={self.current_value}")
         self.is_error_displayed = False
 
-    def clear_error(self):
-        """Clear the error state and reset the display."""
-        self.is_error_displayed = False
-        self.set_entry(0)
+    def clear_entry(self):
+        """Clear the current entry (example implementation)."""
+        self.raw_value = "0"
+        self.set_entry("0")
 
     def append_entry(self, ch):
         """Append a character to the current entry."""

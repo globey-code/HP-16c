@@ -36,7 +36,12 @@ def handle_normal_command_by_label(btn, display, controller_obj):
     label_text = main_label_widget.cget("text").replace("\n", "").strip().upper()
     logger.info(f"Handling normal command: {label_text}")
 
-    if label_text == "ENTER":
+
+    if label_text == "R↓":
+        controller_obj.roll_down()
+    elif label_text == "X><Y":
+        controller_obj.swap_xy()
+    elif label_text == "ENTER":
         controller_obj.enter_value()
     elif label_text.isdigit() or label_text in "ABCDEF":
         controller_obj.enter_digit(label_text)  # Pass digit as string
