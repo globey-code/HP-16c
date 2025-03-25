@@ -144,8 +144,47 @@ def action_toggle_program_run(display_widget, controller_obj):
     logger.info(f"Program mode: {controller_obj.program_mode}")
 
 def action_back_step(display_widget, controller_obj):
-    """Back Step (BST). Placeholder."""
-    logger.info("BST placeholder executed")
+    """Back Step (BST): Move back one step in program mode by removing the last instruction."""
+    if not controller_obj.program_mode:
+        logger.info("BST ignored: Not in program mode")
+        return
+
+    if controller_obj.program_memory:
+        # Remove the last instruction from program memory
+        removed_instruction = controller_obj.program_memory.pop()
+        step = len(controller_obj.program_memory)  # New step number after removal
+        
+        # Log the back step action
+        program_logger.info(f"BST: Removed step {step + 1:03d} - {removed_instruction}")
+        logger.info(f"BST executed: Removed '{removed_instruction}', new length={len(controller_obj.program_memory)}")
+        
+        # Update display to show the previous step or initial state
+        if controller_obj.program_memory:
+            last_instruction = controller_obj.program_memory[-1]
+            # Inline display code mapping
+            op_map = {"/": "10", "*": "20", "-": "30", "+": "40", ".": "48", "ENTER": "36"}
+            base_map = {"HEX": "23", "DEC": "24", "OCT": "25", "BIN": "26"}
+            if isinstance(last_instruction, str):
+                if last_instruction in op_map:
+                    display_code = op_map[last_instruction]
+                elif last_instruction in base_map:
+                    display_code = base_map[last_instruction]
+                elif last_instruction.startswith("LBL "):
+                    display_code = last_instruction.split()[1]  # Label digit/letter
+                elif last_instruction in "0123456789ABCDEFabcdef":
+                    display_code = last_instruction.upper()
+                else:
+                    display_code = str(last_instruction)
+            else:
+                display_code = str(last_instruction)
+            display_widget.set_entry((step, display_code), program_mode=True)
+        else:
+            # If program memory is now empty, show step 0
+            display_widget.set_entry((0, ""), program_mode=True)
+    else:
+        # Handle empty program memory
+        logger.info("BST: Program memory is already empty")
+        display_widget.set_entry((0, ""), program_mode=True)
 
 def action_roll_up(display_widget, controller_obj):
     """Rotate stack upward (R↑)."""

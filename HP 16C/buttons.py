@@ -10,7 +10,7 @@ import base_conversion
 import f_mode
 import g_mode
 from error import HP16CError
-from logging_config import logger
+from logging_config import logger, program_logger
 
 VALID_CHARS = {
     "BIN": set("01"), 
@@ -49,7 +49,7 @@ def handle_normal_command_by_label(btn, display, controller_obj):
     elif label_text in {"+", "-", "*", "/", "AND", "OR", "XOR", "NOT", "RMD", "."}:
         controller_obj.enter_operator(label_text)
     elif label_text == "BSP":
-        do_backspace(display)
+        handle_backspace(display, controller_obj)
     elif label_text in {"BIN", "OCT", "DEC", "HEX"}:
         controller_obj.enter_base_change(label_text)  # Route through controller
     elif label_text == "CHS":
@@ -126,14 +126,54 @@ def handle_command(cmd_name, btn, display, controller_obj):
     else:
         handle_normal_command_by_label(btn, display, controller_obj)
 
-def do_backspace(display_widget):
-    """Perform backspace operation on the display."""
-    logger.info("Performing backspace")
-    old_val = display_widget.raw_value
-    if old_val:
-        new_val = old_val[:-1]
-        display_widget.raw_value = new_val
-        display_widget.set_entry(new_val or "0")
+def handle_backspace(display_widget, controller_obj):
+    """Handle BSP: Backspace in normal mode, back step in program mode."""
+    if controller_obj.program_mode:
+        # In program mode, perform back step (BST-like behavior)
+        if controller_obj.program_memory:
+            removed_instruction = controller_obj.program_memory.pop()
+            step = len(controller_obj.program_memory)
+            program_logger.info(f"BSP: Removed step {step + 1:03d} - {removed_instruction}")
+            logger.info(f"BSP executed: Removed '{removed_instruction}', new length={len(controller_obj.program_memory)}")
+            
+            if controller_obj.program_memory:
+                last_instruction = controller_obj.program_memory[-1]
+                op_map = {"/": "10", "*": "20", "-": "30", "+": "40", ".": "48", "ENTER": "36"}
+                base_map = {"HEX": "23", "DEC": "24", "OCT": "25", "BIN": "26"}
+                if isinstance(last_instruction, str):
+                    if last_instruction in op_map:
+                        display_code = op_map[last_instruction]
+                    elif last_instruction in base_map:
+                        display_code = base_map[last_instruction]
+                    elif last_instruction.startswith("LBL "):
+                        display_code = last_instruction.split()[1]
+                    elif last_instruction in "0123456789ABCDEFabcdef":
+                        display_code = last_instruction.upper()
+                    else:
+                        display_code = str(last_instruction)
+                else:
+                    display_code = str(last_instruction)
+                display_widget.set_entry((step, display_code), program_mode=True)
+            else:
+                display_widget.set_entry((0, ""), program_mode=True)
+        else:
+            logger.info("BSP: Program memory is already empty")
+            display_widget.set_entry((0, ""), program_mode=True)
+    else:
+        # In normal mode, perform standard backspace on display entry
+        logger.info("BSP: Performing backspace on display")
+        old_val = display_widget.raw_value
+        if old_val:
+            new_val = old_val[:-1]
+            display_widget.raw_value = new_val
+            display_widget.set_entry(new_val or "0")
+            # Update X register if user is entering a value
+            if controller_obj.is_user_entry:
+                val = base_conversion.interpret_in_base(new_val or "0", display_widget.mode)
+                stack._x_register = val
+                controller_obj.update_stack_display()
+        else:
+            logger.info("BSP: Display is already empty")
 
 def reload_program():
     """Reload the emulator program."""
