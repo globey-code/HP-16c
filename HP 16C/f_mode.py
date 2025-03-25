@@ -12,7 +12,8 @@ import stack
 from base_conversion import format_in_current_base, interpret_in_base
 from error import (
     HP16CError, IncorrectWordSizeError, NoValueToShiftError, 
-    ShiftExceedsWordSizeError, InvalidBitOperationError
+    ShiftExceedsWordSizeError, InvalidBitOperationError, 
+    StackUnderflowError, DivisionByZeroError, InvalidOperandError
 )
 from logging_config import logger, program_logger
 

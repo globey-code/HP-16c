@@ -1,6 +1,10 @@
 ﻿# program.py
 
-from error import HP16CError
+from error import (
+    HP16CError, IncorrectWordSizeError, NoValueToShiftError, 
+    ShiftExceedsWordSizeError, InvalidBitOperationError, 
+    StackUnderflowError, DivisionByZeroError, InvalidOperandError
+)
 import base_conversion
 
 program_memory = []

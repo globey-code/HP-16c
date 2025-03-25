@@ -13,7 +13,11 @@ from buttons import VALID_CHARS
 from buttons import revert_to_normal
 from f_mode import f_action
 from g_mode import g_action
-from error import HP16CError, StackUnderflowError, InvalidOperandError
+from error import (
+    HP16CError, IncorrectWordSizeError, NoValueToShiftError, 
+    ShiftExceedsWordSizeError, InvalidBitOperationError, 
+    StackUnderflowError, DivisionByZeroError, InvalidOperandError
+)
 from base_conversion import format_in_current_base, interpret_in_base
 from logging_config import logger, program_logger  # Updated import
 from arithmetic import add, subtract, multiply, divide
@@ -253,7 +257,6 @@ class HP16CController:
             self.display.set_entry((step, display_code), program_mode=True)
             return
 
-        # Handle user entry before processing the operator
         if self.is_user_entry:
             entry = self.display.raw_value
             val = interpret_in_base(entry, self.display.mode)
@@ -261,52 +264,65 @@ class HP16CController:
             self.is_user_entry = False
             self.display.clear_entry()
 
-        # Skip operation if an error is currently displayed
         if self.display.is_error_displayed:
             logger.info("Operation skipped due to existing error state")
             return
 
+        operator = operator.upper()
+
         try:
+            mask = (1 << stack.get_word_size()) - 1
+
             if operator in {"+", "-", "*", "/", "AND", "OR", "XOR", "RMD"}:
-                # Check for sufficient operands
                 if len(stack._stack) < 1:
-                    raise StackUnderflowError("Insufficient operands on stack")
-                y = stack.pop()  # Pop Y from the stack
-                x = stack._x_register  # X from register
-                # Perform the operation
+                    raise StackUnderflowError(display=self.display)
+                y = stack.pop()
+                x = stack._x_register
                 if operator == "+":
                     result = add(x, y)
                 elif operator == "-":
-                    result = subtract(y, x)  # y - x for RPN
+                    result = subtract(y, x)
                 elif operator == "*":
                     result = multiply(x, y)
                 elif operator == "/":
                     if x == 0:
-                        raise DivisionByZeroError()
-                    result = divide(y, x)  # y / x
+                        raise DivisionByZeroError(display=self.display)
+                    result = divide(y, x)
                 elif operator == "AND":
-                    result = x & y
+                    result = x & y & mask
                 elif operator == "OR":
-                    result = x | y
+                    result = x | y & mask
                 elif operator == "XOR":
-                    result = x ^ y
+                    result = x ^ y & mask
                 elif operator == "RMD":
                     if x == 0:
-                        raise DivisionByZeroError()
-                    result = y % x  # Remainder of y / x
-                stack._x_register = result  # Set result as new X
+                        raise DivisionByZeroError(display=self.display)
+                    result = y % x
+                stack._x_register = result
             elif operator == "NOT":
                 x = stack._x_register
-                result = ~x & ((1 << stack.get_word_size()) - 1)
-                stack._x_register = result  # Update X directly
+                if hasattr(self, 'complement_mode'):
+                    if self.complement_mode == "1S":
+                        result = ~x & mask
+                    elif self.complement_mode == "2S":
+                        result = ~x & mask
+                    elif self.complement_mode == "UNSIGNED":
+                        result = ~x & mask
+                    else:
+                        result = ~x & mask
+                else:
+                    result = ~x & mask
+                stack._x_register = result
             else:
-                raise InvalidOperandError(f"Unsupported operator: {operator}")
+                raise InvalidOperandError(f"Unsupported operator: {operator}", display=self.display)
 
-            # Update display and stack view
+            if hasattr(self, 'complement_mode') and self.complement_mode == "UNSIGNED" and stack._x_register < 0:
+                stack._x_register = stack._x_register & mask
+
             self.display.set_entry(format_in_current_base(stack.peek(), self.display.mode))
             self.display.raw_value = str(stack.peek())
             self.update_stack_display()
-            self.stack_lift_enabled = True  # Enable stack lift for next entry
+            self.stack_lift_enabled = True
 
         except HP16CError as e:
             self.display.set_error(str(e))

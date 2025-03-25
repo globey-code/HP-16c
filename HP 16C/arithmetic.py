@@ -6,7 +6,11 @@
 # Dependencies: Python 3.6+, HP-16C emulator modules (stack, error)
 
 import stack
-from error import DivisionByZeroError
+from error import (
+    HP16CError, IncorrectWordSizeError, NoValueToShiftError, 
+    ShiftExceedsWordSizeError, InvalidBitOperationError, 
+    StackUnderflowError, DivisionByZeroError, InvalidOperandError
+)
 from logging_config import logger
 
 def to_signed(value, word_size, mode):

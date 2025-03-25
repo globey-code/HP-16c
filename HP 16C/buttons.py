@@ -9,7 +9,11 @@ import stack
 import base_conversion
 import f_mode
 import g_mode
-from error import HP16CError
+from error import (
+    HP16CError, IncorrectWordSizeError, NoValueToShiftError, 
+    ShiftExceedsWordSizeError, InvalidBitOperationError, 
+    StackUnderflowError, DivisionByZeroError, InvalidOperandError
+)
 from logging_config import logger, program_logger
 
 VALID_CHARS = {

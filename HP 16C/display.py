@@ -11,7 +11,7 @@ import tkinter.font as tkFont
 import stack
 import traceback
 import error
-from base_conversion import interpret_in_base, format_in_current_base  # Updated import
+from base_conversion import interpret_in_base, format_in_current_base
 from logging_config import logger
 
 class Display:
@@ -33,17 +33,15 @@ class Display:
         self.master = master
         self.current_entry = "0"
         self.raw_value = "0"
-        self.mode = "DEC"  # Base is managed here
-        self.is_error_displayed = False  # Flag to protect error display
+        self.mode = "DEC"
+        self.is_error_displayed = False
         self.current_value = 0
-        self.raw_value = "0"
-        self.error_displayed = False
-        self.result_displayed = False
-        self.show_stack = False
-        self.last_stack_info = ""
         self.full_width = width
+        self.last_stack_info = ""  # Added to fix AttributeError
+        self.error_displayed = False  # From your original
+        self.result_displayed = False  # From your original
+        self.show_stack = False  # From your original
 
-        # Set up the font
         if font is None:
             self.font = tkFont.Font(family="Courier", size=18)
         elif isinstance(font, tuple):
@@ -51,43 +49,34 @@ class Display:
         else:
             self.font = font
 
-        # Create the frame for the display
         self.frame = tk.Frame(master, bg="#9C9C9C", highlightthickness=border_thickness, highlightbackground="white", relief="flat")
         self.frame.place(x=x, y=y, width=width, height=height)
 
-        # Create the widget internally (start with normal mode width)
         self.widget = tk.Label(self.frame, text=self.current_entry, bg="#9C9C9C", fg="black", font=self.font, anchor="e")
         self.widget.place(x=0, y=0, width=width-30, height=height-2)
         self.widget.bind("<Key>", lambda e: "break")
 
-        # Mode label
         self.mode_label = tk.Label(self.frame, text=self.get_mode_char(self.mode), bg="#9C9C9C", fg="black", font=("Courier", 16), anchor="e")
         self.mode_label.place(relx=1.0, rely=0.5, x=-5, anchor="e")
 
-        # Stack content label
         stack_content_config = stack_content_config or {"relx": 0.01, "rely": 1, "anchor": "sw"}
         self.stack_content = tk.Label(self.frame, font=("Courier", 10), bg="#9C9C9C", text="")
         self.stack_content.place(**stack_content_config)
 
-        # Word size label
         word_size_config = word_size_config or {"relx": 0.99, "rely": 0, "anchor": "ne"}
         self.word_size_label = tk.Label(self.frame, font=("Courier", 10), bg="#9C9C9C")
         self.word_size_label.place(**word_size_config)
 
-        # Initial setup
         self.master.after(10, lambda: self.set_entry("0"))
         self.update_stack_content()
-        logger.info(f"Display initialized: mode={self.mode}, entry={self.current_entry}")
 
-        # Program step label (e.g., "000-")
         self.step_label = tk.Label(self.frame, text="", bg="#9C9C9C", fg="black", font=("Courier", 16), anchor="w")
         self.step_label.place(x=0, y=0, anchor="nw")
-        self.step_label.place_forget()  # Hidden by default
+        self.step_label.place_forget()
 
-        # PRGM annunciator label
         self.prgm_label = tk.Label(self.frame, text="PRGM", bg="#9C9C9C", fg="black", font=("Courier", 10))
         self.prgm_label.place(relx=0.99, rely=0.5, anchor="e")
-        self.prgm_label.place_forget()  # Hidden by default
+        self.prgm_label.place_forget()
 
     def get_mode_char(self, mode):
         """Return the mode character for display."""
@@ -95,44 +84,59 @@ class Display:
         return mode_map.get(mode, "d")
 
     def set_error(self, error_message):
-            """Set the display to show an error message temporarily."""
-            self.is_error_displayed = True
-            self.widget.config(text=error_message, anchor="e")
-            logger.info(f"Error displayed: {error_message}")
-            # Schedule reset after 3 seconds
-            self.master.after(3000, self.reset_error)
+        """Set the display to show an error message temporarily."""
+        self.is_error_displayed = True
+        self.error_displayed = True  # Sync with your original flag
+        self.widget.config(text=error_message, anchor="e")
+        self.mode_label.place_forget()  # Explicitly hide mode_label
+        self.step_label.place_forget()
+        self.prgm_label.place_forget()
+        self.widget.place(x=0, y=0, width=self.full_width-30, height=self.frame.winfo_height()-2)
+        logger.info(f"Error displayed: {error_message}")
+        # Schedule reset after 3 seconds
+        self.master.after(3000, self.reset_error)
 
     def reset_error(self):
-        """Reset the display to the previous value after showing an error."""
+        """Reset the display to the previous value after an error."""
         if self.is_error_displayed:
             self.is_error_displayed = False
-            self.set_entry(self.current_value)
+            self.error_displayed = False  # Sync with your original flag
+            self.widget.config(text=self.current_entry, anchor="e")
+            self.widget.place(x=0, y=0, width=self.full_width-30, height=self.frame.winfo_height()-2)
+            self.mode_label.place(relx=1.0, rely=0.5, x=-5, anchor="e")  # Restore mode_label
+            self.step_label.place_forget()
+            self.prgm_label.place_forget()
             logger.info("Error cleared, display reset to previous value")
 
     def set_entry(self, entry, raw=False, program_mode=False):
+        """Set the display entry based on mode."""
         logger.info(f"Setting entry: value={entry}, raw={raw}, program_mode={program_mode}")
-        if raw:
+        if raw:  # Error message path
+            self.is_error_displayed = True
+            self.error_displayed = True  # Sync with your original flag
             self.widget.config(text=entry, anchor="w")
-            self.widget.place(x=0, y=0, width=self.full_width-30, height=self.frame.winfo_height()-2)  # Normal width for errors
+            self.widget.place(x=0, y=0, width=self.full_width-30, height=self.frame.winfo_height()-2)
             self.mode_label.place_forget()
             self.step_label.place_forget()
             self.prgm_label.place_forget()
-            self.is_error_displayed = True
             self.master.after(3000, self.reset_error)
-            return
-        elif program_mode:
+        elif program_mode:  # Program mode path
             step, instruction = entry
             self.step_label.config(text=f"{step:03d}-")
             self.step_label.place(x=5, rely=0.5, anchor="w")
             self.widget.config(text=instruction, anchor="e")
-            self.widget.place(x=-15, y=0, width=self.full_width, height=self.frame.winfo_height()-2)  # Full width in program mode
+            self.widget.place(x=-15, y=0, width=self.full_width, height=self.frame.winfo_height()-2)
             self.prgm_label.place(relx=0.99, rely=1, anchor="se")
             self.mode_label.place_forget()
-        else:
+            self.is_error_displayed = False
+            self.error_displayed = False  # Sync with your original flag
+        else:  # Normal operation path
+            self.is_error_displayed = False
+            self.error_displayed = False  # Sync with your original flag
             self.step_label.place_forget()
             self.prgm_label.place_forget()
-            self.mode_label.place(relx=1.0, rely=0.5, x=-5, anchor="e")
-            self.widget.place(x=0, y=0, width=self.full_width-30, height=self.frame.winfo_height()-2)  # Normal width in run mode
+            self.mode_label.place(relx=1.0, rely=0.5, x=-5, anchor="e")  # Show mode_label
+            self.widget.place(x=0, y=0, width=self.full_width-30, height=self.frame.winfo_height()-2)
             try:
                 if isinstance(entry, str):
                     val = interpret_in_base(entry, self.mode)
@@ -153,13 +157,17 @@ class Display:
                 anchor = "e"
                 self.current_value = val_int
             self.widget.config(text=entry_str, anchor=anchor)
-            self.is_error_displayed = False
-
+            self.raw_value = entry_str
 
     def clear_entry(self):
-        """Clear the current entry (example implementation)."""
+        """Clear the current entry."""
+        logger.info("Clearing entry")
+        self.current_entry = "0"
         self.raw_value = "0"
-        self.set_entry("0")
+        self.current_value = 0
+        self.widget.config(text=self.current_entry, anchor="e")
+        self.error_displayed = False
+        self.result_displayed = False
 
     def append_entry(self, ch):
         """Append a character to the current entry."""
@@ -180,16 +188,6 @@ class Display:
     def get_entry(self):
         """Get the current display entry."""
         return self.current_entry
-
-    def clear_entry(self):
-        """Clear the current entry."""
-        logger.info("Clearing entry")
-        self.current_entry = "0"
-        self.raw_value = "0"
-        self.current_value = 0
-        self.widget.config(text=self.current_entry, anchor="e")
-        self.error_displayed = False
-        self.result_displayed = False
 
     def set_mode(self, mode_str):
         """Set the display mode and refresh the entry."""

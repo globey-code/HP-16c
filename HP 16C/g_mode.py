@@ -10,7 +10,11 @@ import os
 import stack
 import base_conversion
 import buttons
-from error import HP16CError
+from error import (
+    HP16CError, IncorrectWordSizeError, NoValueToShiftError, 
+    ShiftExceedsWordSizeError, InvalidBitOperationError, 
+    StackUnderflowError, DivisionByZeroError, InvalidOperandError
+)
 from logging_config import logger, program_logger
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
