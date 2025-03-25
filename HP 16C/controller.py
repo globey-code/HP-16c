@@ -15,7 +15,7 @@ from f_mode import f_action
 from g_mode import g_action
 from error import HP16CError, StackUnderflowError, InvalidOperandError
 from base_conversion import format_in_current_base, interpret_in_base
-from logging_config import logger
+from logging_config import logger, program_logger  # Updated import
 from arithmetic import add, subtract, multiply, divide
 
 class HP16CController:
@@ -30,69 +30,144 @@ class HP16CController:
         self.post_enter = False
         self.f_mode_active = False
         self.g_mode_active = False
+        self.program_mode = False        # True when in program mode
+        self.entry_mode = None           # For multi-key sequences (e.g., "label")
+        self.program_memory = []         # Stores program steps as tuples
+        self.current_line = 0            # Program counter for execution
+        self.labels = {}                 # Maps label names to line numbers
+        self.return_stack = []           # Stack for subroutine returns
+
+    def build_labels(self):
+        self.labels = {}
+        for i, cmd in enumerate(self.program_memory):
+            if cmd[0] == "label":
+                self.labels[cmd[1]] = i
+
+    def run_program(self):
+        if self.program_mode:
+            return  # Don’t run while in program mode
+        self.build_labels()
+        self.current_line = 0
+        self.return_stack = []
+        while self.current_line < len(self.program_memory):
+            cmd = self.program_memory[self.current_line]
+            if cmd[0] == "enter_digit":
+                self.enter_digit(cmd[1])
+            elif cmd[0] == "enter_operator":
+                self.enter_operator(cmd[1])
+            elif cmd[0] == "enter_value":
+                self.enter_value()
+            elif cmd[0] == "label":
+                pass  # Labels are skipped during execution
+            elif cmd[0] == "goto":
+                label = cmd[1]
+                if label in self.labels:
+                    self.current_line = self.labels[label]
+                    continue
+                else:
+                    self.display.set_error("Label not found")
+                    break
+            self.current_line += 1
+
+    def enter_base_change(self, base):
+        logger.info(f"Entering base change: {base}")
+        if self.program_mode:
+            base_map = {"HEX": "23", "DEC": "24", "OCT": "25", "BIN": "26"}
+            instruction = base
+            display_code = base_map.get(base, base)
+            self.program_memory.append(instruction)
+            step = len(self.program_memory)
+            program_logger.info(f"{step:03d} - {instruction} ({display_code})")
+            self.display.set_entry((step, display_code), program_mode=True)
+        else:
+            base_conversion.set_base(base, self.display)
 
     def enter_digit(self, digit):
-        logger.info(f"Entering digit: {digit}")
-        digit = digit.upper()
-        if digit not in VALID_CHARS[self.display.mode]:
-            logger.info(f"Ignoring invalid digit {digit} for base {self.display.mode}")
-            return
+            logger.info(f"Entering digit: {digit}")
+            valid_program_chars = set("0123456789ABCDEFabcdef")
 
-        # If this is the first digit after an operation or result, lift stack and clear entry
-        if not self.is_user_entry:
-            if self.stack_lift_enabled:
-                stack.stack_lift()
-                self.stack_lift_enabled = False
-            self.display.clear_entry()  # Reset raw_value to "0"
-            self.result_displayed = False
+            # Custom case transformation for logging and display
+            log_digit = digit.lower() if digit.upper() in {"B", "D"} else digit.upper()
 
-        # Append the digit to the current entry
-        test_input = self.display.raw_value + digit
-        try:
-            if self.display.mode == "OCT":
-                value = int(test_input, 8)
-            elif self.display.mode == "DEC":
-                value = int(test_input, 10)
-            elif self.display.mode == "HEX":
-                value = int(test_input, 16)
-            else:
-                value = int(test_input, 10)
-            max_value = (1 << stack.get_word_size()) - 1
-            if value > max_value:
-                logger.info(f"Ignoring digit {digit}: value {value} exceeds max {max_value}")
+            if self.entry_mode == "label":
+                if digit not in valid_program_chars:
+                    logger.info(f"Ignoring invalid digit {digit} for label in program mode")
+                    return
+                instruction = f"LBL {digit}"
+                self.program_memory.append(instruction)
+                step = len(self.program_memory)
+                program_logger.info(f"{step:03d} - {instruction} ({digit.upper()})")  # Display code uppercase
+                self.entry_mode = None
+                self.display.set_entry((step, log_digit), program_mode=True)  # Use log_digit for UI
                 return
-        except ValueError:
-            logger.info(f"Invalid input {test_input} for base {self.display.mode}")
-            return
 
-        self.display.append_entry(digit)
-        val = interpret_in_base(self.display.raw_value, self.display.mode)
-        stack._x_register = val
-        self.is_user_entry = True
-        self.update_stack_display()
+            if self.program_mode:
+                if digit not in valid_program_chars:
+                    logger.info(f"Ignoring invalid digit {digit} in program mode")
+                    return
+                self.program_memory.append(digit)
+                step = len(self.program_memory)
+                program_logger.info(f"{step:03d} - {log_digit} ({digit.upper()})")  # Display code uppercase
+                instruction = log_digit  # Use log_digit for UI
+                self.display.set_entry((step, instruction), program_mode=True)
+                return
+
+            if digit.upper() not in VALID_CHARS[self.display.mode]:
+                logger.info(f"Ignoring invalid digit {digit} for base {self.display.mode}")
+                return
+
+            if not self.is_user_entry:
+                if self.stack_lift_enabled:
+                    stack.stack_lift()
+                    self.stack_lift_enabled = False
+                self.display.clear_entry()
+                self.result_displayed = False
+
+            test_input = self.display.raw_value + digit
+            try:
+                if self.display.mode == "HEX":
+                    value = int(test_input, 16)
+                elif self.display.mode == "OCT":
+                    value = int(test_input, 8)
+                elif self.display.mode == "BIN":
+                    value = int(test_input, 2)
+                else:  # DEC
+                    value = int(test_input, 10)
+                max_value = (1 << stack.get_word_size()) - 1
+                if value > max_value:
+                    logger.info(f"Ignoring digit {digit}: value {value} exceeds max {max_value}")
+                    return
+            except ValueError:
+                logger.info(f"Invalid input {test_input} for base {self.display.mode}")
+                return
+
+            self.display.append_entry(digit)
+            val = interpret_in_base(self.display.raw_value, self.display.mode)
+            stack._x_register = val
+            self.is_user_entry = True
+            self.update_stack_display()
 
     def toggle_mode(self, mode):
         logger.info(f"Toggling mode: {mode}, f_active={self.f_mode_active}, g_active={self.g_mode_active}")
+    
         if (mode == "f" and self.f_mode_active) or (mode == "g" and self.g_mode_active):
-            for btn in self.buttons:
-                if btn.get("command_name") in ("yellow_f_function", "blue_g_function"):
-                    continue
-                revert_to_normal(btn, self.buttons, self.display, self)
             self.f_mode_active = False
             self.g_mode_active = False
+            for btn in self.buttons:
+                if btn.get("command_name") not in ("yellow_f_function", "blue_g_function"):
+                    revert_to_normal(btn, self.buttons, self.display, self)
             logger.info("Mode reset to normal")
-            if not self.display.is_error_displayed:
-                self.display.set_entry(stack.peek())
-                self.result_displayed = True
-            else:
-                logger.info("Display update deferred due to active error")
             return
 
+        # Reset to normal and unbind previous events
         for btn in self.buttons:
-            if btn.get("command_name") in ("yellow_f_function", "blue_g_function"):
-                continue
-            revert_to_normal(btn, self.buttons, self.display, self)
+            if btn.get("command_name") not in ("yellow_f_function", "blue_g_function"):
+                revert_to_normal(btn, self.buttons, self.display, self)
+                for w in [btn["frame"], btn.get("top_label"), btn.get("main_label"), btn.get("sub_label")]:
+                    if w:
+                        w.unbind("<Button-1>")  # Clear normal bindings
 
+        # Enter the new mode
         if mode == "f":
             self.f_mode_active = True
             self.g_mode_active = False
@@ -124,32 +199,42 @@ class HP16CController:
     def _bind_mode_action(self, btn, mode):
         def on_click(e, b=btn):
             if mode == "f":
-                handled = f_action(b, self.display, self)
-                if not handled:
-                    self.display.master.after(0, lambda: self.toggle_mode(mode))
+                f_action(b, self.display, self)
             elif mode == "g":
                 g_action(b, self.display, self)
-                self.display.master.after(0, lambda: self.toggle_mode(mode))
         for w in [btn["frame"], btn.get("top_label"), btn.get("main_label"), btn.get("sub_label")]:
             if w:
+                w.unbind("<Button-1>")
                 w.bind("<Button-1>", on_click)
 
     def enter_value(self):
         logger.info("Entering value (lifting stack)")
-        """Handle label entry after GSB."""
+        if self.program_mode:
+            instruction = "ENTER"
+            display_code = "36"
+            self.program_memory.append(instruction)
+            step = len(self.program_memory)
+            program_logger.info(f"{step:03d} - {instruction} ({display_code})")
+            self.display.set_entry((step, display_code), program_mode=True)
+            return
+
+        # Handle label entry after GSB
         if hasattr(self, 'entry_mode') and self.entry_mode == "gsb_label":
-            label = self.display.raw_value  # Get user-entered label
+            label = self.display.raw_value
             try:
                 self.gsb(label)
             except Exception as e:
-                self.display.show(str(e))  # Show error
+                self.display.set_error(str(e))
             self.entry_mode = None
             self.is_user_entry = False
-        elif self.is_user_entry:
+            return
+
+        if self.is_user_entry:
             entry = self.display.raw_value
             val = interpret_in_base(entry, self.display.mode)
             stack._x_register = val
             self.is_user_entry = False
+
         stack.stack_lift()
         self.display.set_entry(format_in_current_base(stack.peek(), self.display.mode))
         self.stack_lift_enabled = False
@@ -158,6 +243,15 @@ class HP16CController:
 
     def enter_operator(self, operator):
         logger.info(f"Entering operator: {operator}, X={stack.peek()}, stack={stack._stack}")
+        if self.program_mode:
+            op_map = {"/": "10", "*": "20", "-": "30", "+": "40", ".": "48"}
+            instruction = operator
+            display_code = op_map.get(operator, operator)
+            self.program_memory.append(instruction)
+            step = len(self.program_memory)
+            program_logger.info(f"{step:03d} - {instruction} ({display_code})")
+            self.display.set_entry((step, display_code), program_mode=True)
+            return
 
         # Handle user entry before processing the operator
         if self.is_user_entry:
@@ -177,19 +271,19 @@ class HP16CController:
                 # Check for sufficient operands
                 if len(stack._stack) < 1:
                     raise StackUnderflowError("Insufficient operands on stack")
-                y = stack._stack[0]  # Y from stack
+                y = stack.pop()  # Pop Y from the stack
                 x = stack._x_register  # X from register
                 # Perform the operation
                 if operator == "+":
                     result = add(x, y)
                 elif operator == "-":
-                    result = subtract(y, x)
+                    result = subtract(y, x)  # y - x for RPN
                 elif operator == "*":
                     result = multiply(x, y)
                 elif operator == "/":
                     if x == 0:
                         raise DivisionByZeroError()
-                    result = divide(y, x)
+                    result = divide(y, x)  # y / x
                 elif operator == "AND":
                     result = x & y
                 elif operator == "OR":
@@ -199,33 +293,25 @@ class HP16CController:
                 elif operator == "RMD":
                     if x == 0:
                         raise DivisionByZeroError()
-                    result = y % x
-                # Update stack: drop stack correctly
-                stack._stack[0] = stack._stack[1]  # Y = Z
-                stack._stack[1] = stack._stack[2]  # Z = T
-                # T remains stack._stack[2]
+                    result = y % x  # Remainder of y / x
                 stack._x_register = result  # Set result as new X
-                self.display.set_entry(format_in_current_base(result, self.display.mode))
-                self.display.raw_value = str(result)
-                self.update_stack_display()
-                self.stack_lift_enabled = True  # Enable stack lift for next entry
             elif operator == "NOT":
                 x = stack._x_register
                 result = ~x & ((1 << stack.get_word_size()) - 1)
-                stack._x_register = result
-                # Do not lift stack for unary operation
-                self.display.set_entry(format_in_current_base(result, self.display.mode))
-                self.display.raw_value = str(result)
-                self.update_stack_display()
-                self.stack_lift_enabled = True
+                stack._x_register = result  # Update X directly
             else:
                 raise InvalidOperandError(f"Unsupported operator: {operator}")
+
+            # Update display and stack view
+            self.display.set_entry(format_in_current_base(stack.peek(), self.display.mode))
+            self.display.raw_value = str(stack.peek())
+            self.update_stack_display()
+            self.stack_lift_enabled = True  # Enable stack lift for next entry
+
         except HP16CError as e:
-            # Display the error message using the new set_error method
             self.display.set_error(str(e))
             logger.info(f"Error occurred: {e}")
         except Exception as e:
-            # Handle unexpected errors
             self.display.set_error(str(e))
             logger.info(f"Unexpected error: {e}")
 
@@ -371,32 +457,41 @@ class HP16CController:
 
 
     def gsb(self, label=None):
-        if label is None:
-            return
-        try:
-            if label not in program.labels:
-                raise HP16CError("No such label", "E04")
-            program.current_line = program.labels[label]
-            while program.current_line < len(program.program_memory):
-                instr = program.program_memory[program.current_line]
-                if instr == "RTN":
-                    break
-                if not instr.startswith("LBL "):
-                    # Execute the instruction and check if we should increment
-                    increment = program.execute(stack)
-                    if increment:
-                        program.current_line += 1
+            logger.info(f"GSB called with label: {label}")
+            if self.program_mode:
+                if label is None:
+                    self.entry_mode = "gsb_label"  # Wait for label input
                 else:
-                    program.current_line += 1  # Skip labels
-        except HP16CError as e:
-            self.handle_error(e)
+                    instruction = f"GSB {label}"
+                    self.program_memory.append(instruction)
+                    step = len(self.program_memory)
+                    program_logger.info(f"{step:03d} - {instruction} ({label})")
+                    self.display.set_entry((step, label), program_mode=True)
+                    self.entry_mode = None
+            else:
+                if label is None:
+                    self.entry_mode = "gsb_label"
+                else:
+                    try:
+                        if label not in self.labels:
+                            raise HP16CError("No such label", "E04")
+                        self.current_line = self.labels[label]
+                        while self.current_line < len(self.program_memory):
+                            instr = self.program_memory[self.current_line]
+                            if instr == "RTN":
+                                break
+                            if not instr.startswith("LBL "):
+                                self.program.execute(self.stack)
+                            self.current_line += 1
+                    except HP16CError as e:
+                        self.handle_error(e)
 
 
 
 
 
 # f Mode Functions
- 
+
     def set_word_size(self, bits):
         logger.info(f"Setting word size: {bits}")
         try:

@@ -41,6 +41,7 @@ class Display:
         self.result_displayed = False
         self.show_stack = False
         self.last_stack_info = ""
+        self.full_width = width
 
         # Set up the font
         if font is None:
@@ -54,7 +55,7 @@ class Display:
         self.frame = tk.Frame(master, bg="#9C9C9C", highlightthickness=border_thickness, highlightbackground="white", relief="flat")
         self.frame.place(x=x, y=y, width=width, height=height)
 
-        # Create the widget internally
+        # Create the widget internally (start with normal mode width)
         self.widget = tk.Label(self.frame, text=self.current_entry, bg="#9C9C9C", fg="black", font=self.font, anchor="e")
         self.widget.place(x=0, y=0, width=width-30, height=height-2)
         self.widget.bind("<Key>", lambda e: "break")
@@ -64,7 +65,7 @@ class Display:
         self.mode_label.place(relx=1.0, rely=0.5, x=-5, anchor="e")
 
         # Stack content label
-        stack_content_config = stack_content_config or {"relx": 0.99, "rely": 1, "anchor": "se"}
+        stack_content_config = stack_content_config or {"relx": 0.01, "rely": 1, "anchor": "sw"}
         self.stack_content = tk.Label(self.frame, font=("Courier", 10), bg="#9C9C9C", text="")
         self.stack_content.place(**stack_content_config)
 
@@ -77,6 +78,16 @@ class Display:
         self.master.after(10, lambda: self.set_entry("0"))
         self.update_stack_content()
         logger.info(f"Display initialized: mode={self.mode}, entry={self.current_entry}")
+
+        # Program step label (e.g., "000-")
+        self.step_label = tk.Label(self.frame, text="", bg="#9C9C9C", fg="black", font=("Courier", 16), anchor="w")
+        self.step_label.place(x=0, y=0, anchor="nw")
+        self.step_label.place_forget()  # Hidden by default
+
+        # PRGM annunciator label
+        self.prgm_label = tk.Label(self.frame, text="PRGM", bg="#9C9C9C", fg="black", font=("Courier", 10))
+        self.prgm_label.place(relx=0.99, rely=0.5, anchor="e")
+        self.prgm_label.place_forget()  # Hidden by default
 
     def get_mode_char(self, mode):
         """Return the mode character for display."""
@@ -98,50 +109,52 @@ class Display:
             self.set_entry(self.current_value)
             logger.info("Error cleared, display reset to previous value")
 
-    def set_entry(self, entry, raw=False):
-        """Set the display entry, formatting based on mode."""
-        logger.info(f"Setting entry: value={entry}, raw={raw}")
-
-        # Handle raw display (e.g., for error messages)
+    def set_entry(self, entry, raw=False, program_mode=False):
+        logger.info(f"Setting entry: value={entry}, raw={raw}, program_mode={program_mode}")
         if raw:
-            self.widget.config(text=entry, anchor="e")
+            self.widget.config(text=entry, anchor="w")
+            self.widget.place(x=0, y=0, width=self.full_width-30, height=self.frame.winfo_height()-2)  # Normal width for errors
+            self.mode_label.place_forget()
+            self.step_label.place_forget()
+            self.prgm_label.place_forget()
             self.is_error_displayed = True
-            logger.info(f"Raw entry set: {entry}")
             self.master.after(3000, self.reset_error)
             return
-
-        # Prevent updates while an error is displayed
-        if self.is_error_displayed:
-            logger.info("Ignoring update while error is displayed")
-            return
-
-        # Parse the input value
-        try:
-            if isinstance(entry, str):
-                val = interpret_in_base(entry, self.mode)
-            else:
-                val = float(entry) if self.mode == "FLOAT" else int(entry or 0)
-        except (ValueError, TypeError):
-            val = 0
-            entry = "0"
-
-        # Format the value based on the current mode
-        if self.mode == "FLOAT":
-            entry_str = "{:.9f}".format(val).rstrip("0").rstrip(".")
-            if "." not in entry_str:
-                entry_str += ".0"
-            anchor = "w"
-            self.current_value = val
+        elif program_mode:
+            step, instruction = entry
+            self.step_label.config(text=f"{step:03d}-")
+            self.step_label.place(x=5, rely=0.5, anchor="w")
+            self.widget.config(text=instruction, anchor="e")
+            self.widget.place(x=-15, y=0, width=self.full_width, height=self.frame.winfo_height()-2)  # Full width in program mode
+            self.prgm_label.place(relx=0.99, rely=1, anchor="se")
+            self.mode_label.place_forget()
         else:
-            val_int = stack.apply_word_size(int(val))
-            entry_str = format_in_current_base(val_int, self.mode, pad=False)
-            anchor = "e"
-            self.current_value = val_int
+            self.step_label.place_forget()
+            self.prgm_label.place_forget()
+            self.mode_label.place(relx=1.0, rely=0.5, x=-5, anchor="e")
+            self.widget.place(x=0, y=0, width=self.full_width-30, height=self.frame.winfo_height()-2)  # Normal width in run mode
+            try:
+                if isinstance(entry, str):
+                    val = interpret_in_base(entry, self.mode)
+                else:
+                    val = float(entry) if self.mode == "FLOAT" else int(entry or 0)
+            except (ValueError, TypeError):
+                val = 0
+                entry = "0"
+            if self.mode == "FLOAT":
+                entry_str = "{:.9f}".format(val).rstrip("0").rstrip(".")
+                if "." not in entry_str:
+                    entry_str += ".0"
+                anchor = "w"
+                self.current_value = val
+            else:
+                val_int = stack.apply_word_size(int(val))
+                entry_str = format_in_current_base(val_int, self.mode, pad=False)
+                anchor = "e"
+                self.current_value = val_int
+            self.widget.config(text=entry_str, anchor=anchor)
+            self.is_error_displayed = False
 
-        # Update the display
-        self.widget.config(text=entry_str, anchor=anchor)
-        logger.info(f"Entry set: {entry_str}, value={self.current_value}")
-        self.is_error_displayed = False
 
     def clear_entry(self):
         """Clear the current entry (example implementation)."""

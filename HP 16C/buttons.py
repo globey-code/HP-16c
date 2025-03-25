@@ -45,13 +45,13 @@ def handle_normal_command_by_label(btn, display, controller_obj):
     elif label_text == "ENTER":
         controller_obj.enter_value()
     elif label_text.isdigit() or label_text in "ABCDEF":
-        controller_obj.enter_digit(label_text)  # Pass digit as string
-    elif label_text in {"+", "-", "*", "/", "AND", "OR", "XOR", "NOT", "RMD", "R↓"}:
+        controller_obj.enter_digit(label_text)
+    elif label_text in {"+", "-", "*", "/", "AND", "OR", "XOR", "NOT", "RMD", "."}:
         controller_obj.enter_operator(label_text)
     elif label_text == "BSP":
         do_backspace(display)
     elif label_text in {"BIN", "OCT", "DEC", "HEX"}:
-        base_conversion.set_base(label_text, display)
+        controller_obj.enter_base_change(label_text)  # Route through controller
     elif label_text == "CHS":
         controller_obj.change_sign()
 
@@ -94,6 +94,7 @@ def bind_normal_button(btn, display, controller_obj):
         handle_normal_command_by_label(btn, display, controller_obj)
     for w in [btn["frame"], btn.get("top_label"), btn.get("main_label"), btn.get("sub_label")]:
         if w:
+            w.unbind("<Button-1>")  # Clear previous bindings
             w.bind("<Button-1>", on_click)
 
 def bind_buttons(buttons, display, controller_obj):

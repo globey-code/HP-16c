@@ -11,7 +11,7 @@ import stack
 import base_conversion
 import buttons
 from error import HP16CError
-from logging_config import logger
+from logging_config import logger, program_logger
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 PARENT_DIR = os.path.dirname(CURRENT_DIR)
@@ -67,11 +67,20 @@ def action_double_divide(display_widget, controller_obj):
 # ======================================
 
 def action_return(display_widget, controller_obj):
-    """Return (RTN). Placeholder."""
-    logger.info("RTN placeholder executed")
+    if controller_obj.program_mode:
+        # Record RTN instruction in program memory
+        controller_obj.program_memory.append("RTN")
+        controller_obj.display.set_entry(f"P {len(controller_obj.program_memory):03d}")
+    else:
+        # In run mode, return from subroutine (implementation depends on your stack/program logic)
+        pass  # Add logic to return to the calling point
 
 def action_label(display_widget, controller_obj):
-    """Label (LBL). Placeholder."""
+    if controller_obj.program_mode:
+        controller_obj.entry_mode = "label"
+    else:
+        # Ignore or handle as needed in run mode
+        pass
     logger.info("LBL placeholder executed")
 
 def action_decrement_skip_if_zero(display_widget, controller_obj):
@@ -124,8 +133,15 @@ def action_double_multiply(display_widget, controller_obj):
 # ======================================
 
 def action_toggle_program_run(display_widget, controller_obj):
-    """Toggle Program/Run mode (P/R). Placeholder."""
-    logger.info("P/R placeholder executed")
+    controller_obj.program_mode = not controller_obj.program_mode
+    if controller_obj.program_mode:
+        program_logger.info("PROGRAM MODE START")
+        controller_obj.program_memory = []
+        display_widget.set_entry((0, ""), program_mode=True)
+    else:
+        program_logger.info("PROGRAM MODE END")
+        display_widget.set_entry(stack.peek(), program_mode=False)
+    logger.info(f"Program mode: {controller_obj.program_mode}")
 
 def action_back_step(display_widget, controller_obj):
     """Back Step (BST). Placeholder."""
@@ -262,8 +278,11 @@ G_FUNCTIONS = {
 # ============================================
 
 def g_action(button, display_widget, controller_obj):
-    """Execute the g-mode function for a given button."""
     sub_text = button.get("orig_sub_text", "").strip().upper()
     logger.info(f"g-mode action: {sub_text}")
     if sub_text in G_FUNCTIONS:
         G_FUNCTIONS[sub_text](display_widget, controller_obj)
+        controller_obj.toggle_mode("g")  # Reset to normal
+    else:
+        controller_obj.toggle_mode("g")  # Reset if no action matched
+    return False  # No need to return True anymore

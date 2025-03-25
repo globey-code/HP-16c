@@ -10,11 +10,12 @@ import os
 from datetime import datetime
 
 def setup_logging():
-    """Configure logging with timestamped file output and console output."""
-    current_time = datetime.now().strftime("%m-%d-%Y_%I-%M%p").lower()  # e.g., 03-16-2025_10-58pm
+    """Configure logging with timestamped file output for debug and program logs."""
+    current_time = datetime.now().strftime("%m-%d-%Y_%I-%M%p").lower()  # e.g., 03-24-2025_10-58pm
     log_dir = "logs"
     os.makedirs(log_dir, exist_ok=True)
-    log_file = f"{log_dir}/hp16c_debug_{current_time}.log"
+    debug_log_file = f"{log_dir}/hp16c_debug_{current_time}.log"
+    program_log_file = f"{log_dir}/program_{current_time}.log"
 
     # Custom UTF-8 handler for console
     class UTF8StreamHandler(logging.StreamHandler):
@@ -23,14 +24,26 @@ def setup_logging():
             self.stream.buffer.write((msg + self.terminator).encode('utf-8'))
             self.flush()
 
-    logging.basicConfig(
-        level=logging.INFO,
-        format="[%(asctime)s] %(levelname)s: %(message)s",
-        handlers=[
-            logging.FileHandler(log_file, encoding='utf-8'),  # UTF-8 for file
-            UTF8StreamHandler()  # UTF-8 for console
-        ]
-    )
-    return logging.getLogger(__name__)
+    # Debug logger setup (main log)
+    debug_logger = logging.getLogger('debug')
+    debug_logger.setLevel(logging.INFO)
+    debug_formatter = logging.Formatter("[%(asctime)s] %(levelname)s: %(message)s")
+    debug_file_handler = logging.FileHandler(debug_log_file, encoding='utf-8')
+    debug_file_handler.setFormatter(debug_formatter)
+    debug_console_handler = UTF8StreamHandler()
+    debug_console_handler.setFormatter(debug_formatter)
+    debug_logger.handlers = [debug_file_handler, debug_console_handler]
 
-logger = setup_logging()
+    # Program logger setup (program entries log)
+    program_logger = logging.getLogger('program')
+    program_logger.setLevel(logging.INFO)
+    program_formatter = logging.Formatter("%(asctime)s - %(message)s")  # Simpler format
+    program_file_handler = logging.FileHandler(program_log_file, encoding='utf-8', mode='a')  # Append mode
+    program_file_handler.setFormatter(program_formatter)
+    program_logger.handlers = [program_file_handler]  # No console output
+
+    return debug_logger
+
+# Export loggers for use in other modules
+logger = setup_logging()  # Debug logger
+program_logger = logging.getLogger('program')  # Program logger

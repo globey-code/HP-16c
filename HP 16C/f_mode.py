@@ -14,7 +14,7 @@ from error import (
     HP16CError, IncorrectWordSizeError, NoValueToShiftError, 
     ShiftExceedsWordSizeError, InvalidBitOperationError
 )
-from logging_config import logger
+from logging_config import logger, program_logger
 
 # ======================================
 # Bit Manipulation Functions (Row 1)
@@ -137,8 +137,14 @@ def action_recall_index(display_widget, controller_obj):
     controller_obj.recall_i()
 
 def action_clear_program(display_widget, controller_obj):
-    """Clear Program (CLR PRGM) - Not implemented."""
-    pass
+    """Clear Program (CLR PRGM) - Reset program memory and display to 000- in program mode."""
+    if controller_obj.program_mode:
+        controller_obj.program_memory = []  # Clear program memory
+        display_widget.set_entry((0, ""), program_mode=True)  # Reset display to "000- "
+        logger.info("Program memory cleared")
+        program_logger.info("PROGRAM CLEARED")  # Log to program.log
+    else:
+        logger.info("CLR PRGM ignored - not in program mode")
 
 def action_clear_registers(display_widget, controller_obj):
     """Clear Registers (CLR REG)."""
@@ -290,5 +296,9 @@ def f_action(button, display_widget, controller_obj):
     top_text = button.get("orig_top_text", "").strip().upper()
     logger.info(f"f-mode action: {top_text}")
     if top_text in F_FUNCTIONS:
-        return F_FUNCTIONS[top_text](display_widget, controller_obj)
+        result = F_FUNCTIONS[top_text](display_widget, controller_obj)
+        if not isinstance(result, bool):  # Only reset if not a special case (e.g., SHOW)
+            controller_obj.toggle_mode("f")  # Reset to normal
+        return result
+    controller_obj.toggle_mode("f")  # Reset if no action matched
     return False
