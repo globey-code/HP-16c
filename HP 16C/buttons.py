@@ -54,6 +54,8 @@ def handle_normal_command_by_label(btn, display, controller_obj):
         controller_obj.enter_base_change(label_text)  # Route through controller
     elif label_text == "CHS":
         controller_obj.change_sign()
+    elif label_text == "ON":
+        controller_obj.reload_program()
 
 def revert_to_normal(button, buttons=None, display=None, controller_obj=None):
     """Revert button to normal appearance and bindings."""

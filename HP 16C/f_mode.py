@@ -82,17 +82,22 @@ def action_exchange_x_index(display_widget, controller_obj):
 
 def action_show(display_widget, controller_obj, mode):
     current_mode = controller_obj.display.mode
+    
+    # Set the new mode for 4 seconds
     display_widget.set_mode(mode)
     
+    # Immediately revert buttons to normal (except for specific functions)
+    import buttons  # Import here to avoid circular import
+    for btn in controller_obj.buttons:
+        if btn.get("command_name") not in ("yellow_f_function", "blue_g_function"):
+            buttons.revert_to_normal(btn, controller_obj.buttons, display_widget, controller_obj)
+    
+    # After 4 seconds, revert display to base mode and finalize state
     def revert_display():
-        import buttons  # Import here to avoid circular import
         display_widget.set_mode(current_mode)
         controller_obj.f_mode_active = False
-        for btn in controller_obj.buttons:
-            if btn.get("command_name") not in ("yellow_f_function", "blue_g_function"):
-                buttons.revert_to_normal(btn, controller_obj.buttons, display_widget, controller_obj)
     
-    display_widget.widget.after(4000, revert_display)
+    display_widget.widget.after(2000, revert_display)
     return True  # Indicate that mode toggle is handled
 
 def action_set_bit(display_widget, controller_obj):
@@ -186,12 +191,27 @@ def action_bitwise_not(display_widget, controller_obj):
 
 def action_set_word_size(display_widget, controller_obj):
     try:
-        bits = int(display_widget.raw_value or "0")
+        # Get the raw value (default to "0" if empty)
+        raw_value = display_widget.raw_value or "0"
+        
+        # Determine the current mode and convert to decimal accordingly
+        current_mode = controller_obj.display.mode
+        if current_mode == "HEX":
+            bits = int(raw_value, 16)  # Convert from hexadecimal to decimal
+        elif current_mode == "OCT":
+            bits = int(raw_value, 8)   # Convert from octal to decimal
+        elif current_mode == "BIN":
+            bits = int(raw_value, 2)   # Convert from binary to decimal
+        else:  # Assume DEC or other modes are already in decimal
+            bits = int(raw_value)      # Direct conversion from string to decimal
+        
+        # Default to 64 if the value is 0
         if bits == 0:
             bits = 64
+        
+        # Set the word size (assumes set_word_size handles display updates)
         if controller_obj.set_word_size(bits):
-            # No need to clear_entry() here; set_word_size handles display
-            pass
+            pass  # No need to clear_entry() here
     except ValueError:
         controller_obj.handle_error(IncorrectWordSizeError())
 
