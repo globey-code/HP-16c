@@ -208,18 +208,7 @@ def test_bit(bit_index):
         raise InvalidBitOperationError()
     return (_x_register >> bit_index) & 1
 
-def left_justify():
-    """Shift X left until the most significant bit is 1."""
-    global _x_register
-    if _x_register == 0:
-        return
-    shift = 0
-    x = _x_register
-    while (x & (1 << (_word_size - 1))) == 0 and shift < _word_size:
-        x <<= 1
-        shift += 1
-    _x_register = x & ((1 << _word_size) - 1)
-    logger.info(f"Left justified: X={_x_register}, stack={_stack}")
+
 
 def absolute():
     """Set X to its absolute value."""
@@ -389,3 +378,12 @@ def stack_lift():
     _stack[1] = _stack[0]  # Z = Y
     _stack[0] = _x_register  # Y = X
     logger.info(f"Stack lifted: X={_x_register}, stack={_stack}")
+
+def left_justify():
+    global _x_register, _word_size
+    mask = (1 << _word_size) - 1  # Mask to ensure value fits word size
+    x = _x_register & mask        # Apply mask to X
+    if x == 0:
+        _x_register = _word_size  # If X is 0, set to word size (16)
+    else:
+        _x_register = _word_size - x.bit_length()  # Number of leading zeros

@@ -17,9 +17,74 @@ CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 PARENT_DIR = os.path.dirname(CURRENT_DIR)
 sys.path.insert(0, PARENT_DIR)
 
-def action_lj(display_widget, controller_obj):
+
+# ======================================
+# Bit Manipulation Functions (Row 1)
+# ======================================
+
+def action_left_justify(display_widget, controller_obj):
     """Left Justify (LJ)."""
     controller_obj.left_justify()
+
+def action_arithmetic_shift_right(display_widget, controller_obj):
+    """Arithmetic Shift Right (ASR). Placeholder."""
+    logger.info("ASR placeholder executed")
+
+def action_rotate_left_through_carry(display_widget, controller_obj):
+    """Rotate Left Through Carry (RLC). Placeholder."""
+    logger.info("RLC placeholder executed")
+
+def action_rotate_right_through_carry(display_widget, controller_obj):
+    """Rotate Right Through Carry (RRC). Placeholder."""
+    logger.info("RRC placeholder executed")
+
+def action_rotate_left_through_carry_n(display_widget, controller_obj):
+    """Rotate Left Through Carry n bits (RLCN). Placeholder."""
+    logger.info("RLCN placeholder executed")
+
+def action_rotate_right_through_carry_n(display_widget, controller_obj):
+    """Rotate Right Through Carry n bits (RRCN). Placeholder."""
+    logger.info("RRCN placeholder executed")
+
+def action_count_bits(display_widget, controller_obj):
+    """Count Bits (#B)."""
+    controller_obj.count_bits()
+
+def action_absolute(display_widget, controller_obj):
+    """Absolute Value (ABS)."""
+    controller_obj.absolute()
+
+def action_double_remainder(display_widget, controller_obj):
+    """Double Remainder (DBLR). Placeholder."""
+    logger.info("DBLR placeholder executed")
+
+def action_double_divide(display_widget, controller_obj):
+    """Double Divide (DBL/). Placeholder."""
+    logger.info("DBL/ placeholder executed")
+
+# ======================================
+# Program and Control Flow (Row 2)
+# ======================================
+
+def action_return(display_widget, controller_obj):
+    """Return (RTN). Placeholder."""
+    logger.info("RTN placeholder executed")
+
+def action_label(display_widget, controller_obj):
+    """Label (LBL). Placeholder."""
+    logger.info("LBL placeholder executed")
+
+def action_decrement_skip_if_zero(display_widget, controller_obj):
+    """Decrement, Skip if Zero (DSZ). Placeholder."""
+    logger.info("DSZ placeholder executed")
+
+def action_increment_skip_if_zero(display_widget, controller_obj):
+    """Increment, Skip if Zero (ISZ). Placeholder."""
+    logger.info("ISZ placeholder executed")
+
+def action_square_root(display_widget, controller_obj):
+    """Square Root (√x). Placeholder."""
+    logger.info("√x placeholder executed")
 
 def action_reciprocal(display_widget, controller_obj):
     """Reciprocal (1/X)."""
@@ -37,20 +102,6 @@ def action_reciprocal(display_widget, controller_obj):
     except HP16CError as e:
         controller_obj.handle_error(e)
 
-def action_last_x(display_widget, controller_obj):
-    """Last X (LST X)."""
-    last_x_value = stack.last_x()
-    display_widget.set_entry(last_x_value)
-    display_widget.widget.after(3000, lambda: display_widget.set_entry(0))
-
-def action_abs(display_widget, controller_obj):
-    """Absolute Value (ABS)."""
-    controller_obj.absolute()
-
-def action_count_bits(display_widget, controller_obj):
-    """Count Bits (#B)."""
-    controller_obj.count_bits()
-
 def action_set_flag(display_widget, controller_obj):
     """Set Carry Flag (SF)."""
     controller_obj.set_flag("CF")
@@ -64,44 +115,151 @@ def action_test_flag(display_widget, controller_obj):
     result = controller_obj.test_flag("CF")
     display_widget.set_entry(str(result))
 
-def action_r_up(display_widget, controller_obj):
-    """Rotate stack upward (R↑) to match real HP-16C behavior."""
+def action_double_multiply(display_widget, controller_obj):
+    """Double Multiply (DBL*). Placeholder."""
+    logger.info("DBL* placeholder executed")
+
+# ======================================
+# Calculator Control Functions (Row 3)
+# ======================================
+
+def action_toggle_program_run(display_widget, controller_obj):
+    """Toggle Program/Run mode (P/R). Placeholder."""
+    logger.info("P/R placeholder executed")
+
+def action_back_step(display_widget, controller_obj):
+    """Back Step (BST). Placeholder."""
+    logger.info("BST placeholder executed")
+
+def action_roll_up(display_widget, controller_obj):
+    """Rotate stack upward (R↑)."""
     if controller_obj.is_user_entry:
-        # Commit the pending entry to X without lifting the stack
         entry = controller_obj.display.raw_value
         val = base_conversion.interpret_in_base(entry, controller_obj.display.mode)
-        stack._x_register = val  # Set X to the entered value
+        stack._x_register = val
         controller_obj.is_user_entry = False
-    
-    # Perform the roll-up operation
+
     stack.roll_up()
-    
-    # Update the display with the new X value
+
     top_val = stack.peek()
     display_widget.set_entry(base_conversion.format_in_current_base(top_val, display_widget.mode))
     controller_obj.update_stack_display()
-    
-    # Enable stack lift after R↑
-    controller_obj.stack_lift_enabled = True  # R↑ enables stack lift
+
+    controller_obj.stack_lift_enabled = True
     controller_obj.result_displayed = True
     logger.info("Performed R↑: stack rotated up")
 
+def action_pause(display_widget, controller_obj):
+    """Pause (PSE). Placeholder."""
+    logger.info("PSE placeholder executed")
+
 def action_clx(display_widget, controller_obj):
-    """Clear the X register (CLX) in g-mode."""
+    """Clear X register (CLX)."""
     controller_obj.clear_x()
 
+def action_x_less_equal_y(display_widget, controller_obj):
+    """X less or equal to Y (X≤Y). Placeholder."""
+    logger.info("X≤Y placeholder executed")
+
+def action_x_less_than_zero(display_widget, controller_obj):
+    """X less than zero (X<0). Placeholder."""
+    logger.info("X<0 placeholder executed")
+
+def action_x_greater_than_y(display_widget, controller_obj):
+    """X greater than Y (X>Y). Placeholder."""
+    logger.info("X>Y placeholder executed")
+
+def action_x_greater_than_zero(display_widget, controller_obj):
+    """X greater than zero (X>0). Placeholder."""
+    logger.info("X>0 placeholder executed")
+
+# ======================================
+# Conditional & Stack Functions (Row 4)
+# ======================================
+
+def action_last_x(display_widget, controller_obj):
+    """Last X (LST X)."""
+    last_x_value = stack.last_x()
+    display_widget.set_entry(last_x_value)
+    display_widget.widget.after(3000, lambda: display_widget.set_entry(0))
+
+def action_x_not_equal_y(display_widget, controller_obj):
+    """X not equal Y (X≠Y). Placeholder."""
+    logger.info("X≠Y placeholder executed")
+
+def action_x_not_equal_zero(display_widget, controller_obj):
+    """X not equal zero (X≠0). Placeholder."""
+    logger.info("X≠0 placeholder executed")
+
+def action_x_equal_y(display_widget, controller_obj):
+    """X equal Y (X=Y). Placeholder."""
+    logger.info("X=Y placeholder executed")
+
+def action_x_equal_zero(display_widget, controller_obj):
+    """X equal zero (X=0). Placeholder."""
+    logger.info("X=0 placeholder executed")
+
+
 G_FUNCTIONS = {
-    "LJ": action_lj,
-    "1/X": action_reciprocal,
-    "LST X": action_last_x,
-    "ABS": action_abs,
+
+# ======================================
+# Bit Manipulation Functions (Row 1)
+# ======================================
+
+    "LJ": action_left_justify,
+    "ASR": action_arithmetic_shift_right,
+    "RLC": action_rotate_left_through_carry,
+    "RRC": action_rotate_right_through_carry,
+    "RLCN": action_rotate_left_through_carry_n,
+    "RRCN": action_rotate_right_through_carry_n,
     "#B": action_count_bits,
+    "ABS": action_absolute,
+    "DBLR": action_double_remainder,
+    "DBL/": action_double_divide,
+
+# ======================================
+# Program and Control Flow (Row 2)
+# ======================================
+
+    "RTN": action_return,
+    "LBL": action_label,
+    "DSZ": action_decrement_skip_if_zero,
+    "ISZ": action_increment_skip_if_zero,
+    "√x": action_square_root,
+    "1/X": action_reciprocal,
     "SF": action_set_flag,
     "CF": action_clear_flag,
     "F?": action_test_flag,
-    "R↑": action_r_up,
+    "DBL*": action_double_multiply,
+
+# ======================================
+# Calculator Control Functions (Row 3)
+# ======================================
+
+    "P/R": action_toggle_program_run,
+    "BST": action_back_step,
+    "R↑": action_roll_up,
+    "PSE": action_pause,
     "CLX": action_clx,
+    "X≤Y": action_x_less_equal_y,
+    "X<0": action_x_less_than_zero,
+    "X>Y": action_x_greater_than_y,
+    "X>0": action_x_greater_than_zero,
+
+# ======================================
+# Conditional & Stack Functions (Row 4)
+# ======================================
+
+    "LST X": action_last_x,
+    "X≠Y": action_x_not_equal_y,
+    "X≠0": action_x_not_equal_zero,
+    "X=Y": action_x_equal_y,
+    "X=0": action_x_equal_zero,
 }
+
+# ============================================
+# g-mode Action Handler
+# ============================================
 
 def g_action(button, display_widget, controller_obj):
     """Execute the g-mode function for a given button."""

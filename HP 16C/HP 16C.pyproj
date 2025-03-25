@@ -32,6 +32,7 @@
     <Compile Include="g_mode.py" />
     <Compile Include="controller.py" />
     <Compile Include="logging_config.py" />
+    <Compile Include="program.py" />
     <Compile Include="ui.py" />
     <Compile Include="display.py" />
     <Compile Include="error.py" />

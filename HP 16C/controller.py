@@ -8,6 +8,7 @@
 import stack
 import buttons
 import base_conversion
+import program
 from buttons import VALID_CHARS
 from buttons import revert_to_normal
 from f_mode import f_action
@@ -135,7 +136,16 @@ class HP16CController:
 
     def enter_value(self):
         logger.info("Entering value (lifting stack)")
-        if self.is_user_entry:
+        """Handle label entry after GSB."""
+        if hasattr(self, 'entry_mode') and self.entry_mode == "gsb_label":
+            label = self.display.raw_value  # Get user-entered label
+            try:
+                self.gsb(label)
+            except Exception as e:
+                self.display.show(str(e))  # Show error
+            self.entry_mode = None
+            self.is_user_entry = False
+        elif self.is_user_entry:
             entry = self.display.raw_value
             val = interpret_in_base(entry, self.display.mode)
             stack._x_register = val
@@ -223,9 +233,13 @@ class HP16CController:
 
     def handle_error(self, exc: HP16CError):
         logger.info(f"Handling error: {exc.display_message}")
-        original_value = self.display.current_entry
-        self.display.set_entry(exc.display_message, raw=True)
-        self.display.widget.after(5000, lambda: self.display.set_entry(original_value))
+        if self.display is not None:
+            original_value = self.display.current_entry
+            self.display.set_entry(exc.display_message, raw=True)
+            self.display.widget.after(5000, lambda: self.display.set_entry(original_value))
+        else:
+            raise exc  # Re-raise for testing
+            print(f"Error: {exc.display_message}")  # Fallback for testing
 
     def pop_value(self):
         logger.info("Popping value")
@@ -354,6 +368,30 @@ class HP16CController:
             negated = ((~val) + 1) & mask
         self.display.set_entry(negated)
         stack._x_register = negated
+
+
+    def gsb(self, label=None):
+        if label is None:
+            return
+        try:
+            if label not in program.labels:
+                raise HP16CError("No such label", "E04")
+            program.current_line = program.labels[label]
+            while program.current_line < len(program.program_memory):
+                instr = program.program_memory[program.current_line]
+                if instr == "RTN":
+                    break
+                if not instr.startswith("LBL "):
+                    # Execute the instruction and check if we should increment
+                    increment = program.execute(stack)
+                    if increment:
+                        program.current_line += 1
+                else:
+                    program.current_line += 1  # Skip labels
+        except HP16CError as e:
+            self.handle_error(e)
+
+
 
 
 
@@ -559,27 +597,20 @@ class HP16CController:
             self.handle_error(e)
 # LJ
     def left_justify(self):
-        """
-        Perform left justification on the X register, handling user entry and display updates.
-        """
-        # If there's an ongoing user entry, commit it to the X register
         if self.is_user_entry:
-            entry = self.display.raw_value  # Current display string
-            val = interpret_in_base(entry, self.display.mode)  # Convert to integer based on display mode
-            self.stack._x_register = val
+            entry = self.display.raw_value
+            val = interpret_in_base(entry, self.display.mode)
+            stack._x_register = val
             self.is_user_entry = False
-    
-        # Perform the left justify operation
         try:
-            self.stack.left_justify()
-            top_val = self.stack.peek()  # Get the new X register value
-            # Update the display with the result in the current base (e.g., hex, bin)
+            stack.left_justify()  # Now computes leading zeros
+            top_val = stack.peek()
             self.display.set_entry(format_in_current_base(top_val, self.display.mode))
             self.display.raw_value = str(top_val)
-            self.update_stack_display()  # Refresh stack UI if present
-            self.stack_lift_enabled = True  # Enable stack lift for next entry
-            self.result_displayed = True  # Indicate a result is shown
-        except Exception as e:  # Replace HP16CError with appropriate exception if defined
+            self.update_stack_display()
+            self.stack_lift_enabled = True
+            self.result_displayed = True
+        except Exception as e:
             self.handle_error(e)
 # SF
     def set_flag(self, flag_type):
