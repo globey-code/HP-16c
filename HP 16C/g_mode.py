@@ -236,6 +236,16 @@ def action_x_greater_than_zero(display_widget, controller_obj):
 # Conditional & Stack Functions (Row 4)
 # ======================================
 
+def action_scroll_left(display_widget, controller_obj):
+    """Scroll display one character to the left (⯇)."""
+    display_widget.scroll_left()
+    logger.info("Scrolled display left")
+
+def action_scroll_right(display_widget, controller_obj):
+    """Scroll display one character to the right (⯈)."""
+    display_widget.scroll_right()
+    logger.info("Scrolled display right")
+
 def action_last_x(display_widget, controller_obj):
     """Last X (LST X)."""
     last_x_value = stack.last_x()
@@ -309,11 +319,14 @@ G_FUNCTIONS = {
 # Conditional & Stack Functions (Row 4)
 # ======================================
 
+    "⯇": action_scroll_left,
+    "⯈": action_scroll_right,
     "LST X": action_last_x,
     "X≠Y": action_x_not_equal_y,
     "X≠0": action_x_not_equal_zero,
     "X=Y": action_x_equal_y,
     "X=0": action_x_equal_zero,
+    
 }
 
 # ============================================
