@@ -116,12 +116,22 @@ def action_reciprocal(display_widget, controller_obj):
         controller_obj.handle_error(e)
 
 def action_set_flag(display_widget, controller_obj):
-    """Set Carry Flag (SF)."""
-    controller_obj.set_flag("CF")
+    """Initiate setting a flag (SF)."""
+    if controller_obj.program_mode:
+        # Handle program mode if needed (e.g., record SF instruction)
+        pass
+    else:
+        controller_obj.entry_mode = "set_flag"
+    logger.info("Entered set_flag mode")
 
 def action_clear_flag(display_widget, controller_obj):
-    """Clear Carry Flag (CF)."""
-    controller_obj.clear_flag("CF")
+    """Initiate clearing a flag (CF)."""
+    if controller_obj.program_mode:
+        # Handle program mode if needed
+        pass
+    else:
+        controller_obj.entry_mode = "clear_flag"
+    logger.info("Entered clear_flag mode")
 
 def action_test_flag(display_widget, controller_obj):
     """Test Carry Flag (F?)."""

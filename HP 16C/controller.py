@@ -87,85 +87,104 @@ class HP16CController:
             base_conversion.set_base(base, self.display)
 
     def enter_digit(self, digit):
-            logger.info(f"Entering digit: {digit}")
-            valid_program_chars = set("0123456789ABCDEFabcdef")
-
-            # Custom case transformation for logging and display
-            log_digit = digit.lower() if digit.upper() in {"B", "D"} else digit.upper()
-
-            if self.entry_mode == "label":
-                if digit not in valid_program_chars:
-                    logger.info(f"Ignoring invalid digit {digit} for label in program mode")
-                    return
-                instruction = f"LBL {digit}"
-                self.program_memory.append(instruction)
-                step = len(self.program_memory)
-                program_logger.info(f"{step:03d} - {instruction} ({digit.upper()})")  # Display code uppercase
-                self.entry_mode = None
-                self.display.set_entry((step, log_digit), program_mode=True)  # Use log_digit for UI
-                return
-
-            if self.program_mode:
-                if digit not in valid_program_chars:
-                    logger.info(f"Ignoring invalid digit {digit} in program mode")
-                    return
-                self.program_memory.append(digit)
-                step = len(self.program_memory)
-                program_logger.info(f"{step:03d} - {log_digit} ({digit.upper()})")  # Display code uppercase
-                instruction = log_digit  # Use log_digit for UI
-                self.display.set_entry((step, instruction), program_mode=True)
-                return
-
-            if digit.upper() not in VALID_CHARS[self.display.mode]:
-                logger.info(f"Ignoring invalid digit {digit} for base {self.display.mode}")
-                return
-
-            if not self.is_user_entry:
-                if self.stack_lift_enabled:
-                    stack.stack_lift()
-                    self.stack_lift_enabled = False
-                self.display.clear_entry()
-                self.result_displayed = False
-
-            test_input = self.display.raw_value + digit
+        logger.info(f"Entering digit: {digit}")
+    
+        # Handle flag operations if in set_flag or clear_flag mode
+        if self.entry_mode in {"set_flag", "clear_flag"}:
             try:
-                if self.display.mode == "HEX":
-                    value = int(test_input, 16)
-                elif self.display.mode == "OCT":
-                    value = int(test_input, 8)
-                elif self.display.mode == "BIN":
-                    value = int(test_input, 2)
-                else:  # DEC
-                    value = int(test_input, 10)
-                max_value = (1 << stack.get_word_size()) - 1
-                if value > max_value:
-                    logger.info(f"Ignoring digit {digit}: value {value} exceeds max {max_value}")
-                    return
+                flag_num = int(digit)
+                if 0 <= flag_num <= 5:  # HP-16C supports flags 0-5
+                    if self.entry_mode == "set_flag":
+                        self.set_flag(flag_num)
+                    elif self.entry_mode == "clear_flag":
+                        self.clear_flag(flag_num)
+                else:
+                    self.handle_error(HP16CError("Invalid flag number", "E01"))
             except ValueError:
-                logger.info(f"Invalid input {test_input} for base {self.display.mode}")
-                return
+                self.handle_error(HP16CError("Invalid input for flag", "E02"))
+            self.entry_mode = None  # Reset entry mode after processing
+            return  # Exit early, as flag operation is complete
 
-            self.display.append_entry(digit)
-            val = interpret_in_base(self.display.raw_value, self.display.mode)
-            stack._x_register = val
-            self.is_user_entry = True
-            self.update_stack_display()
+        # Existing functionality preserved below
+        valid_program_chars = set("0123456789ABCDEFabcdef")
+    
+        # Custom case transformation for logging and display
+        log_digit = digit.lower() if digit.upper() in {"B", "D"} else digit.upper()
+    
+        if self.entry_mode == "label":
+            if digit not in valid_program_chars:
+                logger.info(f"Ignoring invalid digit {digit} for label in program mode")
+                return
+            instruction = f"LBL {digit}"
+            self.program_memory.append(instruction)
+            step = len(self.program_memory)
+            program_logger.info(f"{step:03d} - {instruction} ({digit.upper()})")  # Display code uppercase
+            self.entry_mode = None
+            self.display.set_entry((step, log_digit), program_mode=True)  # Use log_digit for UI
+            return
+
+        if self.program_mode:
+            if digit not in valid_program_chars:
+                logger.info(f"Ignoring invalid digit {digit} in program mode")
+                return
+            self.program_memory.append(digit)
+            step = len(self.program_memory)
+            program_logger.info(f"{step:03d} - {log_digit} ({digit.upper()})")  # Display code uppercase
+            instruction = log_digit  # Use log_digit for UI
+            self.display.set_entry((step, instruction), program_mode=True)
+            return
+
+        if digit.upper() not in VALID_CHARS[self.display.mode]:
+            logger.info(f"Ignoring invalid digit {digit} for base {self.display.mode}")
+            return
+
+        if not self.is_user_entry:
+            if self.stack_lift_enabled:
+                stack.stack_lift()
+                self.stack_lift_enabled = False
+            self.display.clear_entry()
+            self.result_displayed = False
+
+        test_input = self.display.raw_value + digit
+        try:
+            if self.display.mode == "HEX":
+                value = int(test_input, 16)
+            elif self.display.mode == "OCT":
+                value = int(test_input, 8)
+            elif self.display.mode == "BIN":
+                value = int(test_input, 2)
+            else:  # DEC
+                value = int(test_input, 10)
+            max_value = (1 << stack.get_word_size()) - 1
+            if value > max_value:
+                logger.info(f"Ignoring digit {digit}: value {value} exceeds max {max_value}")
+                return
+        except ValueError:
+            logger.info(f"Invalid input {test_input} for base {self.display.mode}")
+            return
+
+        self.display.append_entry(digit)
+        val = interpret_in_base(self.display.raw_value, self.display.mode)
+        stack._x_register = val
+        self.is_user_entry = True
+        self.update_stack_display()
 
     def toggle_mode(self, mode):
         logger.info(f"Toggling mode: {mode}, f_active={self.f_mode_active}, g_active={self.g_mode_active}")
     
+        # Reset mode if already active
         if (mode == "f" and self.f_mode_active) or (mode == "g" and self.g_mode_active):
             self.f_mode_active = False
             self.g_mode_active = False
             for btn in self.buttons:
-                if btn.get("command_name") not in ("yellow_f_function", "blue_g_function"):
+                if btn.get("command_name") not in ("yellow_f_function", "blue_g_function", "reload_program"):
                     revert_to_normal(btn, self.buttons, self.display, self)
             logger.info("Mode reset to normal")
             return
 
         # Reset to normal and unbind previous events
         for btn in self.buttons:
-            if btn.get("command_name") not in ("yellow_f_function", "blue_g_function"):
+            if btn.get("command_name") not in ("yellow_f_function", "blue_g_function", "reload_program"):
                 revert_to_normal(btn, self.buttons, self.display, self)
                 for w in [btn["frame"], btn.get("top_label"), btn.get("main_label"), btn.get("sub_label")]:
                     if w:
@@ -186,8 +205,9 @@ class HP16CController:
             logger.warning(f"Invalid mode: {mode}")
             return
 
+        # Apply mode-specific changes, excluding "ON" button
         for btn in self.buttons:
-            if btn.get("command_name") in ("yellow_f_function", "blue_g_function"):
+            if btn.get("command_name") in ("yellow_f_function", "blue_g_function", "reload_program"):
                 continue
             frame = btn["frame"]
             label = btn.get(label_key)
@@ -276,47 +296,37 @@ class HP16CController:
             if operator in {"+", "-", "*", "/", "AND", "OR", "XOR", "RMD"}:
                 if len(stack._stack) < 1:
                     raise StackUnderflowError(display=self.display)
-                y = stack.pop()
-                x = stack._x_register
+                y = stack.pop()  # Original X
+                x = stack._x_register  # Original Y (after pop)
                 if operator == "+":
-                    result = add(x, y)
+                    result = add(y, x)  # Commutative, order doesn't matter
                 elif operator == "-":
-                    result = subtract(y, x)
+                    result = subtract(x, y)  # Y - X: original Y - original X
                 elif operator == "*":
-                    result = multiply(x, y)
+                    result = multiply(y, x)  # Commutative, order doesn't matter
                 elif operator == "/":
-                    if x == 0:
+                    if y == 0:  # y is original X, the divisor
                         raise DivisionByZeroError(display=self.display)
-                    result = divide(y, x)
+                    result = divide(x, y)  # Y / X: original Y / original X
                 elif operator == "AND":
-                    result = x & y & mask
+                    result = x & y & mask  # Commutative
                 elif operator == "OR":
-                    result = x | y & mask
+                    result = x | y & mask  # Commutative
                 elif operator == "XOR":
-                    result = x ^ y & mask
+                    result = x ^ y & mask  # Commutative
                 elif operator == "RMD":
-                    if x == 0:
+                    if y == 0:  # y is original X, the divisor
                         raise DivisionByZeroError(display=self.display)
-                    result = y % x
+                    result = x % y  # Y % X: original Y % original X
                 stack._x_register = result
             elif operator == "NOT":
                 x = stack._x_register
-                if hasattr(self, 'complement_mode'):
-                    if self.complement_mode == "1S":
-                        result = ~x & mask
-                    elif self.complement_mode == "2S":
-                        result = ~x & mask
-                    elif self.complement_mode == "UNSIGNED":
-                        result = ~x & mask
-                    else:
-                        result = ~x & mask
-                else:
-                    result = ~x & mask
+                result = ~x & mask
                 stack._x_register = result
             else:
                 raise InvalidOperandError(f"Unsupported operator: {operator}", display=self.display)
 
-            if hasattr(self, 'complement_mode') and self.complement_mode == "UNSIGNED" and stack._x_register < 0:
+            if stack.get_complement_mode() == "UNSIGNED" and stack._x_register < 0:
                 stack._x_register = stack._x_register & mask
 
             self.display.set_entry(format_in_current_base(stack.peek(), self.display.mode))
@@ -724,18 +734,20 @@ class HP16CController:
         except Exception as e:
             self.handle_error(e)
 # SF
-    def set_flag(self, flag_type):
-        logger.info(f"Setting flag: {flag_type}")
+    def set_flag(self, flag_num):
+        """Set a specific flag number."""
+        logger.info(f"Setting flag: {flag_num}")
         try:
-            stack.set_flag(flag_type)
+            stack.set_flag(flag_num)  # Correct: Call function from stack module
             self.update_stack_display()
         except HP16CError as e:
             self.handle_error(e)
 # CF
-    def clear_flag(self, flag_type):
-        logger.info(f"Clearing flag: {flag_type}")
+    def clear_flag(self, flag_num):
+        """Clear a specific flag number."""
+        logger.info(f"Clearing flag: {flag_num}")
         try:
-            stack.clear_flag(flag_type)
+            stack.clear_flag(flag_num)  # Correct: Call function from stack module
             self.update_stack_display()
         except HP16CError as e:
             self.handle_error(e)

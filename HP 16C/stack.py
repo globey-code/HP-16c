@@ -17,7 +17,8 @@ _stack = [0, 0, 0]  # Y, Z, T
 _x_register = 0     # X (display entry)
 _word_size = 16
 _complement_mode = "UNSIGNED"
-_flags = {"CF": 0}
+# Dictionary to store flag states (0-5), initialized to 0 (cleared)
+_flags = {i: 0 for i in range(6)}
 _last_x = 0
 _i_register = 0
 
@@ -257,27 +258,30 @@ def double_remainder():
     logger.info(f"Double remainder: {x} % {y} = {result}")
     return result
 
-def set_flag(flag_type):
-    """Set a flag (e.g., Carry Flag)."""
-    if flag_type in _flags:
-        _flags[flag_type] = 1
-        logger.info(f"Set flag {flag_type}: {_flags[flag_type]}")
-    else:
-        raise InvalidBitOperationError(f"Unknown flag: {flag_type}")
+def set_flag(flag_num):
+    """Set the specified flag (0-5)."""
+    if not isinstance(flag_num, int) or flag_num < 0 or flag_num > 5:
+        raise ValueError(f"Invalid flag number: {flag_num}")
+    _flags[flag_num] = 1
 
-def clear_flag(flag_type):
-    """Clear a flag."""
-    if flag_type in _flags:
-        _flags[flag_type] = 0
-        logger.info(f"Cleared flag {flag_type}: {_flags[flag_type]}")
-    else:
-        raise InvalidBitOperationError(f"Unknown flag: {flag_type}")
+def clear_flag(flag_num):
+    """Clear the specified flag (0-5)."""
+    if not isinstance(flag_num, int) or flag_num < 0 or flag_num > 5:
+        raise ValueError(f"Invalid flag number: {flag_num}")
+    _flags[flag_num] = 0
 
-def test_flag(flag_type):
-    """Test if a flag is set."""
-    if flag_type in _flags:
-        return _flags[flag_type]
-    raise InvalidBitOperationError(f"Unknown flag: {flag_type}")
+def test_flag(flag_num):
+    """Return 1 if flag is set, 0 if clear."""
+    if not isinstance(flag_num, int) or flag_num < 0 or flag_num > 5:
+        raise ValueError(f"Invalid flag number: {flag_num}")
+    return _flags[flag_num]
+
+def get_flags_bitfield():
+    """Return a 4-bit integer representing flags 0-3."""
+    return (_flags[0] |
+            (_flags[1] << 1) |
+            (_flags[2] << 2) |
+            (_flags[3] << 3))
 
 def set_word_size(size):
     """Set the word size (1-64 bits)."""
