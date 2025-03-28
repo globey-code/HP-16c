@@ -89,12 +89,12 @@ class HP16CController:
 
     def enter_digit(self, digit):
         logger.info(f"Entering digit: {digit}")
-    
+        
         # Handle flag operations if in set_flag or clear_flag mode
         if self.entry_mode in {"set_flag", "clear_flag"}:
             try:
                 flag_num = int(digit)
-                if 0 <= flag_num <= 5:  # HP-16C supports flags 0-5
+                if 0 <= flag_num <= 5:
                     if self.entry_mode == "set_flag":
                         self.set_flag(flag_num)
                     elif self.entry_mode == "clear_flag":
@@ -103,15 +103,13 @@ class HP16CController:
                     self.handle_error(HP16CError("Invalid flag number", "E01"))
             except ValueError:
                 self.handle_error(HP16CError("Invalid input for flag", "E02"))
-            self.entry_mode = None  # Reset entry mode after processing
-            return  # Exit early, as flag operation is complete
+            self.entry_mode = None
+            return
 
-        # Existing functionality preserved below
+        # Program mode handling
         valid_program_chars = set("0123456789ABCDEFabcdef")
-    
-        # Custom case transformation for logging and display
         log_digit = digit.lower() if digit.upper() in {"B", "D"} else digit.upper()
-    
+        
         if self.entry_mode == "label":
             if digit not in valid_program_chars:
                 logger.info(f"Ignoring invalid digit {digit} for label in program mode")
@@ -119,9 +117,9 @@ class HP16CController:
             instruction = f"LBL {digit}"
             self.program_memory.append(instruction)
             step = len(self.program_memory)
-            program_logger.info(f"{step:03d} - {instruction} ({digit.upper()})")  # Display code uppercase
+            program_logger.info(f"{step:03d} - {instruction} ({digit.upper()})")
             self.entry_mode = None
-            self.display.set_entry((step, log_digit), program_mode=True)  # Use log_digit for UI
+            self.display.set_entry((step, log_digit), program_mode=True)  # Blinks
             return
 
         if self.entry_mode == "test_flag":
@@ -129,10 +127,10 @@ class HP16CController:
                 flag_num = int(digit)
                 if flag_num in range(6):
                     result = stack.test_flag(flag_num)
-                    self.display.set_entry("1" if result else "0")
-                elif digit.upper() == "C":  # Allow 'C' for carry flag
+                    self.display.set_entry("1" if result else "0")  # Blinks
+                elif digit.upper() == "C":
                     result = stack.get_carry_flag()
-                    self.display.set_entry("1" if result else "0")
+                    self.display.set_entry("1" if result else "0")  # Blinks
                 else:
                     self.handle_error(HP16CError("Invalid flag number", "E01"))
             except ValueError:
@@ -146,22 +144,23 @@ class HP16CController:
                 return
             self.program_memory.append(digit)
             step = len(self.program_memory)
-            program_logger.info(f"{step:03d} - {log_digit} ({digit.upper()})")  # Display code uppercase
-            instruction = log_digit  # Use log_digit for UI
-            self.display.set_entry((step, instruction), program_mode=True)
+            program_logger.info(f"{step:03d} - {log_digit} ({digit.upper()})")
+            self.display.set_entry((step, log_digit), program_mode=True)  # Blinks
             return
 
         if digit.upper() not in VALID_CHARS[self.display.mode]:
             logger.info(f"Ignoring invalid digit {digit} for base {self.display.mode}")
             return
 
-        if not self.is_user_entry:
+        # If this is the start of a new entry after an operation (like CHS)
+        if not self.is_user_entry or self.stack_lift_enabled:
             if self.stack_lift_enabled:
-                stack.stack_lift()
+                stack.stack_lift()  # Push current X to Y
                 self.stack_lift_enabled = False
-            self.display.clear_entry()
+            self.display.clear_entry()  # Clear display for new entry
             self.result_displayed = False
 
+        # Append the new digit
         test_input = self.display.raw_value + digit
         try:
             if self.display.mode == "HEX":
@@ -180,7 +179,7 @@ class HP16CController:
             logger.info(f"Invalid input {test_input} for base {self.display.mode}")
             return
 
-        self.display.append_entry(digit)  # This will suppress blink via is_digit_entry
+        self.display.append_entry(digit)  # No blink due to is_digit_entry
         val = interpret_in_base(self.display.raw_value, self.display.mode)
         stack._x_register = val
         self.is_user_entry = True
@@ -485,9 +484,9 @@ class HP16CController:
 
         # Update the display with the new X value
         self.display.set_entry(format_in_current_base(stack._x_register, self.display.mode))
-        
-
+       
     def change_sign(self):
+        logger.info("Changing sign")
         val = self.display.current_value or 0
         complement_mode = stack.get_complement_mode()
         word_size = stack.get_word_size()
@@ -498,9 +497,11 @@ class HP16CController:
             negated = (~val) & mask
         else:  # 2S
             negated = ((~val) + 1) & mask
-        self.display.set_entry(negated)
+        self.display.set_entry(negated)  # Updates display, blinks
         stack._x_register = negated
-        
+        self.is_user_entry = True  # Mark as user entry
+        self.stack_lift_enabled = True  # Enable stack lift for next digit
+        self.result_displayed = False  # Not a result, so next digit starts fresh
 
     def gsb(self, label=None):
         logger.info(f"GSB called with label: {label}")
