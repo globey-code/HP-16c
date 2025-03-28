@@ -18,7 +18,7 @@ _x_register = 0     # X (display entry)
 _word_size = 16
 _complement_mode = "UNSIGNED"
 # Dictionary to store flag states (0-5), initialized to 0 (cleared)
-_flags = {i: 0 for i in range(6)}
+_flags = {i: 0 for i in range(6)}  # Flags 0-5 initialized to 0
 _last_x = 0
 _i_register = 0
 
@@ -259,22 +259,20 @@ def double_remainder():
     return result
 
 def set_flag(flag_num):
-    """Set the specified flag (0-5)."""
     if not isinstance(flag_num, int) or flag_num < 0 or flag_num > 5:
         raise ValueError(f"Invalid flag number: {flag_num}")
     _flags[flag_num] = 1
+
+def test_flag(flag_num):
+    if not isinstance(flag_num, int) or flag_num < 0 or flag_num > 5:
+        raise ValueError(f"Invalid flag number: {flag_num}")
+    return _flags[flag_num]
 
 def clear_flag(flag_num):
     """Clear the specified flag (0-5)."""
     if not isinstance(flag_num, int) or flag_num < 0 or flag_num > 5:
         raise ValueError(f"Invalid flag number: {flag_num}")
     _flags[flag_num] = 0
-
-def test_flag(flag_num):
-    """Return 1 if flag is set, 0 if clear."""
-    if not isinstance(flag_num, int) or flag_num < 0 or flag_num > 5:
-        raise ValueError(f"Invalid flag number: {flag_num}")
-    return _flags[flag_num]
 
 def get_flags_bitfield():
     """Return a 4-bit integer representing flags 0-3."""

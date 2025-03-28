@@ -25,20 +25,17 @@ class Display:
         self.is_error_displayed = False
         self.current_value = 0
         self.full_width = width
-        self.last_stack_info = ""  # To fix AttributeError
+        self.last_stack_info = "" 
         self.error_displayed = False
         self.result_displayed = False
         self.show_stack = False
-        self.max_display_chars = 32
+        self.max_display_chars = 24
         self.display_offset = 0
         self.full_entry = "0"
 
-        if font is None:
-            self.font = tkFont.Font(family="Courier", size=18)
-        elif isinstance(font, tuple):
-            self.font = tkFont.Font(family=font[0], size=font[1])
-        else:
-            self.font = font
+        # Use the passed font, fallback to Calculator if None
+        self.font = font if font else tkFont.Font(family="Calculator", size=10)
+        logger.info(f"Display font set to: family={self.font.actual()['family']}, size={self.font.actual()['size']}")
 
         self.frame = tk.Frame(master, bg="#9C9C9C", highlightthickness=border_thickness, highlightbackground="white", relief="flat")
         self.frame.place(x=x, y=y, width=width+25, height=height)
@@ -48,25 +45,35 @@ class Display:
         self.widget.bind("<Key>", lambda e: "break")
 
         self.mode_label = tk.Label(self.frame, text=self.get_mode_char(self.mode), bg="#9C9C9C", fg="black", 
-                                   font=("Courier", 16), anchor="center", width=3)
+                                   font=self.font, anchor="center", width=3)
         self.mode_label.place(relx=1.0, rely=0.5, x=-5, anchor="e")
 
         stack_content_config = stack_content_config or {"relx": 0.01, "rely": 1, "anchor": "sw"}
-        self.stack_content = tk.Label(self.frame, font=("Courier", 10), bg="#9C9C9C", text="")
+        self.stack_content = tk.Label(self.frame, font=self.font, bg="#9C9C9C", text="")
         self.stack_content.place(**stack_content_config)
 
         word_size_config = word_size_config or {"relx": 0.99, "rely": 0, "anchor": "ne"}
-        self.word_size_label = tk.Label(self.frame, font=("Courier", 10), bg="#9C9C9C")
+        self.word_size_label = tk.Label(self.frame, font=("Calculator", 12), bg="#9C9C9C")
         self.word_size_label.place(**word_size_config)
 
-        self.master.after(10, lambda: self.set_entry("0"))
-        self.update_stack_content()  # This should now work
+        # Add flag 4 indicator ("C") below the entry digit
+        self.flag_4_label = tk.Label(self.frame, text="C", bg="#9C9C9C", fg="black", font=("Calculator", 12))
+        self.flag_4_label.place(x=width-45, y=height-2, anchor="se")
+        self.flag_4_label.place_forget()
 
-        self.step_label = tk.Label(self.frame, text="", bg="#9C9C9C", fg="black", font=("Courier", 16), anchor="w")
+        # Add flag 5 indicator ("G") 4 digits left of "C"
+        self.flag_5_label = tk.Label(self.frame, text="G", bg="#9C9C9C", fg="black", font=("Calculator", 12))
+        self.flag_5_label.place(x=width-95, y=height-2, anchor="se")
+        self.flag_5_label.place_forget()
+
+        self.master.after(10, lambda: self.set_entry("0"))
+        self.update_stack_content()
+
+        self.step_label = tk.Label(self.frame, text="", bg="#9C9C9C", fg="black", font=self.font, anchor="w")
         self.step_label.place(x=0, y=0, anchor="nw")
         self.step_label.place_forget()
 
-        self.prgm_label = tk.Label(self.frame, text="PRGM", bg="#9C9C9C", fg="black", font=("Courier", 10))
+        self.prgm_label = tk.Label(self.frame, text="PRGM", bg="#9C9C9C", fg="black", font=self.font)
         self.prgm_label.place(relx=0.99, rely=0.5, anchor="e")
         self.prgm_label.place_forget()
 
@@ -89,6 +96,8 @@ class Display:
         self.mode_label.place_forget()
         self.step_label.place_forget()
         self.prgm_label.place_forget()
+        self.flag_4_label.place_forget()  # Hide flag 4 indicator
+        self.flag_5_label.place_forget()  # Hide flag 5 indicator
         self.widget.place(x=0, y=0, width=self.full_width-30, height=self.frame.winfo_height()-2)
         logger.info(f"Error displayed: {error_message}")
         self.master.after(3000, self.reset_error)
@@ -107,13 +116,14 @@ class Display:
             visible_text = self.full_entry[start:end]
             anchor = "e" if self.mode != "FLOAT" else "w"
             self.widget.config(text=visible_text, anchor=anchor)
-            self.widget.place(x=-5, y=0, width=self.full_width-30, height=self.frame.winfo_height()-2)
+            self.widget.place(x=-25, y=0, width=self.full_width-30, height=self.frame.winfo_height()-2)
             self.mode_label.place(relx=1.0, rely=0.5, x=-5, anchor="e")
             self.step_label.place_forget()
             self.prgm_label.place_forget()
             has_left = self.display_offset > 0
             has_right = end < len(self.full_entry)
             self.mode_label.config(text=self.get_mode_char(self.mode, has_left, has_right))
+            self.update_stack_content()  # Restore flag indicators
             logger.info("Error cleared, display reset to previous value")
 
     def get_visible_text(self):
@@ -141,7 +151,7 @@ class Display:
             return visible_text.rjust(self.max_display_chars)
 
     def set_entry(self, entry, raw=False, program_mode=False):
-        """Set the display entry and initialize the visible text."""
+        """Set the display entry and initialize the visible text, matching HP-16C placeholder behavior."""
         logger.info(f"Setting entry: value={entry}, raw={raw}, program_mode={program_mode}")
         if raw:
             self.is_error_displayed = True
@@ -150,7 +160,7 @@ class Display:
             self.display_offset = 0
             visible_text = entry[:self.max_display_chars]
             self.widget.config(text=visible_text, anchor="w")
-            self.widget.place(x=-5, y=0, width=self.full_width-30, height=self.frame.winfo_height()-2)
+            self.widget.place(x=-25, y=0, width=self.full_width-30, height=self.frame.winfo_height()-2)
             self.mode_label.place_forget()
             self.step_label.place_forget()
             self.prgm_label.place_forget()
@@ -162,7 +172,8 @@ class Display:
             self.step_label.place(x=5, rely=0.5, anchor="w")
             visible_text = instruction[:self.max_display_chars]
             self.widget.config(text=visible_text, anchor="e")
-            self.widget.place(x=-15, y=0, width=self.full_width, height=self.frame.winfo_height()-2)
+            self.widget.place(x=0, y=0, width=self.full_width, height=self.frame.winfo_height()-2)
+            self.prgm_label.config(font=("Calculator", 12))
             self.prgm_label.place(relx=0.99, rely=1, anchor="se")
             self.mode_label.place_forget()
             self.is_error_displayed = False
@@ -181,8 +192,9 @@ class Display:
                     val = float(entry) if self.mode == "FLOAT" else int(entry or 0)
             except (ValueError, TypeError):
                 val = 0
-                entry = "0"
 
+            # Determine display string based on mode and word size
+            word_size = stack.get_word_size()
             if self.mode == "FLOAT":
                 entry_str = "{:.9f}".format(val).rstrip("0").rstrip(".")
                 if "." not in entry_str:
@@ -192,7 +204,17 @@ class Display:
             else:
                 val_int = stack.apply_word_size(int(val))
                 if val_int == 0:
-                    entry_str = "0"
+                    # Mode-specific zero placeholder for initial or cleared state
+                    if self.mode == "DEC":
+                        entry_str = "0"  # Single 0 for DEC
+                    elif self.mode == "HEX":
+                        num_digits = (word_size + 3) // 4  # 4 bits per HEX digit
+                        entry_str = "0" * num_digits
+                    elif self.mode == "OCT":
+                        num_digits = (word_size + 2) // 3  # 3 bits per OCT digit
+                        entry_str = "0" * num_digits
+                    elif self.mode == "BIN":
+                        entry_str = "0" * word_size  # Full word size in BIN
                 else:
                     entry_str = format_in_current_base(val_int, self.mode, pad=False)
                 anchor = "e"
@@ -200,10 +222,10 @@ class Display:
 
             self.full_entry = entry_str
             self.current_entry = entry_str
-            self.display_offset = 0  # Start with no digits hidden on the right
-            visible_text = self.get_visible_text()
+            self.display_offset = 0
+            visible_text = self.get_visible_text()  # Assumes get_visible_text handles truncation
             self.widget.config(text=visible_text, anchor=anchor)
-            self.widget.place(x=-5, y=0, width=self.full_width-30, height=self.frame.winfo_height()-2)
+            self.widget.place(x=-25, y=0, width=self.full_width-30, height=self.frame.winfo_height()-2)
 
             # Update mode label with scroll indicators
             has_left = len(self.full_entry) > self.max_display_chars and self.display_offset < (len(self.full_entry) - self.max_display_chars)
@@ -219,7 +241,7 @@ class Display:
         visible_text = self.get_visible_text()
         anchor = "e" if self.mode != "FLOAT" else "w"
         self.widget.config(text=visible_text, anchor=anchor)
-        self.widget.place(x=-5, y=0, width=self.full_width-30, height=self.frame.winfo_height()-2)
+        self.widget.place(x=-25, y=0, width=self.full_width-30, height=self.frame.winfo_height()-2)
         has_left = len(self.full_entry) > self.max_display_chars and self.display_offset < (len(self.full_entry) - self.max_display_chars)
         has_right = self.display_offset > 0
         self.mode_label.config(text=self.get_mode_char(self.mode, has_left, has_right))
@@ -232,7 +254,7 @@ class Display:
             visible_text = self.get_visible_text()
             anchor = "e" if self.mode != "FLOAT" else "w"
             self.widget.config(text=visible_text, anchor=anchor)
-            self.widget.place(x=-5, y=0, width=self.full_width-30, height=self.frame.winfo_height()-2)
+            self.widget.place(x=-25, y=0, width=self.full_width-30, height=self.frame.winfo_height()-2)
             has_left = len(self.full_entry) > self.max_display_chars and self.display_offset < (len(self.full_entry) - self.max_display_chars)
             has_right = self.display_offset > 0
             self.mode_label.config(text=self.get_mode_char(self.mode, has_left, has_right))
@@ -286,17 +308,26 @@ class Display:
         """Update the stack content display with word size, complement mode, and flags 0-3 as binary."""
         complement_mode = stack.get_complement_mode()
         word_size = stack.get_word_size()
-        flags_bitfield = stack.get_flags_bitfield()  # This should now work
+        flags_bitfield = stack.get_flags_bitfield()
         complement_code = {"UNSIGNED": "00", "1S": "01", "2S": "02"}
         comp_str = complement_code.get(complement_mode, "00")
-        # Format flags as 4-digit binary
         stack_info = f"{comp_str}-{word_size:02d}-{flags_bitfield:04b}"
     
         if stack_info != self.last_stack_info:
             self.word_size_label.config(text=stack_info)
-            # Assuming logger is defined elsewhere
             logger.info(f"Stack info updated: {stack_info}")
             self.last_stack_info = stack_info
+
+        # Update flag 4 and 5 indicators
+        if stack.test_flag(4):
+            self.flag_4_label.place(x=self.full_width-45, y=self.frame.winfo_height()-2, anchor="se")
+        else:
+            self.flag_4_label.place_forget()
+        
+        if stack.test_flag(5):
+            self.flag_5_label.place(x=self.full_width-95, y=self.frame.winfo_height()-2, anchor="se")
+        else:
+            self.flag_5_label.place_forget()
 
     def toggle_stack_display(self, mode=None):
         """Toggle the stack display visibility."""

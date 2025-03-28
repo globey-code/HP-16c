@@ -12,13 +12,16 @@ from controller import HP16CController
 from buttons import bind_buttons
 from button_config import BUTTONS_CONFIG
 from logging_config import logger
+import os
 
 def load_config():
     """Load the default configuration for the emulator."""
     logger.info("Entering function: load_config")
     config = {
         "display_width": 400, "display_height": 100, "margin": 20, "bg_color": "#1e1818",
-        "display_font_family": "Courier", "display_font_size": 18, "show_stack_display": False
+        "display_font_family": "Calculator",  # Use the font family name
+        "display_font_size": 28,            # Larger size for calculator look
+        "show_stack_display": False
     }
     config["display_x"] = 125
     config["display_y"] = 20
@@ -40,13 +43,15 @@ def main():
     logger.info("Setting root resizable: False, False")
     root.resizable(False, False)
 
+    # Check if Calculator is available, fallback to Courier if not
+    available_fonts = tkFont.families()
+    font_family = "Calculator" if "Calculator" in available_fonts else "Courier"
+    custom_font = tkFont.Font(family=font_family, size=28)
+    logger.info(f"Using font: family={custom_font.actual()['family']}, size={custom_font.actual()['size']}")
+    if font_family == "Courier":
+        logger.warning("Calculator font not found in system fonts, falling back to Courier")
+
     config = load_config()
-    try:
-        custom_font = tkFont.Font(family=config["display_font_family"], size=config["display_font_size"])
-        logger.info(f"Custom font created: family={config['display_font_family']}, size={config['display_font_size']}")
-    except Exception as e:
-        logger.info(f"Font creation failed: {str(e)}. Falling back to default")
-        custom_font = tkFont.Font(family="Courier", size=18)
 
     # Set up the main display (X register) and buttons
     disp, buttons = setup_ui(root, config, custom_font)

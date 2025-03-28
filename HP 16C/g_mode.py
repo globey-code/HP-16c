@@ -118,9 +118,14 @@ def action_reciprocal(display_widget, controller_obj):
 def action_set_flag(display_widget, controller_obj):
     """Initiate setting a flag (SF)."""
     if controller_obj.program_mode:
-        # Handle program mode if needed (e.g., record SF instruction)
-        pass
+        # Handle program mode: record SF instruction and wait for digit
+        controller_obj.program_memory.append("SF")
+        step = len(controller_obj.program_memory)
+        program_logger.info(f"{step:03d} - SF (awaiting flag number)")
+        controller_obj.display.set_entry((step, "SF"), program_mode=True)
+        controller_obj.entry_mode = "set_flag"
     else:
+        # In run mode, enter set_flag mode to wait for digit input
         controller_obj.entry_mode = "set_flag"
     logger.info("Entered set_flag mode")
 

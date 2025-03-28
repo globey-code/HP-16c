@@ -12,7 +12,7 @@ from button_config import BUTTONS_CONFIG
 from controller import HP16CController
 from logging_config import logger
 
-def setup_ui(root, config, custom_font):
+def setup_ui(root, config, Courier):
     """Set up the UI components: display and buttons."""
     # Log UI setup details
     logger.info(f"Setting up UI: display at x={config.get('display_x', config['margin'])}, "
@@ -26,7 +26,7 @@ def setup_ui(root, config, custom_font):
         y=config.get("display_y", config["margin"]),
         width=config["display_width"],
         height=config["display_height"],
-        font=custom_font
+        font=Courier
     )
     disp.set_mode("DEC")
     disp.update()

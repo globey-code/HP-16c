@@ -733,30 +733,69 @@ class HP16CController:
             self.result_displayed = True
         except Exception as e:
             self.handle_error(e)
-# SF
+# Set Flag SF
     def set_flag(self, flag_num):
-        """Set a specific flag number."""
+        """Set a specific flag number (0-5) and update display with mode-specific placeholder."""
         logger.info(f"Setting flag: {flag_num}")
         try:
-            stack.set_flag(flag_num)  # Correct: Call function from stack module
-            self.update_stack_display()
+            stack.set_flag(flag_num)  # Set the flag in the stack module
+            self.update_stack_display()  # Update stack display (Y, Z, T registers)
+            self.display.update_stack_content()  # Update flag indicators (C/G)
+
+            # Set display placeholder based on mode and word size
+            word_size = stack.get_word_size()
+            if self.display.mode == "DEC":
+                placeholder = "0"  # Single 0 for DEC mode
+            elif self.display.mode == "HEX":
+                # Pad to word size in nibbles (4 bits per HEX digit)
+                num_digits = (word_size + 3) // 4
+                placeholder = "0" * num_digits
+            elif self.display.mode == "OCT":
+                # Pad to word size in octal digits (3 bits per OCT digit)
+                num_digits = (word_size + 2) // 3
+                placeholder = "0" * num_digits
+            elif self.display.mode == "BIN":
+                # Pad to full word size in binary
+                placeholder = "0" * word_size
+            else:  # FLOAT or unexpected mode
+                placeholder = "0.0" if self.display.mode == "FLOAT" else "0"
+
+            self.display.set_entry(placeholder)
+            self.display.raw_value = placeholder
+            self.is_user_entry = False
+            self.stack_lift_enabled = True
         except HP16CError as e:
             self.handle_error(e)
-# CF
+        except ValueError as e:
+            self.handle_error(HP16CError(f"Invalid flag number: {flag_num}", "E01"))
+# Clear Flag CF
     def clear_flag(self, flag_num):
-        """Clear a specific flag number."""
+        """Clear a specific flag number (0-5)."""
         logger.info(f"Clearing flag: {flag_num}")
         try:
-            stack.clear_flag(flag_num)  # Correct: Call function from stack module
-            self.update_stack_display()
+            stack.clear_flag(flag_num)  # Call stack module's clear_flag
+            self.update_stack_display()  # Update display to reflect flag changes
+            self.display.update_stack_content()  # Ensure flag indicators (C/G) update
         except HP16CError as e:
             self.handle_error(e)
-# F?
+        except ValueError as e:
+            self.handle_error(HP16CError(f"Invalid flag number: {flag_num}", "E01"))
+# Test Flag F?
     def test_flag(self, flag_type):
+        """Test a specific flag (0-5 or 'CF' for carry flag)."""
         logger.info(f"Testing flag: {flag_type}")
         try:
-            result = stack.test_flag(flag_type)
+            if flag_type == "CF":
+                result = stack.get_carry_flag()
+            else:
+                result = stack.test_flag(int(flag_type))
+            self.display.set_entry(str(result))
+            self.update_stack_display()
             return result
         except HP16CError as e:
             self.handle_error(e)
             return False
+        except ValueError as e:
+            self.handle_error(HP16CError(f"Invalid flag type: {flag_type}", "E01"))
+            return False
+
