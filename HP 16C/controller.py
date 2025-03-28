@@ -82,9 +82,11 @@ class HP16CController:
             self.program_memory.append(instruction)
             step = len(self.program_memory)
             program_logger.info(f"{step:03d} - {instruction} ({display_code})")
-            self.display.set_entry((step, display_code), program_mode=True)  # Blinks via set_entry
+            self.display.set_entry((step, display_code), program_mode=True)
         else:
-            base_conversion.set_base(base, self.display)  # Calls set_entry internally, blinks
+            base_conversion.set_base(base, self.display)
+            self.update_stack_display()  # Ensure immediate refresh
+            self.display.update_stack_content()  # Force update of word_size_label
         
 
     def enter_digit(self, digit):

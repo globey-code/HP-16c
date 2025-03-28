@@ -53,9 +53,9 @@ class Display:
         self.stack_content = tk.Label(self.frame, font=self.font, bg="#9C9C9C", text="")
         self.stack_content.place(**stack_content_config)
 
-        word_size_config = word_size_config or {"relx": 0.99, "rely": 0, "anchor": "ne"}
+        self.word_size_config = word_size_config or {"relx": 0.99, "rely": 0, "anchor": "ne"}  # Store config for reuse
         self.word_size_label = tk.Label(self.frame, font=("Calculator", 12), bg="#9C9C9C")
-        self.word_size_label.place(**word_size_config)
+        self.word_size_label.place(**self.word_size_config)
 
         # Add flag 4 indicator ("C") below the entry digit
         self.flag_4_label = tk.Label(self.frame, text="C", bg="#9C9C9C", fg="black", font=("Calculator", 12))
@@ -234,6 +234,7 @@ class Display:
             self.step_label.place_forget()
             self.prgm_label.place_forget()
             self.mode_label.place(relx=1.0, rely=0.5, x=-5, anchor="e")
+            self.word_size_label.place(**self.word_size_config)  # Ensure word_size_label stays visible
 
             try:
                 if isinstance(entry, str):
@@ -270,10 +271,10 @@ class Display:
             self.raw_value = entry_str
             logger.info(f"Display in {self.mode} mode: '{self.full_entry}'")
 
-        # Trigger blink unless explicitly suppressed
         if blink and not self.is_digit_entry:
             self.blink()
-        self.is_digit_entry = False  # Reset flag after use
+        self.is_digit_entry = False
+        self.update_stack_content()  # Refresh word_size_label and flags
 
     def scroll_right(self):
         """Scroll the display one character to the right (hides right digits, shifts left)."""
@@ -332,11 +333,10 @@ class Display:
         return self.current_entry
 
     def set_mode(self, mode_str):
-        """Set the display mode and refresh the entry."""
         logger.info(f"Setting mode: {mode_str}")
         self.mode = mode_str
         self.mode_label.config(text=self.get_mode_char(mode_str))
-        self.set_entry(self.current_value or self.raw_value or 0)
+        self.set_entry(self.current_value or self.raw_value or 0)  # Triggers update_stack_content
 
     def update(self):
         """Refresh the display widget."""
@@ -353,9 +353,11 @@ class Display:
         complement_code = {"UNSIGNED": "00", "1S": "01", "2S": "02"}
         comp_str = complement_code.get(complement_mode, "00")
         stack_info = f"{comp_str}-{word_size:02d}-{flags_bitfield:04b}"
-    
+        
+        # Always update and reposition word_size_label, not just when text changes
+        self.word_size_label.config(text=stack_info)
+        self.word_size_label.place(**self.word_size_config)  # Force repositioning
         if stack_info != self.last_stack_info:
-            self.word_size_label.config(text=stack_info)
             logger.info(f"Stack info updated: {stack_info}")
             self.last_stack_info = stack_info
 
