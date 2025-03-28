@@ -23,13 +23,11 @@ def to_signed(value, word_size, mode):
         if value == mask:
             return 0  # Negative zero in 1's complement (e.g., 0xFF = 0)
         elif value & (1 << (word_size - 1)):
-            # Negative number: flip bits and negate
             return -((~value) & mask)
         else:
             return value  # Positive number
     else:  # "2S"
         if value & (1 << (word_size - 1)):
-            # Negative number: subtract 2^word_size
             return value - (1 << word_size)
         else:
             return value  # Positive number
@@ -41,13 +39,11 @@ def from_signed(value, word_size, mode):
         return value & mask
     elif mode == "1S":
         if value < 0:
-            # Negative number: flip bits of absolute value
             return (~(-value)) & mask
         else:
             return value & mask  # Positive number
     else:  # "2S"
         if value < 0:
-            # Negative number: add 2^word_size to wrap into unsigned range
             return (value + (1 << word_size)) & mask
         else:
             return value & mask  # Positive number
@@ -56,53 +52,104 @@ def add(a, b):
     mode = stack.get_complement_mode()
     word_size = stack.get_word_size()
     mask = (1 << word_size) - 1
+    max_signed = (1 << (word_size - 1)) - 1  # e.g., 32767 for 16-bit
+    min_signed = -(1 << (word_size - 1))     # e.g., -32768 for 16-bit
+
     if mode == "UNSIGNED":
-        result = (a + b) & mask
+        unmasked_result = a + b
+        result = unmasked_result & mask
+        carry = 1 if unmasked_result > mask else 0
+        overflow = carry
     else:
         a_signed = to_signed(a, word_size, mode)
         b_signed = to_signed(b, word_size, mode)
         result_signed = a_signed + b_signed
+        overflow = result_signed > max_signed or result_signed < min_signed
         result = from_signed(result_signed, word_size, mode)
-        result &= mask
-    logger.info(f"Add: {a} + {b} = {result} ({mode})")
+        carry = 0  # No carry in signed mode per real calculator
+
+    # Set flags
+    stack.set_flag(4) if carry else stack.clear_flag(4)  # Flag 4: Carry only in unsigned
+    stack.set_flag(5) if overflow else stack.clear_flag(5)  # Flag 5: Overflow
+    logger.info(f"Add: {a} + {b} = {result} ({mode}), carry={carry}, overflow={overflow}")
     return result
 
 def subtract(a, b):
-    mode = stack.get_complement_mode()  # Get current mode: "UNSIGNED", "1S", or "2S"
-    word_size = stack.get_word_size()   # Get current word size (e.g., 8, 16, 32, 64)
-    mask = (1 << word_size) - 1         # Mask to keep results within word size (e.g., 0xFF for 8 bits)
+    mode = stack.get_complement_mode()
+    word_size = stack.get_word_size()
+    mask = (1 << word_size) - 1
+    max_signed = (1 << (word_size - 1)) - 1  # e.g., 32767 for 16-bit
+    min_signed = -(1 << (word_size - 1))     # e.g., -32768 for 16-bit
 
     if mode == "UNSIGNED":
-        # Simple subtraction with wrap-around
-        result = (a - b) & mask
+        unmasked_result = a - b
+        result = unmasked_result & mask
+        borrow = 1 if a < b else 0
+        overflow = borrow
     else:
-        # Convert operands to signed integers
         a_signed = to_signed(a, word_size, mode)
         b_signed = to_signed(b, word_size, mode)
-        
-        # Perform subtraction in signed arithmetic
         result_signed = a_signed - b_signed
-        
-        # Convert result back to unsigned representation
+        overflow = result_signed > max_signed or result_signed < min_signed
         result = from_signed(result_signed, word_size, mode)
-        result &= mask  # Ensure result fits within word size
+        borrow = 0  # No borrow in signed mode per real calculator
 
-    logger.info(f"Subtract: {a} - {b} = {result} ({mode})")
+    # Set flags
+    stack.set_flag(4) if borrow else stack.clear_flag(4)  # Flag 4: Borrow only in unsigned
+    stack.set_flag(5) if overflow else stack.clear_flag(5)  # Flag 5: Overflow
+    logger.info(f"Subtract: {a} - {b} = {result} ({mode}), borrow={borrow}, overflow={overflow}")
     return result
 
 def multiply(a, b):
     """Multiply two integers with word size consideration."""
-    result = a * b
-    result = stack.apply_word_size(result)
-    logger.info(f"Multiply: {a} * {b} = {result}")
+    mode = stack.get_complement_mode()
+    word_size = stack.get_word_size()
+    mask = (1 << word_size) - 1
+    max_signed = (1 << (word_size - 1)) - 1
+    min_signed = -(1 << (word_size - 1))
+
+    if mode == "UNSIGNED":
+        unmasked_result = a * b
+        result = unmasked_result & mask
+    else:
+        a_signed = to_signed(a, word_size, mode)
+        b_signed = to_signed(b, word_size, mode)
+        result_signed = a_signed * b_signed
+        result = from_signed(result_signed, word_size, mode)
+
+    # No flags set for multiplication overflow per real calculator
+    stack.clear_flag(4)  # Flag 4: No carry
+    stack.clear_flag(5)  # Flag 5: No overflow
+    logger.info(f"Multiply: {a} * {b} = {result} ({mode})")
     return result
 
 def divide(a, b):
+    """Divide two integers with word size consideration."""
     if b == 0:
         raise DivisionByZeroError()
-    result = int(a / b)
-    remainder = a % b
-    stack._last_x = remainder  # Store remainder in last_x
+    
+    mode = stack.get_complement_mode()
+    word_size = stack.get_word_size()
+    mask = (1 << word_size) - 1
+    max_signed = (1 << (word_size - 1)) - 1
+    min_signed = -(1 << (word_size - 1))
+
+    if mode == "UNSIGNED":
+        result = int(a / b)
+        remainder = a % b
+        overflow = 0
+    else:
+        a_signed = to_signed(a, word_size, mode)
+        b_signed = to_signed(b, word_size, mode)
+        result_signed = int(a_signed / b_signed)
+        remainder = a_signed % b_signed
+        overflow = result_signed > max_signed or result_signed < min_signed
+        result = from_signed(result_signed, word_size, mode)
+
+    # Apply word size and set flags
     result = stack.apply_word_size(result)
-    logger.info(f"Divide: {a} / {b} = {result}, remainder={remainder}")
+    stack._last_x = remainder
+    stack.set_flag(4) if remainder != 0 else stack.clear_flag(4)  # Flag 4: Carry if remainder
+    stack.set_flag(5) if overflow else stack.clear_flag(5)  # Flag 5: Overflow
+    logger.info(f"Divide: {a} / {b} = {result} ({mode}), remainder={remainder}, overflow={overflow}")
     return result

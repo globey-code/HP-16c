@@ -263,16 +263,17 @@ def set_flag(flag_num):
         raise ValueError(f"Invalid flag number: {flag_num}")
     _flags[flag_num] = 1
 
-def test_flag(flag_num):
-    if not isinstance(flag_num, int) or flag_num < 0 or flag_num > 5:
-        raise ValueError(f"Invalid flag number: {flag_num}")
-    return _flags[flag_num]
-
 def clear_flag(flag_num):
     """Clear the specified flag (0-5)."""
     if not isinstance(flag_num, int) or flag_num < 0 or flag_num > 5:
         raise ValueError(f"Invalid flag number: {flag_num}")
     _flags[flag_num] = 0
+
+def test_flag(flag_num):
+    if not isinstance(flag_num, int) or flag_num < 0 or flag_num > 5:
+        raise ValueError(f"Invalid flag number: {flag_num}")
+    return _flags[flag_num]
+
 
 def get_flags_bitfield():
     """Return a 4-bit integer representing flags 0-3."""
@@ -322,13 +323,11 @@ def set_complement_mode(mode):
     logger.info(f"Complement mode changed: {old_mode} -> {_complement_mode}")
 
 def get_carry_flag():
-    """Get the carry flag state."""
-    return _flags.get("CF", 0)
+    return _flags[4]
 
 def set_carry_flag(flag):
-    """Set the carry flag."""
-    _flags["CF"] = 1 if flag else 0
-    logger.info(f"Carry flag set: {_flags['CF']}")
+    _flags[4] = 1 if flag else 0
+    logger.info(f"Carry flag (Flag 4) set: {_flags[4]}")
 
 def get_last_x():
     """Get the last X value."""

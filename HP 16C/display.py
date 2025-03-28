@@ -203,20 +203,8 @@ class Display:
                 self.current_value = val
             else:
                 val_int = stack.apply_word_size(int(val))
-                if val_int == 0:
-                    # Mode-specific zero placeholder for initial or cleared state
-                    if self.mode == "DEC":
-                        entry_str = "0"  # Single 0 for DEC
-                    elif self.mode == "HEX":
-                        num_digits = (word_size + 3) // 4  # 4 bits per HEX digit
-                        entry_str = "0" * num_digits
-                    elif self.mode == "OCT":
-                        num_digits = (word_size + 2) // 3  # 3 bits per OCT digit
-                        entry_str = "0" * num_digits
-                    elif self.mode == "BIN":
-                        entry_str = "0" * word_size  # Full word size in BIN
-                else:
-                    entry_str = format_in_current_base(val_int, self.mode, pad=False)
+                # Use format_in_current_base for all values, respecting Flag 3 via its internal logic
+                entry_str = format_in_current_base(val_int, self.mode, pad=False)
                 anchor = "e"
                 self.current_value = val_int
 

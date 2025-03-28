@@ -123,6 +123,22 @@ class HP16CController:
             self.display.set_entry((step, log_digit), program_mode=True)  # Use log_digit for UI
             return
 
+        if self.entry_mode == "test_flag":
+            try:
+                flag_num = int(digit)
+                if flag_num in range(6):
+                    result = stack.test_flag(flag_num)
+                    self.display.set_entry("1" if result else "0")
+                elif digit.upper() == "C":  # Allow 'C' for carry flag
+                    result = stack.get_carry_flag()
+                    self.display.set_entry("1" if result else "0")
+                else:
+                    self.handle_error(HP16CError("Invalid flag number", "E01"))
+            except ValueError:
+                self.handle_error(HP16CError("Invalid input for flag", "E02"))
+            self.entry_mode = None
+            return
+
         if self.program_mode:
             if digit not in valid_program_chars:
                 logger.info(f"Ignoring invalid digit {digit} in program mode")
@@ -432,9 +448,7 @@ class HP16CController:
         except HP16CError as e:
             self.handle_error(e)
 
-
-
-# Normal Mode Functions 
+    # Normal Mode Functions 
 
     def roll_down(self):
         if self.is_user_entry:
@@ -481,42 +495,37 @@ class HP16CController:
         self.display.set_entry(negated)
         stack._x_register = negated
 
-
     def gsb(self, label=None):
-            logger.info(f"GSB called with label: {label}")
-            if self.program_mode:
-                if label is None:
-                    self.entry_mode = "gsb_label"  # Wait for label input
-                else:
-                    instruction = f"GSB {label}"
-                    self.program_memory.append(instruction)
-                    step = len(self.program_memory)
-                    program_logger.info(f"{step:03d} - {instruction} ({label})")
-                    self.display.set_entry((step, label), program_mode=True)
-                    self.entry_mode = None
+        logger.info(f"GSB called with label: {label}")
+        if self.program_mode:
+            if label is None:
+                self.entry_mode = "gsb_label"  # Wait for label input
             else:
-                if label is None:
-                    self.entry_mode = "gsb_label"
-                else:
-                    try:
-                        if label not in self.labels:
-                            raise HP16CError("No such label", "E04")
-                        self.current_line = self.labels[label]
-                        while self.current_line < len(self.program_memory):
-                            instr = self.program_memory[self.current_line]
-                            if instr == "RTN":
-                                break
-                            if not instr.startswith("LBL "):
-                                self.program.execute(self.stack)
-                            self.current_line += 1
-                    except HP16CError as e:
-                        self.handle_error(e)
+                instruction = f"GSB {label}"
+                self.program_memory.append(instruction)
+                step = len(self.program_memory)
+                program_logger.info(f"{step:03d} - {instruction} ({label})")
+                self.display.set_entry((step, label), program_mode=True)
+                self.entry_mode = None
+        else:
+            if label is None:
+                self.entry_mode = "gsb_label"
+            else:
+                try:
+                    if label not in self.labels:
+                        raise HP16CError("No such label", "E04")
+                    self.current_line = self.labels[label]
+                    while self.current_line < len(self.program_memory):
+                        instr = self.program_memory[self.current_line]
+                        if instr == "RTN":
+                            break
+                        if not instr.startswith("LBL "):
+                            self.program.execute(self.stack)
+                        self.current_line += 1
+                except HP16CError as e:
+                    self.handle_error(e)
 
-
-
-
-
-# f Mode Functions
+    # f Mode Functions
 
     def set_word_size(self, bits):
         logger.info(f"Setting word size: {bits}")
@@ -562,17 +571,17 @@ class HP16CController:
             self.handle_error(e)
 
     def exchange_x_with_i(self):
-            logger.info("Exchanging X with I register")
-            try:
-                top_val = stack.pop()
-                i_val = stack.get_i()
-                stack.push(i_val, duplicate_x=False)
-                stack.store_in_i(top_val)
-                self.display.set_entry(format_in_current_base(stack.peek(), self.display.mode))
-                self.display.raw_value = str(stack.peek())
-                self.update_stack_display()
-            except HP16CError as e:
-                self.handle_error(e)
+        logger.info("Exchanging X with I register")
+        try:
+            top_val = stack.pop()
+            i_val = stack.get_i()
+            stack.push(i_val, duplicate_x=False)
+            stack.store_in_i(top_val)
+            self.display.set_entry(format_in_current_base(stack.peek(), self.display.mode))
+            self.display.raw_value = str(stack.peek())
+            self.update_stack_display()
+        except HP16CError as e:
+            self.handle_error(e)
 
     def store_in_i(self):
         logger.info("Storing in I register")
@@ -681,10 +690,8 @@ class HP16CController:
         except HP16CError as e:
             self.handle_error(e)
 
-
-
-# g Mode Functions    
-# CLX
+    # g Mode Functions    
+    # CLX
     def clear_x(self):
         """Clear the X register to 0 and enable stack lift."""
         stack._x_register = 0
@@ -694,7 +701,7 @@ class HP16CController:
         self.stack_lift_enabled = True
         self.update_stack_display()
         logger.info("Cleared X register")
-# DBL×
+    # DBL×
     def double_multiply(self):
         logger.info("Double multiplying")
         try:
@@ -705,7 +712,7 @@ class HP16CController:
             self.update_stack_display()
         except HP16CError as e:
             self.handle_error(e)
-# DBL÷
+    # DBL÷
     def double_divide(self):
         logger.info("Double dividing")
         try:
@@ -716,7 +723,7 @@ class HP16CController:
             self.update_stack_display()
         except HP16CError as e:
             self.handle_error(e)
-# LJ
+    # LJ
     def left_justify(self):
         if self.is_user_entry:
             entry = self.display.raw_value
@@ -733,69 +740,58 @@ class HP16CController:
             self.result_displayed = True
         except Exception as e:
             self.handle_error(e)
-# Set Flag SF
+
+    # Set Flag SF
     def set_flag(self, flag_num):
-        """Set a specific flag number (0-5) and update display with mode-specific placeholder."""
+        """Set a specific flag number (0-5) and refresh the display to reflect the current value."""
         logger.info(f"Setting flag: {flag_num}")
         try:
             stack.set_flag(flag_num)  # Set the flag in the stack module
             self.update_stack_display()  # Update stack display (Y, Z, T registers)
             self.display.update_stack_content()  # Update flag indicators (C/G)
 
-            # Set display placeholder based on mode and word size
-            word_size = stack.get_word_size()
-            if self.display.mode == "DEC":
-                placeholder = "0"  # Single 0 for DEC mode
-            elif self.display.mode == "HEX":
-                # Pad to word size in nibbles (4 bits per HEX digit)
-                num_digits = (word_size + 3) // 4
-                placeholder = "0" * num_digits
-            elif self.display.mode == "OCT":
-                # Pad to word size in octal digits (3 bits per OCT digit)
-                num_digits = (word_size + 2) // 3
-                placeholder = "0" * num_digits
-            elif self.display.mode == "BIN":
-                # Pad to full word size in binary
-                placeholder = "0" * word_size
-            else:  # FLOAT or unexpected mode
-                placeholder = "0.0" if self.display.mode == "FLOAT" else "0"
-
-            self.display.set_entry(placeholder)
-            self.display.raw_value = placeholder
+            # Refresh X register display with current value, respecting Flag 3
+            current_val = stack.peek()
+            formatted_value = format_in_current_base(current_val, self.display.mode, pad=False)
+            self.display.set_entry(formatted_value)
+            self.display.raw_value = formatted_value
             self.is_user_entry = False
             self.stack_lift_enabled = True
         except HP16CError as e:
             self.handle_error(e)
         except ValueError as e:
             self.handle_error(HP16CError(f"Invalid flag number: {flag_num}", "E01"))
-# Clear Flag CF
+
+    # Clear Flag CF
     def clear_flag(self, flag_num):
-        """Clear a specific flag number (0-5)."""
+        """Clear a specific flag number (0-5) and refresh the display to reflect the current value."""
         logger.info(f"Clearing flag: {flag_num}")
         try:
             stack.clear_flag(flag_num)  # Call stack module's clear_flag
-            self.update_stack_display()  # Update display to reflect flag changes
-            self.display.update_stack_content()  # Ensure flag indicators (C/G) update
+            self.update_stack_display()  # Update stack display (Y, Z, T registers)
+            self.display.update_stack_content()  # Update flag indicators (C/G)
+
+            # Refresh X register display with current value, respecting Flag 3
+            current_val = stack.peek()
+            formatted_value = format_in_current_base(current_val, self.display.mode, pad=False)
+            self.display.set_entry(formatted_value)
+            self.display.raw_value = formatted_value
         except HP16CError as e:
             self.handle_error(e)
         except ValueError as e:
             self.handle_error(HP16CError(f"Invalid flag number: {flag_num}", "E01"))
-# Test Flag F?
+
+    # Test Flag F?
     def test_flag(self, flag_type):
-        """Test a specific flag (0-5 or 'CF' for carry flag)."""
         logger.info(f"Testing flag: {flag_type}")
         try:
             if flag_type == "CF":
                 result = stack.get_carry_flag()
             else:
                 result = stack.test_flag(int(flag_type))
-            self.display.set_entry(str(result))
+            self.display.set_entry("1" if result else "0")
             self.update_stack_display()
             return result
-        except HP16CError as e:
-            self.handle_error(e)
-            return False
-        except ValueError as e:
+        except (ValueError, HP16CError) as e:
             self.handle_error(HP16CError(f"Invalid flag type: {flag_type}", "E01"))
             return False
-

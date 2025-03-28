@@ -139,9 +139,9 @@ def action_clear_flag(display_widget, controller_obj):
     logger.info("Entered clear_flag mode")
 
 def action_test_flag(display_widget, controller_obj):
-    """Test Carry Flag (F?)."""
-    result = controller_obj.test_flag("CF")
-    display_widget.set_entry(str(result))
+    """Test a flag (0-5 or CF) after entering flag number."""
+    controller_obj.entry_mode = "test_flag"  # Set mode to wait for flag number
+    logger.info("Entered test_flag mode awaiting flag number")
 
 def action_double_multiply(display_widget, controller_obj):
     """Double Multiply (DBL*). Placeholder."""

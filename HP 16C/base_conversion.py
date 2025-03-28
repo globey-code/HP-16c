@@ -53,20 +53,23 @@ def format_in_current_base(value, base, pad=False):
     mask = (1 << word_size) - 1
     value = value & mask
 
+    # Use Flag 3 to control leading zeros, overridden by explicit pad=True
+    display_leading_zeros = stack.test_flag(3) or pad
+
     if base == "BIN":
-        if pad:
+        if display_leading_zeros:
             result = format(value, f'0{word_size}b')
         else:
             result = format(value, 'b') if value != 0 else '0'
     elif base == "OCT":
-        if pad:
+        if display_leading_zeros:
             oct_digits = (word_size + 2) // 3
             result = format(value, f'0{oct_digits}o')
         else:
             result = format(value, 'o') if value != 0 else '0'
     elif base == "DEC":
         complement_mode = stack.get_complement_mode()
-        if complement_mode in {"1S", "2S"} and value & (1 << (word_size - 1)):  # Check if MSB is set
+        if complement_mode in {"1S", "2S"} and value & (1 << (word_size - 1)):
             if complement_mode == "1S":
                 signed_val = -((~value) & mask)
             else:  # 2S
@@ -75,12 +78,11 @@ def format_in_current_base(value, base, pad=False):
         else:
             result = str(value)
     elif base == "HEX":
-        if pad:
+        if display_leading_zeros:
             hex_digits = (word_size + 3) // 4
             hex_str = format(value, f'0{hex_digits}x')
         else:
             hex_str = format(value, 'x') if value != 0 else '0'
-        # Apply HP-16C custom casing
         mapping = {'a': 'A', 'c': 'C', 'e': 'E', 'f': 'F'}
         result = ''.join(mapping.get(c, c) for c in hex_str)
     else:
