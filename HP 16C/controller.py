@@ -82,9 +82,10 @@ class HP16CController:
             self.program_memory.append(instruction)
             step = len(self.program_memory)
             program_logger.info(f"{step:03d} - {instruction} ({display_code})")
-            self.display.set_entry((step, display_code), program_mode=True)
+            self.display.set_entry((step, display_code), program_mode=True)  # Blinks via set_entry
         else:
-            base_conversion.set_base(base, self.display)
+            base_conversion.set_base(base, self.display)  # Calls set_entry internally, blinks
+        
 
     def enter_digit(self, digit):
         logger.info(f"Entering digit: {digit}")
@@ -179,7 +180,7 @@ class HP16CController:
             logger.info(f"Invalid input {test_input} for base {self.display.mode}")
             return
 
-        self.display.append_entry(digit)
+        self.display.append_entry(digit)  # This will suppress blink via is_digit_entry
         val = interpret_in_base(self.display.raw_value, self.display.mode)
         stack._x_register = val
         self.is_user_entry = True
@@ -255,7 +256,7 @@ class HP16CController:
             self.program_memory.append(instruction)
             step = len(self.program_memory)
             program_logger.info(f"{step:03d} - {instruction} ({display_code})")
-            self.display.set_entry((step, display_code), program_mode=True)
+            self.display.set_entry((step, display_code), program_mode=True)  # Blinks via set_entry
             return
 
         # Handle label entry after GSB
@@ -264,7 +265,7 @@ class HP16CController:
             try:
                 self.gsb(label)
             except Exception as e:
-                self.display.set_error(str(e))
+                self.display.set_error(str(e))  # Blinks via set_error
             self.entry_mode = None
             self.is_user_entry = False
             return
@@ -276,10 +277,11 @@ class HP16CController:
             self.is_user_entry = False
 
         stack.stack_lift()
-        self.display.set_entry(format_in_current_base(stack.peek(), self.display.mode))
+        self.display.set_entry(format_in_current_base(stack.peek(), self.display.mode))  # Blinks via set_entry
         self.stack_lift_enabled = False
         self.result_displayed = True
         self.update_stack_display()
+        
 
     def enter_operator(self, operator):
         logger.info(f"Entering operator: {operator}, X={stack.peek()}, stack={stack._stack}")
@@ -290,7 +292,7 @@ class HP16CController:
             self.program_memory.append(instruction)
             step = len(self.program_memory)
             program_logger.info(f"{step:03d} - {instruction} ({display_code})")
-            self.display.set_entry((step, display_code), program_mode=True)
+            self.display.set_entry((step, display_code), program_mode=True)  # Blinks via set_entry
             return
 
         if self.is_user_entry:
@@ -298,7 +300,7 @@ class HP16CController:
             val = interpret_in_base(entry, self.display.mode)
             stack._x_register = val
             self.is_user_entry = False
-            self.display.clear_entry()
+            self.display.clear_entry()  # No blink here, but subsequent set_entry will
 
         if self.display.is_error_displayed:
             logger.info("Operation skipped due to existing error state")
@@ -345,19 +347,20 @@ class HP16CController:
             if stack.get_complement_mode() == "UNSIGNED" and stack._x_register < 0:
                 stack._x_register = stack._x_register & mask
 
-            self.display.set_entry(format_in_current_base(stack.peek(), self.display.mode))
+            self.display.set_entry(format_in_current_base(stack.peek(), self.display.mode))  # Blinks via set_entry
             self.display.raw_value = str(stack.peek())
             self.update_stack_display()
             self.stack_lift_enabled = True
 
         except HP16CError as e:
-            self.display.set_error(str(e))
+            self.display.set_error(str(e))  # Blinks via set_error
             logger.info(f"Error occurred: {e}")
         except Exception as e:
-            self.display.set_error(str(e))
+            self.display.set_error(str(e))  # Blinks via set_error
             logger.info(f"Unexpected error: {e}")
 
         self.post_enter = False
+        
 
     def handle_error(self, exc: HP16CError):
         logger.info(f"Handling error: {exc.display_message}")
@@ -368,6 +371,7 @@ class HP16CController:
         else:
             raise exc  # Re-raise for testing
             print(f"Error: {exc.display_message}")  # Fallback for testing
+        
 
     def pop_value(self):
         logger.info("Popping value")
@@ -465,6 +469,7 @@ class HP16CController:
 
         # Update the display with the new X value
         self.display.set_entry(format_in_current_base(stack._x_register, self.display.mode))
+        
 
     def swap_xy(self):
         # If user is entering a value, interpret and set it to X register
@@ -480,6 +485,7 @@ class HP16CController:
 
         # Update the display with the new X value
         self.display.set_entry(format_in_current_base(stack._x_register, self.display.mode))
+        
 
     def change_sign(self):
         val = self.display.current_value or 0
@@ -494,6 +500,7 @@ class HP16CController:
             negated = ((~val) + 1) & mask
         self.display.set_entry(negated)
         stack._x_register = negated
+        
 
     def gsb(self, label=None):
         logger.info(f"GSB called with label: {label}")
@@ -547,7 +554,7 @@ class HP16CController:
         except HP16CError as e:
             self.handle_error(e)
             return False
-
+        
     def set_complement_mode(self, mode):
         logger.info(f"Setting complement mode: {mode}")
         try:

@@ -32,6 +32,7 @@ class Display:
         self.max_display_chars = 24
         self.display_offset = 0
         self.full_entry = "0"
+        self.is_digit_entry = False
 
         # Use the passed font, fallback to Calculator if None
         self.font = font if font else tkFont.Font(family="Calculator", size=10)
@@ -76,6 +77,55 @@ class Display:
         self.prgm_label = tk.Label(self.frame, text="PRGM", bg="#9C9C9C", fg="black", font=self.font)
         self.prgm_label.place(relx=0.99, rely=0.5, anchor="e")
         self.prgm_label.place_forget()
+
+    def blink(self):
+        """Simulate a screen blink by briefly clearing and restoring all visible display elements."""
+        if self.is_error_displayed:
+            return  # Skip blink if error is displayed
+        
+        # Store current state of all display elements
+        current_text = self.widget.cget("text")
+        current_anchor = self.widget.cget("anchor")
+        mode_text = self.mode_label.cget("text") if self.mode_label.winfo_ismapped() else None
+        prgm_text = self.prgm_label.cget("text") if self.prgm_label.winfo_ismapped() else None
+        step_text = self.step_label.cget("text") if self.step_label.winfo_ismapped() else None
+        flag_5_text = self.flag_5_label.cget("text") if self.flag_5_label.winfo_ismapped() else None
+        flag_4_text = self.flag_4_label.cget("text") if self.flag_4_label.winfo_ismapped() else None
+        word_size_text = self.word_size_label.cget("text") if self.word_size_label.winfo_ismapped() else None
+        
+        # Clear all visible display elements
+        self.widget.config(text="")
+        if mode_text is not None:
+            self.mode_label.config(text="")
+        if prgm_text is not None:
+            self.prgm_label.config(text="")
+        if step_text is not None:
+            self.step_label.config(text="")
+        if flag_5_text is not None:
+            self.flag_5_label.config(text="")
+        if flag_4_text is not None:
+            self.flag_4_label.config(text="")
+        if word_size_text is not None:
+            self.word_size_label.config(text="")
+        
+        # Restore all after a short delay (e.g., 100ms)
+        def restore():
+            self.widget.config(text=current_text, anchor=current_anchor)
+            if mode_text is not None:
+                self.mode_label.config(text=mode_text)
+            if prgm_text is not None:
+                self.prgm_label.config(text=prgm_text)
+            if step_text is not None:
+                self.step_label.config(text=step_text)
+            if flag_5_text is not None:
+                self.flag_5_label.config(text=flag_5_text)
+            if flag_4_text is not None:
+                self.flag_4_label.config(text=flag_4_text)
+            if word_size_text is not None:
+                self.word_size_label.config(text=word_size_text)
+        
+        self.master.after(100, restore)
+        logger.info("All visible display elements blinked")
 
     def get_mode_char(self, mode, has_left=False, has_right=False):
         mode_map = {"HEX": "h", "DEC": "d", "OCT": "o", "BIN": "b", "FLOAT": "f"}
@@ -150,9 +200,9 @@ class Display:
             visible_text = self.full_entry[start:end]
             return visible_text.rjust(self.max_display_chars)
 
-    def set_entry(self, entry, raw=False, program_mode=False):
-        """Set the display entry and initialize the visible text, matching HP-16C placeholder behavior."""
-        logger.info(f"Setting entry: value={entry}, raw={raw}, program_mode={program_mode}")
+    def set_entry(self, entry, raw=False, program_mode=False, blink=True):
+        """Set the display entry and blink unless suppressed."""
+        logger.info(f"Setting entry: value={entry}, raw={raw}, program_mode={program_mode}, blink={blink}")
         if raw:
             self.is_error_displayed = True
             self.error_displayed = True
@@ -193,7 +243,6 @@ class Display:
             except (ValueError, TypeError):
                 val = 0
 
-            # Determine display string based on mode and word size
             word_size = stack.get_word_size()
             if self.mode == "FLOAT":
                 entry_str = "{:.9f}".format(val).rstrip("0").rstrip(".")
@@ -203,7 +252,6 @@ class Display:
                 self.current_value = val
             else:
                 val_int = stack.apply_word_size(int(val))
-                # Use format_in_current_base for all values, respecting Flag 3 via its internal logic
                 entry_str = format_in_current_base(val_int, self.mode, pad=False)
                 anchor = "e"
                 self.current_value = val_int
@@ -211,17 +259,21 @@ class Display:
             self.full_entry = entry_str
             self.current_entry = entry_str
             self.display_offset = 0
-            visible_text = self.get_visible_text()  # Assumes get_visible_text handles truncation
+            visible_text = self.get_visible_text()
             self.widget.config(text=visible_text, anchor=anchor)
             self.widget.place(x=-25, y=0, width=self.full_width-30, height=self.frame.winfo_height()-2)
 
-            # Update mode label with scroll indicators
             has_left = len(self.full_entry) > self.max_display_chars and self.display_offset < (len(self.full_entry) - self.max_display_chars)
             has_right = self.display_offset > 0
             self.mode_label.config(text=self.get_mode_char(self.mode, has_left, has_right))
 
             self.raw_value = entry_str
             logger.info(f"Display in {self.mode} mode: '{self.full_entry}'")
+
+        # Trigger blink unless explicitly suppressed
+        if blink and not self.is_digit_entry:
+            self.blink()
+        self.is_digit_entry = False  # Reset flag after use
 
     def scroll_right(self):
         """Scroll the display one character to the right (hides right digits, shifts left)."""
@@ -259,7 +311,7 @@ class Display:
         self.result_displayed = False
 
     def append_entry(self, ch):
-        """Append a character to the current entry."""
+        """Append a character to the current entry, marking it as digit entry."""
         logger.info(f"Appending character: {ch}")
         if self.error_displayed:
             self.clear_entry()
@@ -269,10 +321,11 @@ class Display:
             self.raw_value += ch
         try:
             self.current_value = interpret_in_base(self.raw_value, self.mode)
-            self.set_entry(self.current_value)
+            self.is_digit_entry = True  # Mark as digit entry to suppress blink
+            self.set_entry(self.current_value, blink=False)
         except ValueError:
             self.current_value = 0
-            self.set_entry("0")
+            self.set_entry("0", blink=False)
 
     def get_entry(self):
         """Get the current display entry."""
