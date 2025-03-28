@@ -37,6 +37,7 @@ class HP16CController:
         self.program_mode = False        # True when in program mode
         self.entry_mode = None           # For multi-key sequences (e.g., "label")
         self.program_memory = []         # Stores program steps as tuples
+        self.last_program_step = 0       # New: Track last step for re-entry
         self.current_line = 0            # Program counter for execution
         self.labels = {}                 # Maps label names to line numbers
         self.return_stack = []           # Stack for subroutine returns
@@ -83,10 +84,11 @@ class HP16CController:
             step = len(self.program_memory)
             program_logger.info(f"{step:03d} - {instruction} ({display_code})")
             self.display.set_entry((step, display_code), program_mode=True)
+            self.last_program_step = step  # Update last step
         else:
             base_conversion.set_base(base, self.display)
-            self.update_stack_display()  # Ensure immediate refresh
-            self.display.update_stack_content()  # Force update of word_size_label
+            self.update_stack_display()
+            self.display.update_stack_content()
         
 
     def enter_digit(self, digit):
@@ -147,7 +149,8 @@ class HP16CController:
             self.program_memory.append(digit)
             step = len(self.program_memory)
             program_logger.info(f"{step:03d} - {log_digit} ({digit.upper()})")
-            self.display.set_entry((step, log_digit), program_mode=True)  # Blinks
+            self.display.set_entry((step, log_digit), program_mode=True)
+            self.last_program_step = step  # Update last step
             return
 
         if digit.upper() not in VALID_CHARS[self.display.mode]:
@@ -257,7 +260,8 @@ class HP16CController:
             self.program_memory.append(instruction)
             step = len(self.program_memory)
             program_logger.info(f"{step:03d} - {instruction} ({display_code})")
-            self.display.set_entry((step, display_code), program_mode=True)  # Blinks via set_entry
+            self.display.set_entry((step, display_code), program_mode=True)
+            self.last_program_step = step  # Update last step
             return
 
         # Handle label entry after GSB
@@ -293,7 +297,8 @@ class HP16CController:
             self.program_memory.append(instruction)
             step = len(self.program_memory)
             program_logger.info(f"{step:03d} - {instruction} ({display_code})")
-            self.display.set_entry((step, display_code), program_mode=True)  # Blinks via set_entry
+            self.display.set_entry((step, display_code), program_mode=True)
+            self.last_program_step = step  # Update last step
             return
 
         if self.is_user_entry:

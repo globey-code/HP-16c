@@ -155,10 +155,37 @@ def action_toggle_program_run(display_widget, controller_obj):
     controller_obj.program_mode = not controller_obj.program_mode
     if controller_obj.program_mode:
         program_logger.info("PROGRAM MODE START")
-        controller_obj.program_memory = []
-        display_widget.set_entry((0, ""), program_mode=True)
+        # Don’t reset program_memory; keep existing program
+        if not controller_obj.program_memory:
+            # If empty, start at step 000
+            display_widget.set_entry((0, ""), program_mode=True)
+        else:
+            # Show the last edited step or start of program
+            last_step = len(controller_obj.program_memory) - 1 if controller_obj.program_memory else 0
+            if last_step >= 0 and controller_obj.program_memory:
+                last_instruction = controller_obj.program_memory[last_step]
+                # Map instruction to display code
+                op_map = {"/": "10", "*": "20", "-": "30", "+": "40", ".": "48", "ENTER": "36"}
+                base_map = {"HEX": "23", "DEC": "24", "OCT": "25", "BIN": "26"}
+                if isinstance(last_instruction, str):
+                    if last_instruction in op_map:
+                        display_code = op_map[last_instruction]
+                    elif last_instruction in base_map:
+                        display_code = base_map[last_instruction]
+                    elif last_instruction.startswith("LBL "):
+                        display_code = last_instruction.split()[1]
+                    elif last_instruction in "0123456789ABCDEFabcdef":
+                        display_code = last_instruction.upper()
+                    else:
+                        display_code = str(last_instruction)
+                else:
+                    display_code = str(last_instruction)
+                display_widget.set_entry((last_step + 1, display_code), program_mode=True)
+            else:
+                display_widget.set_entry((0, ""), program_mode=True)
     else:
         program_logger.info("PROGRAM MODE END")
+        # Preserve program_memory, just update display to current X
         display_widget.set_entry(stack.peek(), program_mode=False)
     logger.info(f"Program mode: {controller_obj.program_mode}")
 
