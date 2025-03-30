@@ -152,18 +152,21 @@ def action_clear_program(display_widget, controller_obj):
     else:
         logger.info("CLR PRGM ignored - not in program mode")
 
-def action_clear_registers(display_widget, controller_obj):
-    """Clear Registers (CLR REG).
-    
-    Resets all data storage registers to zero, leaving the stack, LAST X, and display unchanged.
-    
-    Args:
-        display_widget: The UI widget responsible for displaying values.
-        controller_obj: The controller object managing emulator state.
-    """
+def action_clear_register(display_widget, controller_obj):
     stack.clear_registers()
-    # No modifications to stack, LAST X, or display are performed
-    logger.info("CLR REG executed: All data storage registers cleared")
+    logger.info("All data storage registers cleared to zero")
+    # Revert buttons to normal mode
+    for btn in controller_obj.buttons:
+        if btn.get("command_name") not in ("yellow_f_function", "blue_g_function", "reload_program"):
+            buttons.revert_to_normal(btn, controller_obj.buttons, display_widget, controller_obj)
+    # Explicitly exit f-mode
+    controller_obj.f_mode_active = False
+    display_widget.hide_f_mode()
+    # Blink the display with the current value
+    current_value = stack.peek()
+    formatted_value = format_in_current_base(current_value, display_widget.mode)
+    display_widget.set_entry(formatted_value, blink=True)
+    return True
 
 def action_clear_prefix(display_widget, controller_obj):
     """Clear Prefix (CLR PRFX) - Reset any pending prefix operations."""
@@ -310,7 +313,7 @@ F_FUNCTIONS = {
     "(I)": action_store_index_indirect, 
     "I": action_recall_index,
     "CLR PRGM": action_clear_program, 
-    "CLR REG": action_clear_registers, 
+    "CLR REG": action_clear_register, 
     "CLR PRFX": action_clear_prefix,
     "WINDOW": action_set_window, 
     "SC 1'S": action_set_complement_1s, 

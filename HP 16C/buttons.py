@@ -58,6 +58,12 @@ def handle_normal_command_by_label(btn, display, controller_obj):
         controller_obj.enter_base_change(label_text)  # Route through controller
     elif label_text == "CHS":
         controller_obj.change_sign()
+    elif label_text == "STO":
+        controller_obj.entry_mode = "sto"
+        logger.info("Entered STO mode, waiting for register number")
+    elif label_text == "RCL":
+        controller_obj.entry_mode = "rcl"
+        logger.info("Entered RCL mode, waiting for register number")
     elif label_text == "ON":
         controller_obj.reload_program()
 

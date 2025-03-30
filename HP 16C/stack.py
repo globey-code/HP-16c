@@ -23,9 +23,8 @@ _complement_mode = "UNSIGNED"
 _flags = {i: 0 for i in range(6)}  # Flags 0-5 initialized to 0
 _last_x = 0
 _i_register = 0
+_data_registers = [0] * 10  # R0 to R9
 
-# Data storage registers (e.g., R0 to R9)
-_data_registers = [0] * 10  # Assuming 10 registers for this example
 
 logger.info(f"Stack initialized: {_stack}, X={_x_register}, word_size={_word_size}, complement_mode={_complement_mode}")
 
@@ -395,23 +394,22 @@ def left_justify():
 # --- New Functions for Data Storage Registers ---
 
 def clear_registers():
-    """Clear all data storage registers to zero."""
     global _data_registers
     _data_registers = [0] * len(_data_registers)
-    logger.info("All data storage registers cleared to zero")
+    logger.info("Registers cleared")
 
-def get_register(index):
-    """Get the value of a specific data storage register."""
+def set_register(index, value):
+    """Set the value of a storage register, applying the word size mask."""
     if 0 <= index < len(_data_registers):
-        return _data_registers[index]
+        mask = (1 << _word_size) - 1  # Mask based on current word size
+        _data_registers[index] = value & mask
+        logger.info(f"Set register R{index} to {_data_registers[index]}")
     else:
         raise IndexError("Register index out of range")
 
-def set_register(index, value):
-    """Set the value of a specific data storage register, applying word size mask."""
+def get_register(index):
+    """Get the value of a storage register."""
     if 0 <= index < len(_data_registers):
-        mask = (1 << _word_size) - 1
-        _data_registers[index] = value & mask
-        logger.info(f"Register {index} set to {_data_registers[index]}")
+        return _data_registers[index]
     else:
         raise IndexError("Register index out of range")

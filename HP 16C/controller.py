@@ -19,7 +19,7 @@ from error import (
     StackUnderflowError, DivisionByZeroError, InvalidOperandError
 )
 from base_conversion import format_in_current_base, interpret_in_base
-from logging_config import logger, program_logger  # Updated import
+from logging_config import logger, program_logger
 from arithmetic import add, subtract, multiply, divide
 
 class HP16CController:
@@ -35,9 +35,9 @@ class HP16CController:
         self.f_mode_active = False
         self.g_mode_active = False
         self.program_mode = False        # True when in program mode
-        self.entry_mode = None           # For multi-key sequences (e.g., "label")
+        self.entry_mode = None           # For multi-key sequences (e.g., "sto", "rcl")
         self.program_memory = []         # Stores program steps as tuples
-        self.last_program_step = 0       # New: Track last step for re-entry
+        self.last_program_step = 0       # Track last step for re-entry
         self.current_line = 0            # Program counter for execution
         self.labels = {}                 # Maps label names to line numbers
         self.return_stack = []           # Stack for subroutine returns
@@ -84,16 +84,56 @@ class HP16CController:
             step = len(self.program_memory)
             program_logger.info(f"{step:03d} - {instruction} ({display_code})")
             self.display.set_entry((step, display_code), program_mode=True)
-            self.last_program_step = step  # Update last step
+            self.last_program_step = step
         else:
             base_conversion.set_base(base, self.display)
             self.update_stack_display()
             self.display.update_stack_content()
-        
 
     def enter_digit(self, digit):
         logger.info(f"Entering digit: {digit}")
-        
+
+        # Handle STO mode
+        if self.entry_mode == "sto":
+            try:
+                reg_num = int(digit)
+                if 0 <= reg_num <= 9:
+                    # Store the current X value in the register
+                    stack.set_register(reg_num, stack.peek())
+                    # Reset entry mode and user entry state
+                    self.entry_mode = None
+                    self.is_user_entry = False  # Ensure next digit starts a new entry
+                    # Update display with current value and blink
+                    self.display.set_entry(format_in_current_base(stack.peek(), self.display.mode), blink=True)
+                    logger.info(f"Stored X={stack.peek()} into R{reg_num}")
+                else:
+                    self.handle_error(HP16CError("Invalid register number", "E01"))
+            except ValueError:
+                self.handle_error(HP16CError("Invalid input for register", "E02"))
+            return
+
+        # Handle RCL mode
+        elif self.entry_mode == "rcl":
+            try:
+                reg_num = int(digit)
+                if 0 <= reg_num <= 9:
+                    # Recall the value from the register and push to stack
+                    value = stack.get_register(reg_num)
+                    stack.push(value)
+                    # Update display with recalled value and blink
+                    self.display.set_entry(format_in_current_base(value, self.display.mode), blink=True)
+                    # Reset entry mode and states
+                    self.entry_mode = None
+                    self.is_user_entry = False
+                    self.stack_lift_enabled = False  # RCL disables stack lift
+                    self.update_stack_display()
+                    logger.info(f"Recalled R{reg_num}={value} into X")
+                else:
+                    self.handle_error(HP16CError("Invalid register number", "E01"))
+            except ValueError:
+                self.handle_error(HP16CError("Invalid input for register", "E02"))
+            return
+
         # Handle flag operations if in set_flag or clear_flag mode
         if self.entry_mode in {"set_flag", "clear_flag"}:
             try:
@@ -113,7 +153,7 @@ class HP16CController:
         # Program mode handling
         valid_program_chars = set("0123456789ABCDEFabcdef")
         log_digit = digit.lower() if digit.upper() in {"B", "D"} else digit.upper()
-        
+
         if self.entry_mode == "label":
             if digit not in valid_program_chars:
                 logger.info(f"Ignoring invalid digit {digit} for label in program mode")
@@ -123,7 +163,7 @@ class HP16CController:
             step = len(self.program_memory)
             program_logger.info(f"{step:03d} - {instruction} ({digit.upper()})")
             self.entry_mode = None
-            self.display.set_entry((step, log_digit), program_mode=True)  # Blinks
+            self.display.set_entry((step, log_digit), program_mode=True)
             return
 
         if self.entry_mode == "test_flag":
@@ -131,10 +171,10 @@ class HP16CController:
                 flag_num = int(digit)
                 if flag_num in range(6):
                     result = stack.test_flag(flag_num)
-                    self.display.set_entry("1" if result else "0")  # Blinks
+                    self.display.set_entry("1" if result else "0")
                 elif digit.upper() == "C":
                     result = stack.get_carry_flag()
-                    self.display.set_entry("1" if result else "0")  # Blinks
+                    self.display.set_entry("1" if result else "0")
                 else:
                     self.handle_error(HP16CError("Invalid flag number", "E01"))
             except ValueError:
@@ -150,19 +190,19 @@ class HP16CController:
             step = len(self.program_memory)
             program_logger.info(f"{step:03d} - {log_digit} ({digit.upper()})")
             self.display.set_entry((step, log_digit), program_mode=True)
-            self.last_program_step = step  # Update last step
+            self.last_program_step = step
             return
 
         if digit.upper() not in VALID_CHARS[self.display.mode]:
             logger.info(f"Ignoring invalid digit {digit} for base {self.display.mode}")
             return
 
-        # If this is the start of a new entry after an operation (like CHS)
+        # If this is the start of a new entry after an operation
         if not self.is_user_entry or self.stack_lift_enabled:
             if self.stack_lift_enabled:
-                stack.stack_lift()  # Push current X to Y
+                stack.stack_lift()
                 self.stack_lift_enabled = False
-            self.display.clear_entry()  # Clear display for new entry
+            self.display.clear_entry()
             self.result_displayed = False
 
         # Append the new digit
@@ -184,7 +224,7 @@ class HP16CController:
             logger.info(f"Invalid input {test_input} for base {self.display.mode}")
             return
 
-        self.display.append_entry(digit)  # No blink due to is_digit_entry
+        self.display.append_entry(digit)
         val = interpret_in_base(self.display.raw_value, self.display.mode)
         stack._x_register = val
         self.is_user_entry = True
@@ -196,6 +236,8 @@ class HP16CController:
         # Reset mode if already active
         if (mode == "f" and self.f_mode_active) or (mode == "g" and self.g_mode_active):
             self.f_mode_active = False
+
+
             self.g_mode_active = False
             self.display.hide_f_mode()
             self.display.hide_g_mode()
@@ -211,7 +253,7 @@ class HP16CController:
                 revert_to_normal(btn, self.buttons, self.display, self)
                 for w in [btn["frame"], btn.get("top_label"), btn.get("main_label"), btn.get("sub_label")]:
                     if w:
-                        w.unbind("<Button-1>")  # Clear normal bindings
+                        w.unbind("<Button-1>")
 
         # Enter the new mode
         if mode == "f":
@@ -267,16 +309,15 @@ class HP16CController:
             step = len(self.program_memory)
             program_logger.info(f"{step:03d} - {instruction} ({display_code})")
             self.display.set_entry((step, display_code), program_mode=True)
-            self.last_program_step = step  # Update last step
+            self.last_program_step = step
             return
 
-        # Handle label entry after GSB
         if hasattr(self, 'entry_mode') and self.entry_mode == "gsb_label":
             label = self.display.raw_value
             try:
                 self.gsb(label)
             except Exception as e:
-                self.display.set_error(str(e))  # Blinks via set_error
+                self.display.set_error(str(e))
             self.entry_mode = None
             self.is_user_entry = False
             return
@@ -288,11 +329,10 @@ class HP16CController:
             self.is_user_entry = False
 
         stack.stack_lift()
-        self.display.set_entry(format_in_current_base(stack.peek(), self.display.mode))  # Blinks via set_entry
+        self.display.set_entry(format_in_current_base(stack.peek(), self.display.mode))
         self.stack_lift_enabled = False
         self.result_displayed = True
         self.update_stack_display()
-        
 
     def enter_operator(self, operator):
         logger.info(f"Entering operator: {operator}, X={stack.peek()}, stack={stack._stack}")
@@ -304,7 +344,7 @@ class HP16CController:
             step = len(self.program_memory)
             program_logger.info(f"{step:03d} - {instruction} ({display_code})")
             self.display.set_entry((step, display_code), program_mode=True)
-            self.last_program_step = step  # Update last step
+            self.last_program_step = step
             return
 
         if self.is_user_entry:
@@ -312,7 +352,7 @@ class HP16CController:
             val = interpret_in_base(entry, self.display.mode)
             stack._x_register = val
             self.is_user_entry = False
-            self.display.clear_entry()  # No blink here, but subsequent set_entry will
+            self.display.clear_entry()
 
         if self.display.is_error_displayed:
             logger.info("Operation skipped due to existing error state")
@@ -326,28 +366,28 @@ class HP16CController:
             if operator in {"+", "-", "*", "/", "AND", "OR", "XOR", "RMD"}:
                 if len(stack._stack) < 1:
                     raise StackUnderflowError(display=self.display)
-                y = stack.pop()  # Original X
-                x = stack._x_register  # Original Y (after pop)
+                y = stack.pop()
+                x = stack._x_register
                 if operator == "+":
-                    result = add(y, x)  # Commutative, order doesn't matter
+                    result = add(y, x)
                 elif operator == "-":
-                    result = subtract(x, y)  # Y - X: original Y - original X
+                    result = subtract(x, y)
                 elif operator == "*":
-                    result = multiply(y, x)  # Commutative, order doesn't matter
+                    result = multiply(y, x)
                 elif operator == "/":
-                    if y == 0:  # y is original X, the divisor
+                    if y == 0:
                         raise DivisionByZeroError(display=self.display)
-                    result = divide(x, y)  # Y / X: original Y / original X
+                    result = divide(x, y)
                 elif operator == "AND":
-                    result = x & y & mask  # Commutative
+                    result = x & y & mask
                 elif operator == "OR":
-                    result = x | y & mask  # Commutative
+                    result = x | y & mask
                 elif operator == "XOR":
-                    result = x ^ y & mask  # Commutative
+                    result = x ^ y & mask
                 elif operator == "RMD":
-                    if y == 0:  # y is original X, the divisor
+                    if y == 0:
                         raise DivisionByZeroError(display=self.display)
-                    result = x % y  # Y % X: original Y % original X
+                    result = x % y
                 stack._x_register = result
             elif operator == "NOT":
                 x = stack._x_register
@@ -359,20 +399,23 @@ class HP16CController:
             if stack.get_complement_mode() == "UNSIGNED" and stack._x_register < 0:
                 stack._x_register = stack._x_register & mask
 
-            self.display.set_entry(format_in_current_base(stack.peek(), self.display.mode))  # Blinks via set_entry
+            if self.entry_mode in {"sto", "rcl"}:
+                self.entry_mode = None
+                logger.info("Canceled STO/RCL operation")
+
+            self.display.set_entry(format_in_current_base(stack.peek(), self.display.mode))
             self.display.raw_value = str(stack.peek())
             self.update_stack_display()
             self.stack_lift_enabled = True
 
         except HP16CError as e:
-            self.display.set_error(str(e))  # Blinks via set_error
+            self.display.set_error(str(e))
             logger.info(f"Error occurred: {e}")
         except Exception as e:
-            self.display.set_error(str(e))  # Blinks via set_error
+            self.display.set_error(str(e))
             logger.info(f"Unexpected error: {e}")
 
         self.post_enter = False
-        
 
     def handle_error(self, exc: HP16CError):
         logger.info(f"Handling error: {exc.display_message}")
@@ -381,9 +424,8 @@ class HP16CController:
             self.display.set_entry(exc.display_message, raw=True)
             self.display.widget.after(5000, lambda: self.display.set_entry(original_value))
         else:
-            raise exc  # Re-raise for testing
-            print(f"Error: {exc.display_message}")  # Fallback for testing
-        
+            raise exc
+            print(f"Error: {exc.display_message}")
 
     def pop_value(self):
         logger.info("Popping value")
@@ -469,35 +511,29 @@ class HP16CController:
     def roll_down(self):
         if self.is_user_entry:
             val = interpret_in_base(self.display.raw_value, self.display.mode)
-            stack._x_register = val  # Changed from self.stack to stack
+            stack._x_register = val
             self.is_user_entry = False
 
-        # Roll the stack down: X → T, Y → X, Z → Y, T → Z
-        old_x = stack._x_register  # Changed from self.stack to stack
-        stack._x_register = stack._stack[0]  # Y → X
-        stack._stack[0] = stack._stack[1]    # Z → Y
-        stack._stack[1] = stack._stack[2]    # T → Z
-        stack._stack[2] = old_x              # X → T
+        old_x = stack._x_register
+        stack._x_register = stack._stack[0]
+        stack._stack[0] = stack._stack[1]
+        stack._stack[1] = stack._stack[2]
+        stack._stack[2] = old_x
 
-        # Update the display with the new X value
         self.display.set_entry(format_in_current_base(stack._x_register, self.display.mode))
-        
 
     def swap_xy(self):
-        # If user is entering a value, interpret and set it to X register
         if self.is_user_entry:
             val = interpret_in_base(self.display.raw_value, self.display.mode)
-            stack._x_register = val  # Update X register using global stack
+            stack._x_register = val
             self.is_user_entry = False
 
-        # Perform the swap between X and Y
-        temp = stack._x_register        # Store current X
-        stack._x_register = stack._stack[0]  # Move Y to X
-        stack._stack[0] = temp          # Move old X to Y
+        temp = stack._x_register
+        stack._x_register = stack._stack[0]
+        stack._stack[0] = temp
 
-        # Update the display with the new X value
         self.display.set_entry(format_in_current_base(stack._x_register, self.display.mode))
-       
+
     def change_sign(self):
         logger.info("Changing sign")
         val = self.display.current_value or 0
@@ -510,17 +546,17 @@ class HP16CController:
             negated = (~val) & mask
         else:  # 2S
             negated = ((~val) + 1) & mask
-        self.display.set_entry(negated)  # Updates display, blinks
+        self.display.set_entry(negated)
         stack._x_register = negated
-        self.is_user_entry = True  # Mark as user entry
-        self.stack_lift_enabled = True  # Enable stack lift for next digit
-        self.result_displayed = False  # Not a result, so next digit starts fresh
+        self.is_user_entry = True
+        self.stack_lift_enabled = True
+        self.result_displayed = False
 
     def gsb(self, label=None):
         logger.info(f"GSB called with label: {label}")
         if self.program_mode:
             if label is None:
-                self.entry_mode = "gsb_label"  # Wait for label input
+                self.entry_mode = "gsb_label"
             else:
                 instruction = f"GSB {label}"
                 self.program_memory.append(instruction)
@@ -568,7 +604,7 @@ class HP16CController:
         except HP16CError as e:
             self.handle_error(e)
             return False
-        
+
     def set_complement_mode(self, mode):
         logger.info(f"Setting complement mode: {mode}")
         try:
@@ -712,9 +748,7 @@ class HP16CController:
             self.handle_error(e)
 
     # g Mode Functions    
-    # CLX
     def clear_x(self):
-        """Clear the X register to 0 and enable stack lift."""
         stack._x_register = 0
         self.display.set_entry("0")
         self.display.raw_value = "0"
@@ -722,7 +756,7 @@ class HP16CController:
         self.stack_lift_enabled = True
         self.update_stack_display()
         logger.info("Cleared X register")
-    # DBL×
+
     def double_multiply(self):
         logger.info("Double multiplying")
         try:
@@ -733,7 +767,7 @@ class HP16CController:
             self.update_stack_display()
         except HP16CError as e:
             self.handle_error(e)
-    # DBL÷
+
     def double_divide(self):
         logger.info("Double dividing")
         try:
@@ -744,7 +778,7 @@ class HP16CController:
             self.update_stack_display()
         except HP16CError as e:
             self.handle_error(e)
-    # LJ
+
     def left_justify(self):
         if self.is_user_entry:
             entry = self.display.raw_value
@@ -752,7 +786,7 @@ class HP16CController:
             stack._x_register = val
             self.is_user_entry = False
         try:
-            stack.left_justify()  # Now computes leading zeros
+            stack.left_justify()
             top_val = stack.peek()
             self.display.set_entry(format_in_current_base(top_val, self.display.mode))
             self.display.raw_value = str(top_val)
@@ -762,16 +796,12 @@ class HP16CController:
         except Exception as e:
             self.handle_error(e)
 
-    # Set Flag SF
     def set_flag(self, flag_num):
-        """Set a specific flag number (0-5) and refresh the display to reflect the current value."""
         logger.info(f"Setting flag: {flag_num}")
         try:
-            stack.set_flag(flag_num)  # Set the flag in the stack module
-            self.update_stack_display()  # Update stack display (Y, Z, T registers)
-            self.display.update_stack_content()  # Update flag indicators (C/G)
-
-            # Refresh X register display with current value, respecting Flag 3
+            stack.set_flag(flag_num)
+            self.update_stack_display()
+            self.display.update_stack_content()
             current_val = stack.peek()
             formatted_value = format_in_current_base(current_val, self.display.mode, pad=False)
             self.display.set_entry(formatted_value)
@@ -783,16 +813,12 @@ class HP16CController:
         except ValueError as e:
             self.handle_error(HP16CError(f"Invalid flag number: {flag_num}", "E01"))
 
-    # Clear Flag CF
     def clear_flag(self, flag_num):
-        """Clear a specific flag number (0-5) and refresh the display to reflect the current value."""
         logger.info(f"Clearing flag: {flag_num}")
         try:
-            stack.clear_flag(flag_num)  # Call stack module's clear_flag
-            self.update_stack_display()  # Update stack display (Y, Z, T registers)
-            self.display.update_stack_content()  # Update flag indicators (C/G)
-
-            # Refresh X register display with current value, respecting Flag 3
+            stack.clear_flag(flag_num)
+            self.update_stack_display()
+            self.display.update_stack_content()
             current_val = stack.peek()
             formatted_value = format_in_current_base(current_val, self.display.mode, pad=False)
             self.display.set_entry(formatted_value)
@@ -802,7 +828,6 @@ class HP16CController:
         except ValueError as e:
             self.handle_error(HP16CError(f"Invalid flag number: {flag_num}", "E01"))
 
-    # Test Flag F?
     def test_flag(self, flag_type):
         logger.info(f"Testing flag: {flag_type}")
         try:
