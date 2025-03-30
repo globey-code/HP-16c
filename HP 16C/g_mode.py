@@ -9,11 +9,8 @@ import sys
 import os
 import stack
 import base_conversion
-import buttons
 from error import (
-    HP16CError, IncorrectWordSizeError, NoValueToShiftError, 
-    ShiftExceedsWordSizeError, InvalidBitOperationError, 
-    StackUnderflowError, DivisionByZeroError, InvalidOperandError
+    HP16CError
 )
 from logging_config import logger, program_logger
 

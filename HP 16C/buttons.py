@@ -7,20 +7,14 @@
 
 import stack
 import base_conversion
-import f_mode
-import g_mode
-from error import (
-    HP16CError, IncorrectWordSizeError, NoValueToShiftError, 
-    ShiftExceedsWordSizeError, InvalidBitOperationError, 
-    StackUnderflowError, DivisionByZeroError, InvalidOperandError
-)
 from logging_config import logger, program_logger
 
 VALID_CHARS = {
     "BIN": set("01"), 
     "OCT": set("01234567"), 
     "DEC": set("0123456789"), 
-    "HEX": set("0123456789ABCDEF")
+    "HEX": set("0123456789ABCDEF"),
+    "FLOAT": set("0123456789.")
 }
 
 def normal_action_digit(digit, display_widget):
@@ -32,7 +26,6 @@ def normal_action_digit(digit, display_widget):
     display_widget.append_entry(digit)
 
 def handle_normal_command_by_label(btn, display, controller_obj):
-    """Execute normal mode commands based on button label."""
     main_label_widget = btn.get("main_label")
     if not main_label_widget:
         return
@@ -50,12 +43,17 @@ def handle_normal_command_by_label(btn, display, controller_obj):
         controller_obj.enter_value()
     elif label_text.isdigit() or label_text in "ABCDEF":
         controller_obj.enter_digit(label_text)
-    elif label_text in {"+", "-", "*", "/", "AND", "OR", "XOR", "NOT", "RMD", "."}:
+    elif label_text in {"+", "-", "*", "/", "AND", "OR", "XOR", "NOT", "RMD"}:
         controller_obj.enter_operator(label_text)
+    elif label_text == ".":
+        if display.mode == "FLOAT":
+            controller_obj.enter_digit(label_text)  # Treat '.' as a digit in FLOAT mode
+        else:
+            controller_obj.enter_operator(label_text)  # Otherwise, treat as operator
     elif label_text == "BSP":
         handle_backspace(display, controller_obj)
     elif label_text in {"BIN", "OCT", "DEC", "HEX"}:
-        controller_obj.enter_base_change(label_text)  # Route through controller
+        controller_obj.enter_base_change(label_text)
     elif label_text == "CHS":
         controller_obj.change_sign()
     elif label_text == "STO":
@@ -139,7 +137,7 @@ def handle_command(cmd_name, btn, display, controller_obj):
 def handle_backspace(display_widget, controller_obj):
     """Handle BSP: Backspace in normal mode, back step in program mode."""
     if controller_obj.program_mode:
-        # In program mode, perform back step (BST-like behavior)
+        # Existing program mode logic remains unchanged
         if controller_obj.program_memory:
             removed_instruction = controller_obj.program_memory.pop()
             step = len(controller_obj.program_memory)
@@ -170,20 +168,13 @@ def handle_backspace(display_widget, controller_obj):
             logger.info("BSP: Program memory is already empty")
             display_widget.set_entry((0, ""), program_mode=True)
     else:
-        # In normal mode, perform standard backspace on display entry
-        logger.info("BSP: Performing backspace on display")
-        old_val = display_widget.raw_value
-        if old_val:
-            new_val = old_val[:-1]
-            display_widget.raw_value = new_val
-            display_widget.set_entry(new_val or "0")
-            # Update X register if user is entering a value
-            if controller_obj.is_user_entry:
-                val = base_conversion.interpret_in_base(new_val or "0", display_widget.mode)
-                stack._x_register = val
-                controller_obj.update_stack_display()
+        # In normal mode, handle backspace based on entry state
+        if controller_obj.is_user_entry:
+            logger.info("BSP: Deleting last digit during user entry")
+            controller_obj.delete_digit()
         else:
-            logger.info("BSP: Display is already empty")
+            logger.info("BSP: Clearing X register (not in user entry mode)")
+            controller_obj.clear_x()
 
 def reload_program():
     """Reload the emulator program."""

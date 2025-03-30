@@ -18,7 +18,7 @@ def show_user_guide():
                                "Here you can find instructions on how to use the emulator.").pack()
 
 def setup_ui(root, config, Courier):
-    """Set up the UI components: display, buttons, menu bar, and key bindings."""
+    """Set up the UI components: display, buttons, menu bar, stack display, and key bindings."""
     # Log UI setup details
     logger.info(f"Setting up UI: display at x={config.get('display_x', config['margin'])}, "
                 f"y={config.get('display_y', config['margin'])}, width={config['display_width']}, "
@@ -101,7 +101,7 @@ def setup_ui(root, config, Courier):
 
     # Set window geometry
     root.update_idletasks()
-    root.geometry(f"{1049 + 2 * config['margin']}x560")
+    root.geometry(f"{1049 + 2 * config['margin']}x580")
 
     # Create menu bar
     menu_bar = tk.Menu(root)
@@ -110,12 +110,23 @@ def setup_ui(root, config, Courier):
     # Create Help menu
     help_menu = tk.Menu(menu_bar, tearoff=0)
     menu_bar.add_cascade(label="Help", menu=help_menu)
-
-    # Add User Guide command to Help menu
     help_menu.add_command(label="User Guide", command=show_user_guide)
+
+    # Create Debug menu
+    debug_menu = tk.Menu(menu_bar, tearoff=0)
+    menu_bar.add_cascade(label="Debug", menu=debug_menu)
+    debug_menu.add_command(label="Toggle Stack Display", command=disp.toggle_stack_display)
 
     # Bind F1 key to show_user_guide
     root.bind('<F1>', lambda event: show_user_guide())
+
+    # Create stack display widget
+    stack_display = tk.Label(root, text="Y: 0 Z: 0 T: 0", font=Courier, bg=config["bg_color"], fg="white")
+    disp.stack_display = stack_display  # Attach to Display instance
+    if config.get("show_stack_display", False):
+        disp.toggle_stack_display()  # Show if config specifies
+    else:
+        disp.toggle_stack_display()  # Hide initially
 
     return disp, buttons_list
 
