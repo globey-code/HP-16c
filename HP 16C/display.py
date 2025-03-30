@@ -50,7 +50,7 @@ class Display:
         self.mode_label.place(relx=1.0, rely=0.5, x=-5, anchor="e")
 
         stack_content_config = stack_content_config or {"relx": 0.01, "rely": 1, "anchor": "sw"}
-        self.stack_content = tk.Label(self.frame, font=self.font, bg="#9C9C9C", text="")
+        self.stack_content = tk.Label(self.frame, font=("Calculator", 12), bg="#9C9C9C", text="")
         self.stack_content.place(**stack_content_config)
 
         self.word_size_config = word_size_config or {"relx": 0.99, "rely": 0, "anchor": "ne"}  # Store config for reuse
@@ -67,6 +67,16 @@ class Display:
         self.flag_5_label.place(x=width-95, y=height-2, anchor="se")
         self.flag_5_label.place_forget()
 
+        # Add f-mode indicator (120 pixels from left, bottom)
+        self.f_mode_label = tk.Label(self.frame, text="f", bg="#9C9C9C", fg="black", font=("Calculator", 12))
+        self.f_mode_label.place(x=120, y=height-2, anchor="s")
+        self.f_mode_label.place_forget()
+
+        # Add g-mode indicator (150 pixels from left, bottom)
+        self.g_mode_label = tk.Label(self.frame, text="g", bg="#9C9C9C", fg="black", font=("Calculator", 12))
+        self.g_mode_label.place(x=150, y=height-4, anchor="s")
+        self.g_mode_label.place_forget()
+
         self.master.after(10, lambda: self.set_entry("0"))
         self.update_stack_content()
 
@@ -77,6 +87,28 @@ class Display:
         self.prgm_label = tk.Label(self.frame, text="PRGM", bg="#9C9C9C", fg="black", font=self.font)
         self.prgm_label.place(relx=0.99, rely=0.5, anchor="e")
         self.prgm_label.place_forget()
+
+    def show_f_mode(self):
+        """Show the f-mode indicator."""
+        self.f_mode_label.place(x=120, y=self.frame.winfo_height()-2, anchor="s")
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info("f-mode indicator shown")
+
+    def hide_f_mode(self):
+        self.f_mode_label.place_forget()
+        self.master.update_idletasks()  # Force Tkinter to update the UI
+        logger.info("f-mode indicator hidden")
+
+    def show_g_mode(self):
+        """Show the g-mode indicator."""
+        self.g_mode_label.place(x=150, y=self.frame.winfo_height()-4, anchor="s")
+        logger.info("g-mode indicator shown")
+
+    def hide_g_mode(self):
+        """Hide the g-mode indicator."""
+        self.g_mode_label.place_forget()
+        logger.info("g-mode indicator hidden")
 
     def blink(self):
         """Simulate a screen blink by briefly clearing and restoring all visible display elements."""
@@ -92,6 +124,8 @@ class Display:
         flag_5_text = self.flag_5_label.cget("text") if self.flag_5_label.winfo_ismapped() else None
         flag_4_text = self.flag_4_label.cget("text") if self.flag_4_label.winfo_ismapped() else None
         word_size_text = self.word_size_label.cget("text") if self.word_size_label.winfo_ismapped() else None
+        f_mode_text = self.f_mode_label.cget("text") if self.f_mode_label.winfo_ismapped() else None
+        g_mode_text = self.g_mode_label.cget("text") if self.g_mode_label.winfo_ismapped() else None
         
         # Clear all visible display elements
         self.widget.config(text="")
@@ -107,6 +141,10 @@ class Display:
             self.flag_4_label.config(text="")
         if word_size_text is not None:
             self.word_size_label.config(text="")
+        if f_mode_text is not None:
+            self.f_mode_label.config(text="")
+        if g_mode_text is not None:
+            self.g_mode_label.config(text="")
         
         # Restore all after a short delay (e.g., 100ms)
         def restore():
@@ -123,6 +161,10 @@ class Display:
                 self.flag_4_label.config(text=flag_4_text)
             if word_size_text is not None:
                 self.word_size_label.config(text=word_size_text)
+            if f_mode_text is not None:
+                self.f_mode_label.config(text=f_mode_text)
+            if g_mode_text is not None:
+                self.g_mode_label.config(text=g_mode_text)
         
         self.master.after(100, restore)
         logger.info("All visible display elements blinked")

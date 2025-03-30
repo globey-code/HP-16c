@@ -197,6 +197,8 @@ class HP16CController:
         if (mode == "f" and self.f_mode_active) or (mode == "g" and self.g_mode_active):
             self.f_mode_active = False
             self.g_mode_active = False
+            self.display.hide_f_mode()
+            self.display.hide_g_mode()
             for btn in self.buttons:
                 if btn.get("command_name") not in ("yellow_f_function", "blue_g_function", "reload_program"):
                     revert_to_normal(btn, self.buttons, self.display, self)
@@ -215,11 +217,15 @@ class HP16CController:
         if mode == "f":
             self.f_mode_active = True
             self.g_mode_active = False
+            self.display.show_f_mode()
+            self.display.hide_g_mode()
             color = "#e3af01"
             label_key = "top_label"
         elif mode == "g":
             self.f_mode_active = False
             self.g_mode_active = True
+            self.display.hide_f_mode()
+            self.display.show_g_mode()
             color = "#59b7d1"
             label_key = "sub_label"
         else:

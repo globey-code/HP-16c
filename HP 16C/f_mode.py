@@ -153,18 +153,39 @@ def action_clear_program(display_widget, controller_obj):
         logger.info("CLR PRGM ignored - not in program mode")
 
 def action_clear_registers(display_widget, controller_obj):
-    """Clear Registers (CLR REG)."""
-    stack_state = stack.get_state()
-    for i in range(len(stack_state)):
-        stack.pop()
-        stack.push(0, duplicate_x=False)
-    display_widget.clear_entry()
-    controller_obj.update_stack_display()
+    """Clear Registers (CLR REG).
+    
+    Resets all data storage registers to zero, leaving the stack, LAST X, and display unchanged.
+    
+    Args:
+        display_widget: The UI widget responsible for displaying values.
+        controller_obj: The controller object managing emulator state.
+    """
+    stack.clear_registers()
+    # No modifications to stack, LAST X, or display are performed
+    logger.info("CLR REG executed: All data storage registers cleared")
 
 def action_clear_prefix(display_widget, controller_obj):
-    """Clear Prefix (CLR PRFX) - Reset modes."""
+    """Clear Prefix (CLR PRFX) - Reset any pending prefix operations."""
+    # Reset mode states
+    controller_obj.entry_mode = None
     controller_obj.f_mode_active = False
     controller_obj.g_mode_active = False
+    # Hide mode indicators on the display
+    display_widget.hide_f_mode()
+    display_widget.hide_g_mode()
+    # Revert buttons to normal mode
+    for btn in controller_obj.buttons:
+        if btn.get("command_name") not in ("yellow_f_function", "blue_g_function", "reload_program"):
+            buttons.revert_to_normal(btn, controller_obj.buttons, display_widget, controller_obj)
+    # Refresh display with current X register value
+    from stack import peek
+    from base_conversion import format_in_current_base
+    current_x = peek()
+    formatted_x = format_in_current_base(current_x, display_widget.mode)
+    display_widget.set_entry(formatted_x)
+    logger.info("Clear Prefix: Reset prefix states, reverted buttons, and refreshed display")
+    return True
 
 def action_set_window(display_widget, controller_obj):
     """Window - Not implemented."""

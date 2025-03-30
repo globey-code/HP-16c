@@ -12,17 +12,24 @@ from error import (
     StackUnderflowError, DivisionByZeroError, InvalidOperandError
 )
 from logging_config import logger
+import logging
+logger = logging.getLogger(__name__)
 
+# Stack and register variables
 _stack = [0, 0, 0]  # Y, Z, T
 _x_register = 0     # X (display entry)
 _word_size = 16
 _complement_mode = "UNSIGNED"
-# Dictionary to store flag states (0-5), initialized to 0 (cleared)
 _flags = {i: 0 for i in range(6)}  # Flags 0-5 initialized to 0
 _last_x = 0
 _i_register = 0
 
+# Data storage registers (e.g., R0 to R9)
+_data_registers = [0] * 10  # Assuming 10 registers for this example
+
 logger.info(f"Stack initialized: {_stack}, X={_x_register}, word_size={_word_size}, complement_mode={_complement_mode}")
+
+# --- Existing Functions (Unchanged) ---
 
 def get_state():
     """Return a copy of the current stack plus X."""
@@ -39,7 +46,6 @@ def push(value):
         value = (1 << _word_size) + value
     value = value & ((1 << _word_size) - 1)
     
-    # Shift stack: T = Z, Z = Y, Y = X
     _stack[2] = _stack[1]  # T = Z
     _stack[1] = _stack[0]  # Z = Y
     _stack[0] = _x_register  # Y = X
@@ -64,7 +70,6 @@ def peek():
 def roll_down():
     """Roll down the stack: Y→X, Z→Y, T→Z, X→T"""
     global _x_register, _stack
-    # Perform the downward rotation: Y becomes X, Z becomes Y, T becomes Z, X becomes T
     old_x = _x_register
     _x_register = _stack[0]  # Y moves to X
     _stack = [_stack[1], _stack[2], old_x]  # Z→Y, T→Z, X→T
@@ -209,8 +214,6 @@ def test_bit(bit_index):
         raise InvalidBitOperationError()
     return (_x_register >> bit_index) & 1
 
-
-
 def absolute():
     """Set X to its absolute value."""
     global _x_register
@@ -274,7 +277,6 @@ def test_flag(flag_num):
         raise ValueError(f"Invalid flag number: {flag_num}")
     return _flags[flag_num]
 
-
 def get_flags_bitfield():
     """Return a 4-bit integer representing flags 0-3."""
     return (_flags[0] |
@@ -283,7 +285,7 @@ def get_flags_bitfield():
             (_flags[3] << 3))
 
 def set_word_size(size):
-    """Set the word size (1-64 bits)."""
+    """Set the word size (1-64 bits) and apply mask to stack and registers."""
     global _word_size, _x_register
     if not isinstance(size, int) or size < 1 or size > 64:
         raise IncorrectWordSizeError()
@@ -293,7 +295,9 @@ def set_word_size(size):
     _x_register = _x_register & mask
     for i in range(len(_stack)):
         _stack[i] = _stack[i] & mask
-    logger.info(f"Word size changed: {old_size} -> {_word_size}, X={_x_register}, stack={_stack}")
+    for i in range(len(_data_registers)):
+        _data_registers[i] = _data_registers[i] & mask
+    logger.info(f"Word size changed: {old_size} -> {_word_size}, X={_x_register}, stack={_stack}, registers={_data_registers}")
 
 def get_word_size():
     """Get the current word size."""
@@ -359,8 +363,7 @@ def recall_i():
     push(_i_register)
     logger.info(f"Recalled I register: {_i_register}, X={_x_register}, stack={_stack}")
 
-
-### g-mode functions ###
+# --- g-mode functions ---
 
 def roll_up():
     """Rotate stack upward: X→Y, Y→Z, Z→T, T→X."""
@@ -388,3 +391,27 @@ def left_justify():
         _x_register = _word_size  # If X is 0, set to word size (16)
     else:
         _x_register = _word_size - x.bit_length()  # Number of leading zeros
+
+# --- New Functions for Data Storage Registers ---
+
+def clear_registers():
+    """Clear all data storage registers to zero."""
+    global _data_registers
+    _data_registers = [0] * len(_data_registers)
+    logger.info("All data storage registers cleared to zero")
+
+def get_register(index):
+    """Get the value of a specific data storage register."""
+    if 0 <= index < len(_data_registers):
+        return _data_registers[index]
+    else:
+        raise IndexError("Register index out of range")
+
+def set_register(index, value):
+    """Set the value of a specific data storage register, applying word size mask."""
+    if 0 <= index < len(_data_registers):
+        mask = (1 << _word_size) - 1
+        _data_registers[index] = value & mask
+        logger.info(f"Register {index} set to {_data_registers[index]}")
+    else:
+        raise IndexError("Register index out of range")
