@@ -6,14 +6,19 @@
 # Dependencies: Python 3.6+ with tkinter, HP-16C emulator modules (buttons, display, controller)
 
 import tkinter as tk
-import buttons
 from display import Display
 from button_config import BUTTONS_CONFIG
-from controller import HP16CController
 from logging_config import logger
 
+def show_user_guide():
+    """Display the user guide in a new window."""
+    help_window = tk.Toplevel()
+    help_window.title("User Guide")
+    tk.Label(help_window, text="This is the user guide for the HP-16C emulator.\n"
+                               "Here you can find instructions on how to use the emulator.").pack()
+
 def setup_ui(root, config, Courier):
-    """Set up the UI components: display and buttons."""
+    """Set up the UI components: display, buttons, menu bar, and key bindings."""
     # Log UI setup details
     logger.info(f"Setting up UI: display at x={config.get('display_x', config['margin'])}, "
                 f"y={config.get('display_y', config['margin'])}, width={config['display_width']}, "
@@ -97,6 +102,21 @@ def setup_ui(root, config, Courier):
     # Set window geometry
     root.update_idletasks()
     root.geometry(f"{1049 + 2 * config['margin']}x560")
+
+    # Create menu bar
+    menu_bar = tk.Menu(root)
+    root.config(menu=menu_bar)
+
+    # Create Help menu
+    help_menu = tk.Menu(menu_bar, tearoff=0)
+    menu_bar.add_cascade(label="Help", menu=help_menu)
+
+    # Add User Guide command to Help menu
+    help_menu.add_command(label="User Guide", command=show_user_guide)
+
+    # Bind F1 key to show_user_guide
+    root.bind('<F1>', lambda event: show_user_guide())
+
     return disp, buttons_list
 
 def create_single_button(root, cfg):
