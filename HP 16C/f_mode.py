@@ -241,11 +241,10 @@ def action_set_word_size(display_widget, controller_obj):
         controller_obj.handle_error(IncorrectWordSizeError())
 
 def action_set_float_mode(display_widget, controller_obj):
-    """Set Float Mode (FLOAT)."""
-    controller_obj.display.mode = "FLOAT"
-    current_val = float(display_widget.raw_value or "0")
-    display_widget.set_entry(current_val)
-    controller_obj.update_stack_display()
+    """Set the calculator to float mode and prepare to set decimal places."""
+    controller_obj.entry_mode = "set_decimal_places"
+    display_widget.set_entry("0", raw=True, blink=True)
+    # Mode will be set to FLOAT after digit entry, as shown above
 
 def action_memory_status(display_widget, controller_obj):
     """Memory Info (MEM) - Not implemented."""

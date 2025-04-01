@@ -3,7 +3,7 @@
 # Author: GlobeyCode
 # License: MIT
 # Date: 3/23/2025
-# Dependencies: Python 3.6+, HP-16C emulator modules (stack, buttons, error, base_conversion, arithmetic)
+# Dependencies: Python 3.6+, HP-16C emulator modules (stack, buttons, error, base_conversion)
 
 import stack
 import base_conversion
@@ -15,7 +15,6 @@ from error import (
 )
 from base_conversion import format_in_current_base, interpret_in_base
 from logging_config import logger, program_logger
-from arithmetic import add, subtract, multiply, divide
 
 class HP16CController:
     def __init__(self, display, buttons, stack_display):
@@ -38,14 +37,35 @@ class HP16CController:
         self.return_stack = []
         self.decimal_entered = False
 
-        # Initialize stack mode to "DEC" as default
+    def initialize(self):
+        """Initialize stack mode and display after attributes are set."""
         stack.set_current_mode("DEC")
-        self.display.set_entry("0.0")  # Initial display in float mode
+        if self.display is not None:
+            self.display.set_entry("0.0")  # Initial display in float mode
         logger.info("Stack mode initialized to DEC")
 
     def enter_digit(self, digit):
         """Handle digit entry with live comma formatting in float mode."""
         logger.info(f"Entering digit: {digit}")
+    
+        # Handle setting decimal places in float mode
+        if self.entry_mode == "set_decimal_places":
+            if digit in "0123456789":
+                decimal_places = int(digit)
+                if decimal_places == 0:
+                    self.display.decimal_places = None  # Floating decimal
+                else:
+                    self.display.decimal_places = decimal_places  # Fixed decimal
+                self.display.set_mode("FLOAT")
+                stack.set_current_mode("FLOAT")
+                self.entry_mode = None
+                current_value = stack.peek()
+                formatted_value = self.format_float(current_value)
+                self.display.set_entry(formatted_value, blink=True)
+                logger.info(f"Set decimal places to {decimal_places if decimal_places else 'floating'}")
+            return
+    
+        # Handle store mode
         if self.entry_mode == "sto":
             try:
                 reg_num = int(digit)
@@ -60,6 +80,7 @@ class HP16CController:
             except ValueError:
                 self.handle_error(HP16CError("Invalid input for register", "E02"))
             return
+        # Handle recall mode
         elif self.entry_mode == "rcl":
             try:
                 reg_num = int(digit)
@@ -78,16 +99,19 @@ class HP16CController:
                 self.handle_error(HP16CError("Invalid input for register", "E02"))
             return
 
+        # Validate digit for current mode
         if digit.upper() not in VALID_CHARS[self.display.mode]:
             logger.info(f"Ignoring invalid digit {digit} for base {self.display.mode}")
             return
 
+        # Initialize entry if not already in user entry mode
         if not self.is_user_entry:
             self.display.clear_entry()
             self.is_user_entry = True
             self.decimal_entered = False
             self.result_displayed = False
 
+        # Handle float mode input
         if self.display.mode == "FLOAT":
             if digit == ".":
                 if self.decimal_entered:
@@ -99,23 +123,12 @@ class HP16CController:
                 self.display.raw_value += digit
             formatted_value = self.format_float_with_commas(self.display.raw_value)
             self.display.set_entry(formatted_value, raw=True)
+        # Handle other modes (integer bases)
         else:
             self.display.append_entry(digit)
             val = interpret_in_base(self.display.raw_value, self.display.mode)
             stack._x_register = val
             self.update_stack_display()
-
-    def delete_digit(self):
-        """Remove the last digit and reformat the display in float mode."""
-        if self.is_user_entry and self.display.raw_value:
-            self.display.raw_value = self.display.raw_value[:-1]
-            if not self.display.raw_value:
-                self.is_user_entry = False
-                self.display.set_entry("0", raw=True)
-            else:
-                formatted_value = self.format_float_with_commas(self.display.raw_value)
-                self.display.set_entry(formatted_value, raw=True)
-                self.decimal_entered = "." in self.display.raw_value
 
     def format_float_with_commas(self, raw_value):
         """Format the raw float string with commas in the integer part."""
@@ -134,6 +147,34 @@ class HP16CController:
         else:
             integer_part = "{:,}".format(int(number)) if number else "0"
             return f"{sign}{integer_part}"
+
+    def format_float(self, value):
+        """Format a number as a float based on decimal_places setting."""
+        if self.display.decimal_places is not None:
+            return "{:.{}f}".format(float(value), self.display.decimal_places)
+        else:
+            return "{:.9f}".format(float(value)).rstrip('0').rstrip('.')
+
+    def delete_digit(self):
+        """Remove the last digit and reformat the display in float mode."""
+        if self.is_user_entry and self.display.raw_value:
+            self.display.raw_value = self.display.raw_value[:-1]
+            if not self.display.raw_value:
+                self.is_user_entry = False
+                self.display.set_entry("0", raw=True)
+            else:
+                formatted_value = self.format_float_with_commas(self.display.raw_value)
+                self.display.set_entry(formatted_value, raw=True)
+                self.decimal_entered = "." in self.display.raw_value
+
+    def finalize_entry(self):
+        """Finalize the current user entry and set it to X register."""
+        if self.is_user_entry:
+            entry = self.display.raw_value
+            val = interpret_in_base(entry, self.display.mode)
+            stack._x_register = val
+            self.is_user_entry = False
+            self.display.clear_entry()
 
     def enter_value(self):
         """Finalize the entered value and push it onto the stack."""
@@ -179,7 +220,7 @@ class HP16CController:
             self.display.set_entry(format_in_current_base(stack.peek(), self.display.mode))
 
     def update_stack_display(self):
-        """Update the stack display with current Y, Z, T values and refresh main display's stack info."""
+        """Update the stack display with current Y, Z, T values."""
         logger.debug("Updating stack display")
         if self.stack_display:
             if self.display.mode == "FLOAT":
@@ -199,209 +240,26 @@ class HP16CController:
             logger.info("Stack display hidden")
         else:
             self.stack_display.place(x=125, y=110, width=575, height=40)
-            self.update_stack_display()  # Update content when shown
+            self.update_stack_display()
             logger.info("Stack display shown")
 
-    # Remaining methods unchanged for brevity; they are identical to the original query
-    def build_labels(self):
-        self.labels = {}
-        for i, cmd in enumerate(self.program_memory):
-            if cmd[0] == "label":
-                self.labels[cmd[1]] = i
-
-    def run_program(self):
-        if self.program_mode:
-            return
-        self.build_labels()
-        self.current_line = 0
-        self.return_stack = []
-        while self.current_line < len(self.program_memory):
-            cmd = self.program_memory[self.current_line]
-            if cmd[0] == "enter_digit":
-                self.enter_digit(cmd[1])
-            elif cmd[0] == "enter_operator":
-                self.enter_operator(cmd[1])
-            elif cmd[0] == "enter_value":
-                self.enter_value()
-            elif cmd[0] == "label":
-                pass
-            elif cmd[0] == "goto":
-                label = cmd[1]
-                if label in self.labels:
-                    self.current_line = self.labels[label]
-                    continue
-                else:
-                    self.display.set_error("Label not found")
-                    break
-            self.current_line += 1
-
-    def enter_base_change(self, base):
-        logger.info(f"Entering base change: {base}")
-        if self.program_mode:
-            base_map = {"HEX": "23", "DEC": "24", "OCT": "25", "BIN": "26"}
-            instruction = base
-            display_code = base_map.get(base, base)
-            self.program_memory.append(instruction)
-            step = len(self.program_memory)
-            program_logger.info(f"{step:03d} - {instruction} ({display_code})")
-            self.display.set_entry((step, display_code), program_mode=True)
-            self.last_program_step = step
-        else:
-            base_conversion.set_base(base, self.display)
-            self.update_stack_display()
-            self.display.update_stack_content()
-
-    def toggle_mode(self, mode):
-        logger.info(f"Toggling mode: {mode}, f_active={self.f_mode_active}, g_active={self.g_mode_active}")
-        if (mode == "f" and self.f_mode_active) or (mode == "g" and self.g_mode_active):
-            self.f_mode_active = False
-            self.g_mode_active = False
-            self.display.hide_f_mode()
-            self.display.hide_g_mode()
-            for btn in self.buttons:
-                if btn.get("command_name") not in ("yellow_f_function", "blue_g_function", "reload_program"):
-                    revert_to_normal(btn, self.buttons, self.display, self)
-            logger.info("Mode reset to normal")
-            return
-
-        for btn in self.buttons:
-            if btn.get("command_name") not in ("yellow_f_function", "blue_g_function", "reload_program"):
-                revert_to_normal(btn, self.buttons, self.display, self)
-                for w in [btn["frame"], btn.get("top_label"), btn.get("main_label"), btn.get("sub_label")]:
-                    if w:
-                        w.unbind("<Button-1>")
-
-        if mode == "f":
-            self.f_mode_active = True
-            self.g_mode_active = False
-            self.display.show_f_mode()
-            self.display.hide_g_mode()
-            color = "#e3af01"
-            label_key = "top_label"
-        elif mode == "g":
-            self.f_mode_active = False
-            self.g_mode_active = True
-            self.display.hide_f_mode()
-            self.display.show_g_mode()
-            color = "#59b7d1"
-            label_key = "sub_label"
-        else:
-            logger.warning(f"Invalid mode: {mode}")
-            return
-
-        for btn in self.buttons:
-            if btn.get("command_name") in ("yellow_f_function", "blue_g_function", "reload_program"):
-                continue
-            frame = btn["frame"]
-            label = btn.get(label_key)
-            if label:
-                frame.config(bg=color)
-                label.config(bg=color, fg="black")
-                label.place(relx=0.5, rely=0.5, anchor="center")
-                btn.get("main_label") and btn["main_label"].place_forget()
-                btn.get("sub_label" if label_key == "top_label" else "top_label") and btn["sub_label" if label_key == "top_label" else "top_label"].place_forget()
-                self._bind_mode_action(btn, mode)
-        logger.info(f"Mode set: {mode}")
-
-    def _bind_mode_action(self, btn, mode):
-        def on_click(e, b=btn):
-            if mode == "f":
-                f_action(b, self.display, self)
-            elif mode == "g":
-                g_action(b, self.display, self)
-        for w in [btn["frame"], btn.get("top_label"), btn.get("main_label"), btn.get("sub_label")]:
-            if w:
-                w.unbind("<Button-1>")
-                w.bind("<Button-1>", on_click)
-
     def enter_operator(self, operator):
+        """Handle operator input by delegating to stack.py."""
         logger.info(f"Entering operator: {operator}, X={stack.peek()}, stack={stack._stack}")
         if self.program_mode:
             return
 
-        if self.is_user_entry:
-            entry = self.display.raw_value
-            val = interpret_in_base(entry, self.display.mode)
-            stack._x_register = val
-            self.is_user_entry = False
-            self.display.clear_entry()
-
-        if self.display.is_error_displayed:
-            logger.info("Operation skipped due to existing error state")
-            return
-
-        operator = operator.upper()
-
         try:
-            if self.display.mode == "FLOAT":
-                if operator in {"+", "-", "*", "/", "RMD"}:
-                    if len(stack._stack) < 1:
-                        raise StackUnderflowError(display=self.display)
-                    y = stack.pop()
-                    x = stack._x_register
-                    if operator == "+":
-                        result = float(x) + float(y)
-                    elif operator == "-":
-                        result = float(x) - float(y)
-                    elif operator == "*":
-                        result = float(x) * float(y)
-                    elif operator == "/":
-                        if float(x) == 0:
-                            raise DivisionByZeroError(display=self.display)
-                        result = float(y) / float(x)
-                    elif operator == "RMD":
-                        if float(x) == 0:
-                            raise DivisionByZeroError(display=self.display)
-                        result = float(y) % float(x)
-                    if len(stack._stack) >= 2:
-                        stack._stack.append(stack._stack[1])
-                    stack._x_register = result
-                else:
-                    raise InvalidOperationError(f"Operation '{operator}' not supported in FLOAT mode", display=self.display) # type: ignore
-            else:
-                mask = (1 << stack.get_word_size()) - 1
-                if operator in {"+", "-", "*", "/", "AND", "OR", "XOR", "RMD"}:
-                    if len(stack._stack) < 1:
-                        raise StackUnderflowError(display=self.display)
-                    y = stack.pop()
-                    x = stack._x_register
-                    if operator == "+":
-                        result = add(y, x)
-                    elif operator == "-":
-                        result = subtract(y, x)
-                    elif operator == "*":
-                        result = multiply(y, x)
-                    elif operator == "/":
-                        if x == 0:
-                            raise DivisionByZeroError(display=self.display)
-                        result = divide(y, x)
-                    elif operator == "AND":
-                        result = y & x & mask
-                    elif operator == "OR":
-                        result = y | x & mask
-                    elif operator == "XOR":
-                        result = y ^ x & mask
-                    elif operator == "RMD":
-                        if x == 0:
-                            raise DivisionByZeroError(display=self.display)
-                        result = y % x
-                    if len(stack._stack) >= 2:
-                        stack._stack.append(stack._stack[1])
-                    stack._x_register = result
-                elif operator == "NOT":
-                    x = stack._x_register
-                    result = ~x & mask
-                    stack._x_register = result
-                else:
-                    raise InvalidOperandError(f"Unsupported operator: {operator}", display=self.display)
-
-            self.display.set_entry(format_in_current_base(stack.peek(), self.display.mode))
+            self.finalize_entry()
+            if self.display.is_error_displayed:
+                logger.info("Operation skipped due to existing error state")
+                return
+            result = stack.perform_operation(operator)
+            self.display.set_entry(format_in_current_base(result, self.display.mode))
             self.update_stack_display()
             self.stack_lift_enabled = True
-
         except HP16CError as e:
-            self.display.set_error(str(e))
-            logger.info(f"Error occurred: {e}")
+            self.handle_error(e)
         except Exception as e:
             self.display.set_error(str(e))
             logger.info(f"Unexpected error: {e}")
@@ -834,3 +692,114 @@ class HP16CController:
         except (ValueError, HP16CError) as e:
             self.handle_error(HP16CError(f"Invalid flag type: {flag_type}", "E01"))
             return False
+
+    def build_labels(self):
+        self.labels = {}
+        for i, cmd in enumerate(self.program_memory):
+            if cmd[0] == "label":
+                self.labels[cmd[1]] = i
+
+    def run_program(self):
+        if self.program_mode:
+            return
+        self.build_labels()
+        self.current_line = 0
+        self.return_stack = []
+        while self.current_line < len(self.program_memory):
+            cmd = self.program_memory[self.current_line]
+            if cmd[0] == "enter_digit":
+                self.enter_digit(cmd[1])
+            elif cmd[0] == "enter_operator":
+                self.enter_operator(cmd[1])
+            elif cmd[0] == "enter_value":
+                self.enter_value()
+            elif cmd[0] == "label":
+                pass
+            elif cmd[0] == "goto":
+                label = cmd[1]
+                if label in self.labels:
+                    self.current_line = self.labels[label]
+                    continue
+                else:
+                    self.display.set_error("Label not found")
+                    break
+            self.current_line += 1
+
+    def enter_base_change(self, base):
+        logger.info(f"Entering base change: {base}")
+        if self.program_mode:
+            base_map = {"HEX": "23", "DEC": "24", "OCT": "25", "BIN": "26"}
+            instruction = base
+            display_code = base_map.get(base, base)
+            self.program_memory.append(instruction)
+            step = len(self.program_memory)
+            program_logger.info(f"{step:03d} - {instruction} ({display_code})")
+            self.display.set_entry((step, display_code), program_mode=True)
+            self.last_program_step = step
+        else:
+            base_conversion.set_base(base, self.display)
+            self.update_stack_display()
+            self.display.update_stack_content()
+
+    def toggle_mode(self, mode):
+        logger.info(f"Toggling mode: {mode}, f_active={self.f_mode_active}, g_active={self.g_mode_active}")
+        if (mode == "f" and self.f_mode_active) or (mode == "g" and self.g_mode_active):
+            self.f_mode_active = False
+            self.g_mode_active = False
+            self.display.hide_f_mode()
+            self.display.hide_g_mode()
+            for btn in self.buttons:
+                if btn.get("command_name") not in ("yellow_f_function", "blue_g_function", "reload_program"):
+                    revert_to_normal(btn, self.buttons, self.display, self)
+            logger.info("Mode reset to normal")
+            return
+
+        for btn in self.buttons:
+            if btn.get("command_name") not in ("yellow_f_function", "blue_g_function", "reload_program"):
+                revert_to_normal(btn, self.buttons, self.display, self)
+                for w in [btn["frame"], btn.get("top_label"), btn.get("main_label"), btn.get("sub_label")]:
+                    if w:
+                        w.unbind("<Button-1>")
+
+        if mode == "f":
+            self.f_mode_active = True
+            self.g_mode_active = False
+            self.display.show_f_mode()
+            self.display.hide_g_mode()
+            color = "#e3af01"
+            label_key = "top_label"
+        elif mode == "g":
+            self.f_mode_active = False
+            self.g_mode_active = True
+            self.display.hide_f_mode()
+            self.display.show_g_mode()
+            color = "#59b7d1"
+            label_key = "sub_label"
+        else:
+            logger.warning(f"Invalid mode: {mode}")
+            return
+
+        for btn in self.buttons:
+            if btn.get("command_name") in ("yellow_f_function", "blue_g_function", "reload_program"):
+                continue
+            frame = btn["frame"]
+            label = btn.get(label_key)
+            if label:
+                frame.config(bg=color)
+                label.config(bg=color, fg="black")
+                label.place(relx=0.5, rely=0.5, anchor="center")
+                btn.get("main_label") and btn["main_label"].place_forget()
+                btn.get("sub_label" if label_key == "top_label" else "top_label") and btn["sub_label" if label_key == "top_label" else "top_label"].place_forget()
+                self._bind_mode_action(btn, mode)
+        logger.info(f"Mode set: {mode}")
+
+    def _bind_mode_action(self, btn, mode):
+        def on_click(e, b=btn):
+            if mode == "f":
+                f_action(b, self.display, self)
+            elif mode == "g":
+                g_action(b, self.display, self)
+        for w in [btn["frame"], btn.get("top_label"), btn.get("main_label"), btn.get("sub_label")]:
+            if w:
+                w.unbind("<Button-1>")
+                w.bind("<Button-1>", on_click)

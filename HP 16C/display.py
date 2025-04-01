@@ -31,6 +31,7 @@ class Display:
         self.display_offset = 0
         self.full_entry = "0"
         self.is_digit_entry = False
+        self.decimal_places = None
 
         # Use the passed font, fallback to Calculator if None
         self.font = font if font else tkFont.Font(family="Calculator", size=10)
@@ -219,6 +220,8 @@ class Display:
     def set_entry(self, entry, raw=False, program_mode=False, blink=True):
         """Set the display entry and blink unless suppressed."""
         logger.info(f"Setting entry: value={entry}, raw={raw}, program_mode={program_mode}, blink={blink}")
+    
+        # Handle raw input (e.g., during digit entry)
         if raw:
             self.is_error_displayed = False
             self.error_displayed = False
@@ -235,6 +238,7 @@ class Display:
                 self.widget.place(x=-25, y=0, width=self.full_width-30, height=self.frame.winfo_height()-2)
                 self.float_widget.place_forget()
                 self.mode_label.place(relx=1.0, rely=0.5, x=-5, anchor="e")
+        # Handle program mode display
         elif program_mode:
             step, instruction = entry
             self.full_entry = f"{step:03d}-{instruction}"
@@ -249,6 +253,7 @@ class Display:
             self.mode_label.place_forget()
             self.is_error_displayed = False
             self.error_displayed = False
+        # Handle normal mode display
         else:
             self.is_error_displayed = False
             self.error_displayed = False
@@ -256,6 +261,7 @@ class Display:
             self.prgm_label.place_forget()
             self.word_size_label.place(**self.word_size_config)
 
+            # Convert entry to numeric value
             try:
                 if isinstance(entry, str):
                     val = interpret_in_base(entry, self.mode)
@@ -266,9 +272,14 @@ class Display:
 
             word_size = stack.get_word_size()
             if self.mode == "FLOAT":
-                entry_str = "{:.9f}".format(val).rstrip("0").rstrip(".")
-                if "." not in entry_str:
-                    entry_str += ".0"
+                if self.decimal_places is not None:
+                    # Fixed decimal places
+                    entry_str = "{:,.{}f}".format(val, self.decimal_places)
+                else:
+                    # Floating decimal, up to 9 places, strip trailing zeros
+                    entry_str = "{:,.9f}".format(val).rstrip('0').rstrip('.')
+                    if '.' not in entry_str:
+                        entry_str += '.0'  # Ensure at least one decimal digit
                 self.current_value = val
                 self.float_widget.config(text=entry_str)
                 self.float_widget.place(x=0, y=0, width=self.full_width-30, height=self.frame.winfo_height()-2)
@@ -293,6 +304,7 @@ class Display:
 
             logger.info(f"Display in {self.mode} mode: '{self.full_entry}'")
 
+        # Blink the display if appropriate
         if blink and not self.is_digit_entry:
             self.blink()
         self.is_digit_entry = False

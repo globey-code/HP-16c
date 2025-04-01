@@ -26,14 +26,105 @@ _i_register = 0
 _data_registers = [0] * 10  # R0 to R9
 _current_mode = "DEC"
 
-
 logger.info(f"Stack initialized: {_stack}, X={_x_register}, word_size={_word_size}, complement_mode={_complement_mode}")
 
-# --- Existing Functions (Unchanged) ---
+# --- Centralized Operation Handling ---
+
+def perform_binary_operation(op):
+    """Perform a binary operation using X and Y registers."""
+    global _x_register, _stack
+    if len(_stack) < 1 or _stack[0] == 0:
+        raise StackUnderflowError("Insufficient stack values for binary operation")
+    y = _stack[0]  # Y register
+    x = _x_register  # X register
+    if _current_mode == "FLOAT":
+        if op == "+":
+            result = float(y) + float(x)
+        elif op == "-":
+            result = float(y) - float(x)
+        elif op == "*":
+            result = float(y) * float(x)
+        elif op == "/":
+            if float(x) == 0:
+                raise DivisionByZeroError("Division by zero")
+            result = float(y) / float(x)
+        elif op == "RMD":
+            if float(x) == 0:
+                raise DivisionByZeroError("Division by zero")
+            result = float(y) % float(x)
+        else:
+            raise InvalidOperandError(f"Operation '{op}' not supported in FLOAT mode")
+    else:
+        # Integer mode operations
+        if op == "+":
+            result = add(y, x)
+        elif op == "-":
+            result = subtract(y, x)
+        elif op == "*":
+            result = multiply(y, x)
+        elif op == "/":
+            result = divide(y, x)
+        elif op == "AND":
+            mask = (1 << _word_size) - 1
+            result = (y & x) & mask
+        elif op == "OR":
+            mask = (1 << _word_size) - 1
+            result = (y | x) & mask
+        elif op == "XOR":
+            mask = (1 << _word_size) - 1
+            result = (y ^ x) & mask
+        elif op == "RMD":
+            if x == 0:
+                raise DivisionByZeroError("Division by zero")
+            result = y % x
+        else:
+            raise InvalidOperandError(f"Operation '{op}' not supported in current mode")
+    # Update stack: X = result, Y = Z, Z = T, T remains unchanged
+    _x_register = result
+    if len(_stack) >= 2:
+        _stack[0] = _stack[1]  # Y = Z
+        _stack[1] = _stack[2]  # Z = T
+    logger.info(f"Performed binary {op}: result={result}, X={_x_register}, stack={_stack}")
+    return result
+
+def perform_unary_operation(op):
+    """Perform a unary operation on the X register."""
+    global _x_register
+    x = _x_register
+    if _current_mode == "FLOAT":
+        if op == "NOT":
+            raise InvalidOperandError("NOT not supported in FLOAT mode")
+        # Add other unary operations if needed
+        raise InvalidOperandError(f"Operation '{op}' not supported in FLOAT mode")
+    else:
+        # Integer mode operations
+        if op == "NOT":
+            mask = (1 << _word_size) - 1
+            result = (~x) & mask
+        else:
+            raise InvalidOperandError(f"Operation '{op}' not supported in current mode")
+    _x_register = result
+    logger.info(f"Performed unary {op}: result={result}, X={_x_register}, stack={_stack}")
+    return result
+
+def perform_operation(op):
+    """Perform the specified operation based on its type (binary or unary)."""
+    op = op.upper()
+    if op in {"+", "-", "*", "/", "AND", "OR", "XOR", "RMD"}:
+        return perform_binary_operation(op)
+    elif op == "NOT":
+        return perform_unary_operation(op)
+    else:
+        raise ValueError(f"Unknown operator: {op}")
+
+# --- Existing Functions (Unchanged Unless Noted) ---
 
 def set_current_mode(mode):
     global _current_mode
     _current_mode = mode
+
+def get_current_mode():
+    return current_mode
 
 def get_state():
     """Return a copy of the current stack plus X."""
@@ -79,83 +170,15 @@ def roll_down():
     _stack = [_stack[1], _stack[2], old_x]  # Z→Y, T→Z, X→T
     logger.info(f"Stack rolled down: X={_x_register}, stack={_stack}")
 
-def perform_operation(op):
-    """Perform an arithmetic or logical operation based on the current mode."""
-    if _current_mode == "FLOAT":
-        if op in {'+', '-', '*', '/', 'rmd'}:
-            y = pop()
-            x = pop()
-            if not isinstance(x, (int, float)) or not isinstance(y, (int, float)):
-                raise InvalidOperandError("Invalid operand type")
-            x = float(x)
-            y = float(y)
-            if op == '+':
-                result = x + y
-            elif op == '-':
-                result = x - y
-            elif op == '*':
-                result = x * y
-            elif op == '/':
-                if y == 0:
-                    raise DivisionByZeroError("Division by zero")
-                result = x / y
-            elif op == 'rmd':
-                if y == 0:
-                    raise DivisionByZeroError("Division by zero")
-                result = x % y
-            push(result)
-            return result
-        else:
-            raise InvalidOperationError(f"Operation '{op}' not supported in FLOAT mode") # type: ignore
-    else:
-        # Handle integer operations (original behavior with enhancements)
-        # Check for sufficient stack values for binary operations
-        if op not in {'not'} and (_x_register == 0 or len([x for x in _stack if x != 0]) < 1):
-            raise StackUnderflowError("Operation requires at least two values")
-        
-        mask = (1 << _word_size) - 1  # Mask to ensure results fit within word size
-        if op in {'+', '-', '*', '/', 'xor', 'and', 'or', 'rmd'}:
-            y = pop()
-            x = pop()
-            if op == '+':
-                result = add(x, y)  # Uses arithmetic.py function
-            elif op == '-':
-                result = subtract(x, y)  # Uses arithmetic.py function
-            elif op == '*':
-                result = multiply(x, y)  # Uses arithmetic.py function
-            elif op == '/':
-                result = divide(x, y)  # Uses arithmetic.py function
-            elif op == 'xor':
-                result = (x ^ y) & mask  # Bitwise XOR with word size limit
-            elif op == 'and':
-                result = (x & y) & mask  # Bitwise AND with word size limit
-            elif op == 'or':
-                result = (x | y) & mask  # Bitwise OR with word size limit
-            elif op == 'rmd':
-                if y == 0:
-                    raise DivisionByZeroError("Division by zero")
-                result = x % y  # Integer remainder
-        elif op == 'not':
-            x = pop()
-            result = ~x & mask  # Bitwise NOT with word size limit
-        else:
-            raise ValueError(f"Unknown operator: {op}")
-        
-        push(result)
-        logger.info(f"Performed {op}: result={result}")
-        return result
-
 def shift_left():
     """Shift X left by 1 bit or multiply by 2 in float mode."""
     global _x_register
     if _current_mode == "FLOAT":
-        # In float mode, multiply by 2
         if not isinstance(_x_register, (int, float)):
             raise InvalidOperandError("Invalid operand type for shift in FLOAT mode")
         _x_register = float(_x_register) * 2.0
         logger.info(f"Multiplied by 2 in FLOAT mode: X={_x_register}, stack={_stack}")
     else:
-        # In integer modes, perform bitwise left shift
         if _x_register == 0 and all(x == 0 for x in _stack):
             raise NoValueToShiftError()
         mask = (1 << _word_size) - 1
