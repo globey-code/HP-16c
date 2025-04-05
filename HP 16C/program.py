@@ -5,7 +5,7 @@ from error import (
     ShiftExceedsWordSizeError, InvalidBitOperationError, 
     StackUnderflowError, DivisionByZeroError, InvalidOperandError
 )
-import base_conversion
+
 
 program_memory = []
 current_line = 0

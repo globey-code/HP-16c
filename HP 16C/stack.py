@@ -1,482 +1,680 @@
-﻿# stack.py
-# Implements the stack for the HP-16C emulator, including push, pop, and various bit operations.
-# Author: GlobeyCode
-# License: MIT
-# Date: 3/23/2025
-# Dependencies: Python 3.6+, HP-16C emulator modules (arithmetic, error)
+﻿"""
+stack.py
+Implements the stack for the HP-16C emulator, including arithmetic operations.
+Author: GlobeyCode (original), refactored by ChatGPT
+License: MIT
+Date: 3/23/2025 (original), refactored 2025-04-01
+"""
 
-from arithmetic import add, subtract, multiply, divide
+from typing import List, Union
 from error import (
-    IncorrectWordSizeError, NoValueToShiftError, 
-    InvalidBitOperationError, 
-    StackUnderflowError, DivisionByZeroError, InvalidOperandError
+    HP16CError, IncorrectWordSizeError, NoValueToShiftError,
+    DivisionByZeroError, InvalidOperandError, StackUnderflowError,
+    NegativeShiftCountError
 )
 from logging_config import logger
-import logging
-logger = logging.getLogger(__name__)
 
-# Stack and register variables
-_stack = [0, 0, 0]  # Y, Z, T
-_x_register = 0     # X (display entry)
-_word_size = 16
-_complement_mode = "UNSIGNED"
-_flags = {i: 0 for i in range(6)}  # Flags 0-5 initialized to 0
-_last_x = 0
-_i_register = 0
-_data_registers = [0] * 10  # R0 to R9
-_current_mode = "DEC"
+Number = Union[int, float]
 
-logger.info(f"Stack initialized: {_stack}, X={_x_register}, word_size={_word_size}, complement_mode={_complement_mode}")
-
-# --- Centralized Operation Handling ---
-
-def perform_binary_operation(op):
-    """Perform a binary operation using X and Y registers."""
-    global _x_register, _stack
-    if len(_stack) < 1 or _stack[0] == 0:
-        raise StackUnderflowError("Insufficient stack values for binary operation")
-    y = _stack[0]  # Y register
-    x = _x_register  # X register
-    if _current_mode == "FLOAT":
-        if op == "+":
-            result = float(y) + float(x)
-        elif op == "-":
-            result = float(y) - float(x)
-        elif op == "*":
-            result = float(y) * float(x)
-        elif op == "/":
-            if float(x) == 0:
-                raise DivisionByZeroError("Division by zero")
-            result = float(y) / float(x)
-        elif op == "RMD":
-            if float(x) == 0:
-                raise DivisionByZeroError("Division by zero")
-            result = float(y) % float(x)
+# Helper functions for signed number conversion
+def to_signed(value: int, word_size: int, mode: str) -> int:
+    mask = (1 << word_size) - 1
+    value &= mask
+    if mode == "UNSIGNED":
+        return value
+    elif mode == "1S":
+        if value == mask:
+            return 0
+        elif value & (1 << (word_size - 1)):
+            return -((~value) & mask)
         else:
-            raise InvalidOperandError(f"Operation '{op}' not supported in FLOAT mode")
-    else:
-        # Integer mode operations
-        if op == "+":
-            result = add(y, x)
-        elif op == "-":
-            result = subtract(y, x)
-        elif op == "*":
-            result = multiply(y, x)
-        elif op == "/":
-            result = divide(y, x)
-        elif op == "AND":
-            mask = (1 << _word_size) - 1
-            result = (y & x) & mask
-        elif op == "OR":
-            mask = (1 << _word_size) - 1
-            result = (y | x) & mask
-        elif op == "XOR":
-            mask = (1 << _word_size) - 1
-            result = (y ^ x) & mask
-        elif op == "RMD":
-            if x == 0:
-                raise DivisionByZeroError("Division by zero")
-            result = y % x
-        else:
-            raise InvalidOperandError(f"Operation '{op}' not supported in current mode")
-    # Update stack: X = result, Y = Z, Z = T, T remains unchanged
-    _x_register = result
-    if len(_stack) >= 2:
-        _stack[0] = _stack[1]  # Y = Z
-        _stack[1] = _stack[2]  # Z = T
-    logger.info(f"Performed binary {op}: result={result}, X={_x_register}, stack={_stack}")
-    return result
-
-def perform_unary_operation(op):
-    """Perform a unary operation on the X register."""
-    global _x_register
-    x = _x_register
-    if _current_mode == "FLOAT":
-        if op == "NOT":
-            raise InvalidOperandError("NOT not supported in FLOAT mode")
-        # Add other unary operations if needed
-        raise InvalidOperandError(f"Operation '{op}' not supported in FLOAT mode")
-    else:
-        # Integer mode operations
-        if op == "NOT":
-            mask = (1 << _word_size) - 1
-            result = (~x) & mask
-        else:
-            raise InvalidOperandError(f"Operation '{op}' not supported in current mode")
-    _x_register = result
-    logger.info(f"Performed unary {op}: result={result}, X={_x_register}, stack={_stack}")
-    return result
-
-def perform_operation(op):
-    """Perform the specified operation based on its type (binary or unary)."""
-    op = op.upper()
-    if op in {"+", "-", "*", "/", "AND", "OR", "XOR", "RMD"}:
-        return perform_binary_operation(op)
-    elif op == "NOT":
-        return perform_unary_operation(op)
-    else:
-        raise ValueError(f"Unknown operator: {op}")
-
-# --- Existing Functions (Unchanged Unless Noted) ---
-
-def set_current_mode(mode):
-    global _current_mode
-    _current_mode = mode
-
-def get_current_mode():
-    return current_mode
-
-def get_state():
-    """Return a copy of the current stack plus X."""
-    return [_x_register] + _stack.copy()
-
-def push(value):
-    """Push a value into X, shifting stack up: T=Z, Z=Y, Y=X, X=value."""
-    global _x_register
-    if isinstance(value, float) and not value.is_integer():
-        value = int(value)
-    if _complement_mode == "1S" and value < 0:
-        value = (~(-value)) & ((1 << _word_size) - 1)
-    elif _complement_mode == "2S" and value < 0:
-        value = (1 << _word_size) + value
-    value = value & ((1 << _word_size) - 1)
-    
-    _stack[2] = _stack[1]  # T = Z
-    _stack[1] = _stack[0]  # Z = Y
-    _stack[0] = _x_register  # Y = X
-    _x_register = value    # X = new value
-    logger.info(f"Pushed value: {value}, X={_x_register}, stack={_stack}")
-
-def pop():
-    """Pop X into last_x, shift stack down (Y→X, Z→Y, T→Z, 0→T)."""
-    global _x_register, _last_x
-    if _x_register == 0 and all(x == 0 for x in _stack):
-        raise StackUnderflowError("Stack is empty")
-    _last_x = _x_register
-    _x_register = _stack.pop(0)  # Y → X
-    _stack.append(0)            # 0 → T
-    logger.info(f"Popped value: {_last_x}, X={_x_register}, stack={_stack}")
-    return _last_x
-
-def peek():
-    """Return the current X value without popping."""
-    return _x_register
-
-def roll_down():
-    """Roll down the stack: Y→X, Z→Y, T→Z, X→T"""
-    global _x_register, _stack
-    old_x = _x_register
-    _x_register = _stack[0]  # Y moves to X
-    _stack = [_stack[1], _stack[2], old_x]  # Z→Y, T→Z, X→T
-    logger.info(f"Stack rolled down: X={_x_register}, stack={_stack}")
-
-def shift_left():
-    """Shift X left by 1 bit or multiply by 2 in float mode."""
-    global _x_register
-    if _current_mode == "FLOAT":
-        if not isinstance(_x_register, (int, float)):
-            raise InvalidOperandError("Invalid operand type for shift in FLOAT mode")
-        _x_register = float(_x_register) * 2.0
-        logger.info(f"Multiplied by 2 in FLOAT mode: X={_x_register}, stack={_stack}")
-    else:
-        if _x_register == 0 and all(x == 0 for x in _stack):
-            raise NoValueToShiftError()
-        mask = (1 << _word_size) - 1
-        _x_register = (_x_register << 1) & mask
-        logger.info(f"Shifted left: X={_x_register}, stack={_stack}")
-
-def shift_right():
-    """Shift X right by 1 bit."""
-    global _x_register
-    if _x_register == 0 and all(x == 0 for x in _stack):
-        raise NoValueToShiftError()
-    _x_register = (_x_register >> 1) & ((1 << _word_size) - 1)
-    logger.info(f"Shifted right: X={_x_register}, stack={_stack}")
-
-def rotate_left():
-    """Rotate X left by 1 bit."""
-    global _x_register
-    if _x_register == 0 and all(x == 0 for x in _stack):
-        raise NoValueToShiftError()
-    _x_register = ((_x_register << 1) | (_x_register >> (_word_size - 1))) & ((1 << _word_size) - 1)
-    logger.info(f"Rotated left: X={_x_register}, stack={_stack}")
-
-def rotate_right():
-    """Rotate X right by 1 bit."""
-    global _x_register
-    if _x_register == 0 and all(x == 0 for x in _stack):
-        raise NoValueToShiftError()
-    _x_register = ((_x_register >> 1) | (_x_register << (_word_size - 1))) & ((1 << _word_size) - 1)
-    logger.info(f"Rotated right: X={_x_register}, stack={_stack}")
-
-def rotate_left_carry():
-    """Rotate X left with carry."""
-    global _x_register
-    if _x_register == 0 and all(x == 0 for x in _stack):
-        raise NoValueToShiftError()
-    carry = 1 if get_carry_flag() else 0
-    result = ((_x_register << 1) | carry) & ((1 << _word_size) - 1)
-    set_carry_flag(_x_register >> (_word_size - 1))
-    _x_register = result
-    logger.info(f"Rotated left with carry: X={_x_register}, carry={_flags['CF']}, stack={_stack}")
-
-def rotate_right_carry():
-    """Rotate X right with carry."""
-    global _x_register
-    if _x_register == 0 and all(x == 0 for x in _stack):
-        raise NoValueToShiftError()
-    carry = 1 if get_carry_flag() else 0
-    result = ((_x_register >> 1) | (carry << (_word_size - 1))) & ((1 << _word_size) - 1)
-    set_carry_flag(_x_register & 1)
-    _x_register = result
-    logger.info(f"Rotated right with carry: X={_x_register}, carry={_flags['CF']}, stack={_stack}")
-
-def mask_left(bits):
-    """Mask the leftmost bits of X."""
-    global _x_register
-    if bits < 0 or bits > _word_size:
-        raise InvalidBitOperationError()
-    mask = (((1 << (_word_size - bits)) - 1) << bits)
-    _x_register = _x_register & mask
-    logger.info(f"Masked left {bits} bits: X={_x_register}, stack={_stack}")
-
-def mask_right(bits):
-    """Mask the rightmost bits of X."""
-    global _x_register
-    if bits < 0 or bits > _word_size:
-        raise InvalidBitOperationError()
-    mask = (1 << bits) - 1
-    _x_register = _x_register & mask
-    logger.info(f"Masked right {bits} bits: X={_x_register}, stack={_stack}")
-
-def count_bits():
-    """Count the number of 1 bits in X."""
-    global _x_register
-    count = bin(_x_register).count("1")
-    _x_register = count
-    logger.info(f"Counted bits: X={_x_register}, stack={_stack}")
-
-def set_bit(bit_index):
-    """Set a specific bit in X."""
-    global _x_register
-    if bit_index < 0 or bit_index >= _word_size:
-        raise InvalidBitOperationError()
-    mask = 1 << bit_index
-    _x_register = (_x_register | mask) & ((1 << _word_size) - 1)
-    logger.info(f"Set bit {bit_index}: X={_x_register}, stack={_stack}")
-
-def clear_bit(bit_index):
-    """Clear a specific bit in X."""
-    global _x_register
-    if bit_index < 0 or bit_index >= _word_size:
-        raise InvalidBitOperationError()
-    mask = ~(1 << bit_index)
-    _x_register = _x_register & mask & ((1 << _word_size) - 1)
-    logger.info(f"Cleared bit {bit_index}: X={_x_register}, stack={_stack}")
-
-def test_bit(bit_index):
-    """Test if a specific bit is set in X."""
-    if bit_index < 0 or bit_index >= _word_size:
-        raise InvalidBitOperationError()
-    return (_x_register >> bit_index) & 1
-
-def absolute():
-    """Set X to its absolute value."""
-    global _x_register
-    if _complement_mode == "UNSIGNED":
-        result = _x_register
-    elif _complement_mode == "1S":
-        result = (~_x_register) & ((1 << _word_size) - 1) if _x_register & (1 << (_word_size - 1)) else _x_register
+            return value
     else:  # "2S"
-        result = (-_x_register) & ((1 << _word_size) - 1) if _x_register & (1 << (_word_size - 1)) else _x_register
-    _x_register = result
-    logger.info(f"Absolute value: X={_x_register}, stack={_stack}")
+        if value & (1 << (word_size - 1)):
+            return value - (1 << word_size)
+        else:
+            return value
 
-def double_multiply():
-    """Multiply two double-word values (X and Y)."""
-    if _x_register == 0 or _stack[0] == 0:
-        raise StackUnderflowError("Double multiply requires two values")
-    y = pop()
-    x = pop()
-    result = x * y
-    push(result)
-    logger.info(f"Double multiply: {x} * {y} = {result}")
+def from_signed(value: int, word_size: int, mode: str) -> int:
+    mask = (1 << word_size) - 1
+    if mode == "UNSIGNED":
+        return value & mask
+    elif mode == "1S":
+        return (~(-value)) & mask if value < 0 else value & mask
+    else:  # "2S"
+        return (value + (1 << word_size)) & mask if value < 0 else value & mask
 
-def double_divide():
-    """Divide two double-word values (X by Y)."""
-    if _x_register == 0 or _stack[0] == 0:
-        raise StackUnderflowError("Double divide requires two values")
-    y = pop()
-    if y == 0:
-        raise DivisionByZeroError("Division by zero")
-    x = pop()
-    result = int(x / y)
-    push(result)
-    logger.info(f"Double divide: {x} / {y} = {result}")
+class Stack:
+    def __init__(self, word_size: int = 16, complement_mode: str = "UNSIGNED") -> None:
+        self.word_size: int = word_size
+        self.complement_mode: str = complement_mode
+        self.current_mode: str = "DEC"  # "DEC" or "FLOAT"
+        self._stack: List[int] = [0, 0, 0]  # Y, Z, T
+        self._x_register: int = 0  # X register
+        self._flags: dict[int, int] = {i: 0 for i in range(6)}
+        self._last_x: int = 0
+        self._i_register: int = 0
+        self._data_registers: List[int] = [0] * 10
+        
 
-def double_remainder():
-    """Compute remainder of two double-word values."""
-    if _x_register == 0 or _stack[0] == 0:
-        raise StackUnderflowError("Double remainder requires two values")
-    y = pop()
-    if y == 0:
-        raise DivisionByZeroError("Division by zero")
-    x = pop()
-    result = x % y
-    push(result)
-    logger.info(f"Double remainder: {x} % {y} = {result}")
-    return result
+    def set_x_register(self, value):
+        """Set the X register value."""
+        self._x_register = value
 
-def set_flag(flag_num):
-    if not isinstance(flag_num, int) or flag_num < 0 or flag_num > 5:
-        raise ValueError(f"Invalid flag number: {flag_num}")
-    _flags[flag_num] = 1
+    def get_x_register(self):
+        """Get the X register value."""
+        return self._x_register
 
-def clear_flag(flag_num):
-    """Clear the specified flag (0-5)."""
-    if not isinstance(flag_num, int) or flag_num < 0 or flag_num > 5:
-        raise ValueError(f"Invalid flag number: {flag_num}")
-    _flags[flag_num] = 0
+    def get_word_size(self):
+        """Get the current word size."""
+        return self.word_size
 
-def test_flag(flag_num):
-    if not isinstance(flag_num, int) or flag_num < 0 or flag_num > 5:
-        raise ValueError(f"Invalid flag number: {flag_num}")
-    return _flags[flag_num]
+    def get_complement_mode(self):
+        """Get the current complement mode."""
+        return self.complement_mode
 
-def get_flags_bitfield():
-    """Return a 4-bit integer representing flags 0-3."""
-    return (_flags[0] |
-            (_flags[1] << 1) |
-            (_flags[2] << 2) |
-            (_flags[3] << 3))
+    def set_g_flag(self, value):
+        self._flags[5] = value  # Use integer 5
+        logger.info(f"G flag set to {value}")
 
-def set_word_size(size):
-    """Set the word size (1-64 bits) and apply mask to stack and registers."""
-    global _word_size, _x_register
-    if not isinstance(size, int) or size < 1 or size > 64:
-        raise IncorrectWordSizeError()
-    old_size = _word_size
-    _word_size = size
-    mask = (1 << _word_size) - 1
-    _x_register = _x_register & mask
-    for i in range(len(_stack)):
-        _stack[i] = _stack[i] & mask
-    for i in range(len(_data_registers)):
-        _data_registers[i] = _data_registers[i] & mask
-    logger.info(f"Word size changed: {old_size} -> {_word_size}, X={_x_register}, stack={_stack}, registers={_data_registers}")
+    def get_g_flag(self):
+        return self._flags[5]  # Use integer 5
+        
+    def interpret_in_base(self, string_value: str, base: str) -> Number:
+        """
+        Convert a string representing a number in a given base into a numeric value.
+        Uses the stack's complement mode and word size in integer modes.
 
-def get_word_size():
-    """Get the current word size."""
-    return _word_size
+        Args:
+            string_value (str): The string to convert (e.g., "1A", "1010", "123.45").
+            base (str): The base to interpret ("FLOAT", "DEC", "HEX", "BIN", "OCT").
 
-def apply_word_size(val):
-    """Apply word size mask to a value."""
-    try:
-        if isinstance(val, float) and not val.is_integer():
-            return val
-        mask = (1 << _word_size) - 1
-        return int(val) & mask
-    except Exception:
-        return val
+        Returns:
+            Number: The interpreted numeric value (int for integer modes, float for FLOAT).
 
-def get_complement_mode():
-    """Get the current complement mode."""
-    return _complement_mode
+        Raises:
+            ValueError: If the string is invalid for the given base or mode.
+        """
+        # Remove leading/trailing whitespace to handle inputs like " 123 " or "1A "
+        string_value = string_value.strip()
+    
+        # Handle empty strings by returning a default value
+        if not string_value:
+            return 0.0 if base == "FLOAT" else 0
 
-def set_complement_mode(mode):
-    """Set the complement mode."""
-    global _complement_mode
-    if mode not in {"UNSIGNED", "1S", "2S"}:
-        raise ValueError(f"Invalid complement mode: {mode}")
-    old_mode = _complement_mode
-    _complement_mode = mode
-    logger.info(f"Complement mode changed: {old_mode} -> {_complement_mode}")
+        try:
+            # FLOAT mode: Convert to float and return without masking
+            if base == "FLOAT":
+                return float(string_value)
 
-def get_carry_flag():
-    return _flags[4]
+            # DEC mode: Handle signed/unsigned integers based on complement mode
+            elif base == "DEC":
+                val = int(string_value)  # Convert string to integer in base 10
+                mask = (1 << self.word_size) - 1  # Create mask, e.g., 65535 for 16 bits
 
-def set_carry_flag(flag):
-    _flags[4] = 1 if flag else 0
-    logger.info(f"Carry flag (Flag 4) set: {_flags[4]}")
+                if self.complement_mode == "UNSIGNED":
+                    if val < 0:
+                        raise ValueError("Negative numbers not allowed in unsigned mode")
+                    val = val & mask
+                elif self.complement_mode == "1S":
+                    if val < 0:
+                        val = (~(-val)) & mask  # 1's complement for negative numbers
+                    else:
+                        val = val & mask
+                else:  # "2S" (2's complement)
+                    if val < 0:
+                        val = ((1 << self.word_size) + val) & mask  # 2's complement conversion
+                    else:
+                        val = val & mask
+                return val
 
-def get_last_x():
-    """Get the last X value."""
-    global _last_x
-    return _last_x
+            # HEX, BIN, OCT modes: Treat as unsigned integers and apply mask
+            else:
+                base_num = {"HEX": 16, "BIN": 2, "OCT": 8}[base]
+                val = int(string_value, base_num)  # Convert string to integer in specified base
+                mask = (1 << self.word_size) - 1
+                val = val & mask  # Apply word size mask
+                return val
 
-def save_last_x():
-    """Save the current X as last X."""
-    global _last_x
-    _last_x = _x_register
-    logger.info(f"Saved last X: {_last_x}")
+        except ValueError as e:
+            # Log the error and return a default value
+            logger.info(f"Failed to interpret '{string_value}' in {base}: {e}, defaulting to 0")
+            return 0.0 if base == "FLOAT" else 0
 
-def last_x():
-    """Return the last X value."""
-    return _last_x
+    def format_in_base(self, value: Number, base: str, pad: bool = False) -> str:
+        """
+        Format a numeric value into a string representation based on the specified base.
+        
+        Args:
+            value (Number): The numeric value to format (int or float).
+            base (str): The base to format in ("FLOAT", "DEC", "HEX", "BIN", "OCT").
+            pad (bool): If True, pad with leading zeros to word size (default: False).
+        
+        Returns:
+            str: The formatted string representation.
+        """
+        if base == "FLOAT":
+            result = f"{float(value):.9f}".rstrip('0').rstrip('.')
+            return result if result else '0'
+        value = int(value)
+        mask = (1 << self.word_size) - 1
+        value &= mask
+        display_leading_zeros = (self.test_flag(3) == 1) or pad
+        if base == "BIN":
+            result = format(value, f'0{self.word_size}b') if display_leading_zeros else (format(value, 'b') if value != 0 else '0')
+        elif base == "OCT":
+            oct_digits = (self.word_size + 2) // 3
+            result = format(value, f'0{oct_digits}o') if display_leading_zeros else (format(value, 'o') if value != 0 else '0')
+        elif base == "DEC":
+            if self.complement_mode in {"1S", "2S"} and (value & (1 << (self.word_size - 1))):
+                if self.complement_mode == "1S":
+                    result = str(-((~value) & mask))
+                else:
+                    result = str(value - (1 << self.word_size))
+            else:
+                result = str(value)
+        elif base == "HEX":
+            hex_digits = (self.word_size + 3) // 4
+            hex_str = format(value, f'0{hex_digits}x') if display_leading_zeros else (format(value, 'x') if value != 0 else '0')
+            mapping = {'a': 'A', 'c': 'C', 'e': 'E', 'f': 'F'}
+            result = ''.join(mapping.get(c, c) for c in hex_str)
+        else:
+            result = str(value)
+        return result
 
-def store_in_i():
-    """Store X in the I register."""
-    global _i_register
-    _i_register = _x_register
-    logger.info(f"Stored in I register: {_i_register}")
 
-def get_i():
-    """Get the value from the I register."""
-    return _i_register
 
-def recall_i():
-    """Push the I register value into X."""
-    push(_i_register)
-    logger.info(f"Recalled I register: {_i_register}, X={_x_register}, stack={_stack}")
+    def set_flag(self, flag: int) -> None:
+        self._flags[flag] = 1
 
-# --- g-mode functions ---
+    def clear_flag(self, flag: int) -> None:
+        self._flags[flag] = 0
 
-def roll_up():
-    """Rotate stack upward: X→Y, Y→Z, Z→T, T→X."""
-    global _x_register
-    temp = _stack[2]
-    _stack[2] = _stack[1]
-    _stack[1] = _stack[0]
-    _stack[0] = _x_register
-    _x_register = temp
-    logger.info(f"Stack rolled up: X={_x_register}, stack={_stack}")
+    def test_flag(self, flag: int) -> bool:
+        return self._flags[flag] == 1
 
-def stack_lift():
-    """Lift the stack: T = Z, Z = Y, Y = X, X remains unchanged."""
-    global _stack, _x_register
-    _stack[2] = _stack[1]  # T = Z
-    _stack[1] = _stack[0]  # Z = Y
-    _stack[0] = _x_register  # Y = X
-    logger.info(f"Stack lifted: X={_x_register}, stack={_stack}")
+    def get_flags_bitfield(self) -> int:
+        return (self._flags[0] |
+                (self._flags[1] << 1) |
+                (self._flags[2] << 2) |
+                (self._flags[3] << 3))
 
-def left_justify():
-    global _x_register, _word_size
-    mask = (1 << _word_size) - 1  # Mask to ensure value fits word size
-    x = _x_register & mask        # Apply mask to X
-    if x == 0:
-        _x_register = _word_size  # If X is 0, set to word size (16)
-    else:
-        _x_register = _word_size - x.bit_length()  # Number of leading zeros
+    def apply_word_size(self, value: int) -> int:
+        mask = (1 << self.word_size) - 1
+        return value & mask
 
-# --- New Functions for Data Storage Registers ---
+    def get_state(self) -> List[int]:
+        return [self._x_register] + self._stack
 
-def clear_registers():
-    global _data_registers
-    _data_registers = [0] * len(_data_registers)
-    logger.info("Registers cleared")
+    def push(self, value: int) -> None:
+        self._stack.pop()
+        self._stack.insert(0, self._x_register)
+        self._x_register = value
 
-def set_register(index, value):
-    """Set the value of a storage register, applying the word size mask."""
-    if 0 <= index < len(_data_registers):
-        mask = (1 << _word_size) - 1  # Mask based on current word size
-        _data_registers[index] = value & mask
-        logger.info(f"Set register R{index} to {_data_registers[index]}")
-    else:
-        raise IndexError("Register index out of range")
+    def pop(self) -> int:
+        if self._x_register == 0 and all(x == 0 for x in self._stack):
+            raise StackUnderflowError("Stack is empty")
+        self._last_x = self._x_register
+        self._x_register = self._stack.pop(0)
+        self._stack.append(0)
+        return self._last_x
 
-def get_register(index):
-    """Get the value of a storage register."""
-    if 0 <= index < len(_data_registers):
-        return _data_registers[index]
-    else:
-        raise IndexError("Register index out of range")
+    def peek(self) -> int:
+        return self._x_register
+
+    ### Arithmetic Operations ###
+
+    def add(self) -> None:
+        """Add X to Y and update the stack.
+
+        Raises:
+            StackUnderflowError: If the stack has fewer than 3 elements (Y, Z, T).
+        """
+        # Check if stack has at least 3 elements (Y, Z, T)
+        if len(self._stack) < 3:
+            raise StackUnderflowError("Stack underflow: need at least Y, Z, T")
+    
+        # Assign operands: Y from stack, X from register
+        y = self._stack[0]      # Y
+        x = self._x_register    # X
+    
+        # Perform addition based on current mode
+        if self.current_mode == "FLOAT":
+            # Floating-point addition
+            result = y + x
+            self.clear_flag(4)  # Clear carry flag
+            self.clear_flag(5)  # Clear overflow flag
+            # Check for infinity to set overflow flag
+            if isinstance(result, float) and (result == float('inf') or result == float('-inf')):
+                self.set_flag(5)
+            logger.info(f"Add (FLOAT): {y} + {x} = {result}")
+        else:
+            # Integer addition (signed or unsigned)
+            mode = self.get_complement_mode()
+            word_size = self.get_word_size()
+            mask = (1 << word_size) - 1
+            max_signed = (1 << (word_size - 1)) - 1
+            min_signed = -(1 << (word_size - 1))
+        
+            if mode == "UNSIGNED":
+                # Unsigned integer addition
+                unmasked_result = y + x
+                result = unmasked_result & mask
+                carry = 1 if unmasked_result > mask else 0
+                overflow = carry
+            else:
+                # Signed integer addition
+                a_signed = to_signed(y, word_size, mode)
+                b_signed = to_signed(x, word_size, mode)
+                result_signed = a_signed + b_signed
+                # Convert back to unsigned representation
+                result = from_signed(result_signed, word_size, mode)
+                overflow = result_signed > max_signed or result_signed < min_signed
+                carry = 0  # Carry typically not used in signed mode
+        
+            # Set or clear flags based on carry and overflow
+            if carry:
+                self.set_flag(4)  # Carry flag
+            else:
+                self.clear_flag(4)
+            if overflow:
+                self.set_flag(5)  # Overflow flag
+            else:
+                self.clear_flag(5)
+            logger.info(f"Add: {y} + {x} = {result} ({mode}), carry={carry}, overflow={overflow}")
+    
+        # Save the old X value before it’s overwritten
+        self._last_x = x
+    
+        # Update X register with result
+        self._x_register = result
+    
+        # Update stack: Shift Z to Y, T to Z, and duplicate T
+        t = self._stack[2]  # T
+        self._stack = [self._stack[1], self._stack[2], t]  # [Z, T, T]
+
+    def subtract(self) -> None:
+        """Subtract X from Y and update the stack.
+
+        Raises:
+            StackUnderflowError: If the stack has fewer than 3 elements (Y, Z, T).
+        """
+        # Check if stack has at least 3 elements (Y, Z, T)
+        if len(self._stack) < 3:
+            raise StackUnderflowError("Stack underflow: need at least Y, Z, T")
+    
+        # Assign operands: Y from stack, X from register
+        y = self._stack[0]      # Y
+        x = self._x_register    # X
+    
+        # Perform subtraction based on current mode
+        if self.current_mode == "FLOAT":
+            # Floating-point subtraction
+            result = y - x
+            self.clear_flag(4)  # Clear borrow flag
+            self.clear_flag(5)  # Clear overflow flag
+            # Check for infinity to set overflow flag
+            if isinstance(result, float) and (result == float('inf') or result == float('-inf')):
+                self.set_flag(5)
+            logger.info(f"Subtract (FLOAT): {y} - {x} = {result}")
+        else:
+            # Integer subtraction (signed or unsigned)
+            mode = self.get_complement_mode()
+            word_size = self.get_word_size()
+            mask = (1 << word_size) - 1
+            max_signed = (1 << (word_size - 1)) - 1
+            min_signed = -(1 << (word_size - 1))
+        
+            if mode == "UNSIGNED":
+                # Unsigned integer subtraction
+                unmasked_result = y - x
+                result = unmasked_result & mask
+                borrow = 1 if y < x else 0
+                overflow = borrow
+            else:
+                # Signed integer subtraction
+                a_signed = to_signed(y, word_size, mode)
+                b_signed = to_signed(x, word_size, mode)
+                result_signed = a_signed - b_signed
+                # Convert back to unsigned representation (assuming a helper function)
+                result = result_signed & mask  # Simplification; may need from_signed()
+                overflow = result_signed > max_signed or result_signed < min_signed
+                borrow = 0  # Borrow typically not used in signed mode
+        
+            # Set or clear flags based on borrow and overflow
+            if borrow:
+                self.set_flag(4)  # Borrow flag
+            else:
+                self.clear_flag(4)
+            if overflow:
+                self.set_flag(5)  # Overflow flag
+            else:
+                self.clear_flag(5)
+            logger.info(f"Subtract: {y} - {x} = {result} ({mode}), borrow={borrow}, overflow={overflow}")
+    
+        # Update X register with result
+        self._x_register = result
+    
+        # Update stack: Shift Z to Y, T to Z, and duplicate T
+        t = self._stack[2]  # T
+        self._stack = [self._stack[1], self._stack[2], t]  # [Z, T, T]
+
+    def multiply(self) -> None:
+        if not self._stack:
+            raise StackUnderflowError("Not enough values on stack")
+        y = self._stack[0]
+        x = self._x_register
+        if self.current_mode == "FLOAT":
+            result: Number = y * x
+            self.clear_flag(4)
+            self.clear_flag(5)
+            if isinstance(result, float) and (result == float('inf') or result == float('-inf')):
+                self.set_flag(5)
+            logger.info(f"Multiply (FLOAT): {y} * {x} = {result}")
+        else:
+            mode = self.get_complement_mode()
+            word_size = self.get_word_size()
+            mask = (1 << word_size) - 1
+            if mode == "UNSIGNED":
+                unmasked_result = y * x
+                result = unmasked_result & mask
+            else:
+                a_signed = to_signed(y, word_size, mode)
+                b_signed = to_signed(x, word_size, mode)
+                result_signed = a_signed * b_signed
+                result = from_signed(result_signed, word_size, mode)
+            self.clear_flag(4)
+            self.clear_flag(5)
+            logger.info(f"Multiply: {y} * {x} = {result} ({mode})")
+        self._x_register = result
+        self._stack[0] = self._stack[1]
+        self._stack[1] = self._stack[2]
+
+    def divide(self) -> None:
+        if not self._stack:
+            raise StackUnderflowError("Not enough values on stack")
+        y = self._stack[0]
+        x = self._x_register
+        if x == 0:
+            raise DivisionByZeroError()
+        if self.current_mode == "FLOAT":
+            result: Number = y / x
+            self.clear_flag(4)
+            self.clear_flag(5)
+            if isinstance(result, float) and (result == float('inf') or result == float('-inf')):
+                self.set_flag(5)
+            logger.info(f"Divide (FLOAT): {y} / {x} = {result}")
+        else:
+            mode = self.get_complement_mode()
+            word_size = self.get_word_size()
+            mask = (1 << word_size) - 1
+            max_signed = (1 << (word_size - 1)) - 1
+            min_signed = -(1 << (word_size - 1))
+            if mode == "UNSIGNED":
+                result = int(y / x)
+                remainder = y % x
+                overflow = 0
+            else:
+                a_signed = to_signed(y, word_size, mode)
+                b_signed = to_signed(x, word_size, mode)
+                result_signed = int(a_signed / b_signed)
+                remainder = a_signed % b_signed
+                overflow = result_signed > max_signed or result_signed < min_signed
+                result = from_signed(result_signed, word_size, mode)
+            result = result & mask
+            self._last_x = remainder
+            if remainder != 0:
+                self.set_flag(4)
+            else:
+                self.clear_flag(4)
+            if overflow:
+                self.set_flag(5)
+            else:
+                self.clear_flag(5)
+            logger.info(f"Divide: {y} / {x} = {result} ({mode}), remainder={remainder}, overflow={overflow}")
+        self._x_register = result
+        self._stack[0] = self._stack[1]
+        self._stack[1] = self._stack[2]
+
+    def set_word_size(self, bits: int) -> None:
+        """
+        Set the word size for the stack and adjust all values accordingly.
+    
+        Args:
+            bits (int): The new word size in bits (e.g., 8, 16, 32, 64).
+    
+        Raises:
+            IncorrectWordSizeError: If the word size is invalid (e.g., not positive or exceeds reasonable limits).
+        """
+        if not isinstance(bits, int) or bits <= 0 or bits > 64:
+            raise IncorrectWordSizeError(f"Invalid WSIZE:{bits} <= 64")
+    
+        old_word_size = self.word_size
+        self.word_size = bits
+        mask = (1 << bits) - 1
+    
+        # Adjust X register
+        self._x_register = self._x_register & mask
+    
+        # Adjust stack values (Y, Z, T)
+        for i in range(len(self._stack)):
+            self._stack[i] = self._stack[i] & mask
+    
+        # Adjust data registers
+        for i in range(len(self._data_registers)):
+            self._data_registers[i] = self._data_registers[i] & mask
+    
+        # Adjust I register
+        self._i_register = self._i_register & mask
+    
+        logger.info(f"Word size changed from {old_word_size} to {bits} bits")
+
+    def set_complement_mode(self, mode: str) -> None:
+        """
+        Set the complement mode for the stack and adjust all values accordingly.
+    
+        Args:
+            mode (str): The new complement mode ("UNSIGNED", "1S", or "2S").
+    
+        Raises:
+            ValueError: If the mode is not one of "UNSIGNED", "1S", or "2S".
+        """
+        valid_modes = {"UNSIGNED", "1S", "2S"}
+        if mode not in valid_modes:
+            raise ValueError(f"Invalid complement mode: {mode}. Must be one of {valid_modes}")
+    
+        old_mode = self.complement_mode
+        if old_mode == mode:
+            return  # No change needed
+    
+        # Convert all values from the old mode to signed integers
+        mask = (1 << self.word_size) - 1
+        x_signed = to_signed(self._x_register, self.word_size, old_mode)
+        stack_signed = [to_signed(val, self.word_size, old_mode) for val in self._stack]
+        registers_signed = [to_signed(val, self.word_size, old_mode) for val in self._data_registers]
+        i_signed = to_signed(self._i_register, self.word_size, old_mode)
+    
+        # Update the complement mode
+        self.complement_mode = mode
+    
+        # Convert all values back to the new mode
+        self._x_register = from_signed(x_signed, self.word_size, mode) & mask
+        for i in range(len(self._stack)):
+            self._stack[i] = from_signed(stack_signed[i], self.word_size, mode) & mask
+        for i in range(len(self._data_registers)):
+            self._data_registers[i] = from_signed(registers_signed[i], self.word_size, mode) & mask
+        self._i_register = from_signed(i_signed, self.word_size, mode) & mask
+    
+        logger.info(f"Complement mode changed from {old_mode} to {mode}")
+
+    def roll_up(self) -> None:
+        """Roll up the stack: T→X, X→Y, Y→Z, Z→T."""
+        old_t = self._stack[2]  # Capture current T
+        self._stack[2] = self._stack[1]  # Z → T
+        self._stack[1] = self._stack[0]  # Y → Z
+        self._stack[0] = self._x_register  # X → Y
+        self._x_register = old_t  # T → X
+        logger.info("Stack rolled up: T→X, X→Y, Y→Z, Z→T")
+
+    def last_x(self) -> int:
+        """
+        Return the last X value before the most recent stack operation that modified it.
+    
+        Returns:
+            int: The value of _last_x.
+        """
+        return self._last_x
+
+# f mode Row 1
+# SL
+    def shift_left(self) -> None:
+        """Shift the X register left by one bit, respecting word size and complement mode."""
+        word_size = self.get_word_size()
+        mask = (1 << word_size) - 1
+        mode = self.get_complement_mode()
+    
+        # Perform the shift
+        shifted = (self._x_register << 1) & mask
+    
+        # Handle carry flag (bit shifted out)
+        carry = 1 if (self._x_register & (1 << (word_size - 1))) else 0
+        if carry:
+            self.set_flag(4)
+        else:
+            self.clear_flag(4)
+    
+        # Update X register
+        self._x_register = shifted
+    
+        logger.info(f"Shifted left: {shifted} (word size={word_size}, mode={mode}, carry={carry})")
+# SR
+    def shift_right(self) -> None:
+        """Shift the X register right by one bit, respecting word size and complement mode."""
+        word_size = self.get_word_size()
+        mode = self.get_complement_mode()
+    
+        # Handle carry flag (least significant bit before shift)
+        carry = self._x_register & 1
+        if carry:
+            self.set_flag(4)
+        else:
+            self.clear_flag(4)
+    
+        # Perform the shift based on complement mode
+        if mode == "UNSIGNED":
+            shifted = self._x_register >> 1
+        else:  # 1S or 2S (arithmetic shift right, preserve sign bit)
+            # Convert to signed, shift, then back to unsigned representation
+            signed_value = to_signed(self._x_register, word_size, mode)
+            shifted_signed = signed_value >> 1
+            shifted = from_signed(shifted_signed, word_size, mode)
+    
+        # Update X register
+        self._x_register = shifted
+    
+        logger.info(f"Shifted right: {shifted} (word size={word_size}, mode={mode}, carry={carry})")
+# RL
+    def rotate_left(self) -> None:
+        """Rotate the X register left by one bit, wrapping MSB to LSB."""
+        word_size = self.get_word_size()
+        mask = (1 << word_size) - 1
+        mode = self.get_complement_mode()
+    
+        # Perform the rotation
+        msb = self._x_register & (1 << (word_size - 1))  # Get MSB
+        shifted = (self._x_register << 1) & mask  # Shift left within word size
+        rotated = shifted | (1 if msb else 0)  # Wrap MSB to LSB
+    
+        # Handle carry flag (MSB before rotation)
+        carry = 1 if msb else 0
+        if carry:
+            self.set_flag(4)
+        else:
+            self.clear_flag(4)
+    
+        # Update X register
+        self._x_register = rotated
+    
+        logger.info(f"Rotated left: {rotated} (word size={word_size}, mode={mode}, carry={carry})")
+# RR
+    def rotate_right(self) -> None:
+        """Rotate the X register right by one bit, wrapping LSB to MSB."""
+        word_size = self.get_word_size()
+        mask = (1 << word_size) - 1
+        mode = self.get_complement_mode()
+
+        # Perform the rotation
+        lsb = self._x_register & 1  # Get LSB
+        shifted = self._x_register >> 1  # Shift right
+        rotated = shifted | (lsb << (word_size - 1))  # Wrap LSB to MSB
+
+        # Handle carry flag (LSB before rotation)
+        carry = 1 if lsb else 0
+        if carry:
+            self.set_flag(4)
+        else:
+            self.clear_flag(4)
+
+        # Update X register
+        self._x_register = rotated
+
+        logger.info(f"Rotated right: {rotated} (word size={word_size}, mode={mode}, carry={carry})")
+# RLn
+    def rotate_left_carry(self) -> None:
+        """Rotate X left by X bits through carry, matching real HP-16C RLn behavior.
+    
+        Raises:
+            ValueError: If word_size is not positive.
+            NegativeShiftCountError: If the rotation count is negative or exceeds word_size - 1.
+        """
+        # Get and validate word size
+        word_size = self.get_word_size()
+        if word_size <= 0:
+            raise ValueError("Word size must be positive")
+    
+        # Check raw rotation amount before any masking or normalization
+        if self._x_register < 0 or self._x_register >= word_size:
+            raise NegativeShiftCountError("Invalid rotation count", "E108")
+
+    
+        # Create mask for the word size
+        mask = (1 << word_size) - 1
+    
+        # Determine rotation amount (already validated to be in [0, word_size - 1])
+        n = self._x_register & mask  # Interpret as unsigned value
+    
+        # Get carry-in from flag 4
+        carry_in = 1 if self.test_flag(4) else 0
+    
+        # Perform the rotation: (x << n) | (x >> (word_size - n))
+        rotated = ((self._x_register << n) | (self._x_register >> (word_size - n))) & mask
+    
+        # Determine carry-out from the MSB of the rotated value
+        carry_out = 1 if (rotated & (1 << (word_size - 1))) else 0
+        if carry_out:
+            self.set_flag(4)
+        else:
+            self.clear_flag(4)
+    
+        # Update the X register
+        self._x_register = rotated
+    
+        # Log the operation details
+        logger.info(f"Rotated left with carry by {n}: {rotated} (word_size={word_size}, carry_in={carry_in}, carry_out={carry_out})")
+#RRn
+    def rotate_right_carry(self) -> None:
+        """Rotate X right by X bits through carry, matching real HP-16C RRn behavior."""
+        word_size = self.get_word_size()
+        mask = (1 << word_size) - 1
+        n = self._x_register & mask  # Rotate by X’s value (14)
+        carry_in = 1 if self.test_flag(4) else 0
+        # Rotate n bits: (x >> n) | (x << (word_size - n))
+        rotated = ((self._x_register >> n) | (self._x_register << (word_size - n))) & mask
+        # Carry: LSB after rotation
+        carry_out = 1 if (rotated & 1) else 0
+        if carry_out:
+            self.set_flag(4)
+        else:
+            self.clear_flag(4)
+        self._x_register = rotated
+        logger.info(f"Rotated right with carry by {n}: {rotated} (word_size={word_size}, carry_in={carry_in}, carry_out={carry_out})")

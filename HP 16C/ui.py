@@ -1,32 +1,47 @@
-# ui.py
-# Builds the UI components for the HP-16C emulator, including the display and button grid.
-# Author: GlobeyCode
-# License: MIT
-# Date: 3/23/2025
-# Dependencies: Python 3.6+ with tkinter, HP-16C emulator modules (buttons, display, controller)
+"""
+ui.py
+Builds the UI components for the HP-16C emulator, including the display and button grid.
+Refactored to include type hints, clearer docstrings, and improved layout calculations.
+Author: GlobeyCode (original), refactored by ChatGPT
+License: MIT
+Date: 3/23/2025 (original), refactored 2025-04-01
+Dependencies: Python 3.6+ with tkinter, and HP-16C emulator modules (buttons, display, controller)
+"""
 
+from typing import Tuple, List, Dict, Any
 import tkinter as tk
+import tkinter.font as tkFont
 from display import Display
+from stack import Stack
 from button_config import BUTTONS_CONFIG
 from logging_config import logger
+from dataclasses import asdict
 
-def show_user_guide():
-    """Display the user guide in a new window."""
+
+def show_user_guide() -> None:
     help_window = tk.Toplevel()
     help_window.title("User Guide")
-    tk.Label(help_window, text="This is the user guide for the HP-16C emulator.\n"
-                               "Here you can find instructions on how to use the emulator.").pack()
+    tk.Label(
+        help_window,
+        text=(
+            "This is the user guide for the HP-16C emulator.\n"
+            "Here you can find instructions on how to use the emulator."
+        )
+    ).pack()
 
-def setup_ui(root, config, Courier):
-    """Set up the UI components: display, buttons, menu bar, stack display, and key bindings."""
-    # Log UI setup details
-    logger.info(f"Setting up UI: display at x={config.get('display_x', config['margin'])}, "
-                f"y={config.get('display_y', config['margin'])}, width={config['display_width']}, "
-                f"height={config['display_height']}, grid=4x10, total={1049 + 2 * config['margin']}x560")
+def setup_ui(root: tk.Tk, stack: Stack, config: Dict[str, Any], Courier: tkFont.Font) -> Tuple[Display, List[Dict[str, Any]]]:
+    total_width = 1049 + 2 * config["margin"]
+    total_height = 560
+    logger.info(
+        f"Setting up UI: display at x={config.get('display_x', config['margin'])}, "
+        f"y={config.get('display_y', config['margin'])}, width={config['display_width']}, "
+        f"height={config['display_height']}, grid=4x10, total={total_width}x{total_height}"
+    )
 
-    # Create Display object (no widget parameter needed after Display class fix)
+    # Initialize the display
     disp = Display(
         master=root,
+        stack=stack,
         x=config.get("display_x", config["margin"]),
         y=config.get("display_y", config["margin"]),
         width=config["display_width"],
@@ -36,53 +51,56 @@ def setup_ui(root, config, Courier):
     disp.set_mode("DEC")
     disp.update()
 
-    # Define grid dimensions for buttons
+    # Define grid dimensions
     max_rows = 4
     max_cols = 10
     base_row_height = 75
     grid_width = 1045
     grid_height = (max_rows * base_row_height) + ((max_rows - 1) * 5) + (max_rows * 22)
-
-    # Adjust grid height if any button in row 3 has rowspan=2
-    if any(cfg["row"] == 3 and cfg.get("rowspan", 1) == 2 for cfg in BUTTONS_CONFIG):
+    
+    # Adjust grid height if any button in row 3 has rowspan of 2
+    if any(cfg.row == 3 and cfg.rowspan == 2 for cfg in BUTTONS_CONFIG):
         grid_height += (175 - base_row_height)
     total_grid_width = grid_width + 4
     total_grid_height = grid_height + 17
 
-    # Create bezel and button frames
+    # Create bezel frame
     bezel_frame = tk.Frame(root, bg="#C0C0C0", highlightthickness=0, bd=0)
-    bezel_frame.place(
-        x=(1049 + 2 * config["margin"] - total_grid_width) / 2,
-        y=config.get("display_y", config["margin"]) + config["display_height"] + config["margin"],
-        width=total_grid_width,
-        height=total_grid_height
-    )
+    bezel_x = (total_width - total_grid_width) / 2
+    bezel_y = config.get("display_y", config["margin"]) + config["display_height"] + config["margin"]
+    bezel_frame.place(x=bezel_x, y=bezel_y, width=total_grid_width, height=total_grid_height)
+
+    # Create buttons frame
     buttons_frame = tk.Frame(bezel_frame, bg=config["bg_color"])
     buttons_frame.place(x=2, y=2, width=grid_width, height=grid_height)
 
-    # Create buttons from BUTTONS_CONFIG
-    buttons_list = []
+    # Create buttons
+    buttons_list: List[Dict[str, Any]] = []
     logger.info("Creating buttons from BUTTONS_CONFIG")
     for cfg in BUTTONS_CONFIG:
-        btn_dict = create_single_button(buttons_frame, cfg)
-        rowspan = cfg.get("rowspan", 1)
+        # Convert ButtonConfig dataclass to dictionary for create_single_button
+        btn_dict = create_single_button(buttons_frame, asdict(cfg))
+        rowspan = cfg.rowspan  # Access rowspan directly from dataclass
         btn_dict["frame"].grid(
-            row=cfg["row"],
-            column=cfg["col"],
+            row=cfg.row,       # Use dot notation
+            column=cfg.col,    # Use dot notation
             rowspan=rowspan,
             padx=(25, 2),
             pady=(20, 2),
             sticky="nsew"
         )
-        top_text = cfg['orig_top_text'].replace('\n', '')
-        main_text = cfg['orig_main_text'].replace('\n', '')
-        sub_text = cfg['orig_sub_text'].replace('\n', '')
-        logger.info(f"Button {cfg['row']},{cfg['col']}: {top_text}/{main_text}/{sub_text}, "
-                    f"{cfg['width']}x{cfg['height']}, row={cfg['row']}, col={cfg['col']}, rowspan={rowspan}")
+        # Access text fields from btn_dict since they are added by create_single_button
+        top_text = (btn_dict.get('orig_top_text') or '').replace('\n', '')
+        main_text = (btn_dict.get('orig_main_text') or '').replace('\n', '')
+        sub_text = (btn_dict.get('orig_sub_text') or '').replace('\n', '')
+        logger.info(
+            f"Button {cfg.row},{cfg.col}: {top_text}/{main_text}/{sub_text}, "
+            f"{cfg.width}x{cfg.height}, rowspan={rowspan}"
+        )
         buttons_list.append(btn_dict)
     logger.info(f"Total buttons created: {len(buttons_list)}")
 
-    # Configure grid layout
+    # Configure grid
     for col in range(max_cols):
         buttons_frame.grid_columnconfigure(col, uniform="col", minsize=75)
     for row in range(max_rows):
@@ -99,44 +117,33 @@ def setup_ui(root, config, Courier):
     )
     branding_label.place(x=20, rely=1, y=6, anchor="sw")
 
-    # Set window geometry
+    # Set window size
     root.update_idletasks()
-    root.geometry(f"{1049 + 2 * config['margin']}x580")
+    root.geometry(f"{total_width}x{total_height}")
 
-    # Create menu bar
+    # Configure menu
     menu_bar = tk.Menu(root)
     root.config(menu=menu_bar)
-
-    # Create Help menu
     help_menu = tk.Menu(menu_bar, tearoff=0)
     menu_bar.add_cascade(label="Help", menu=help_menu)
     help_menu.add_command(label="User Guide", command=show_user_guide)
-
-    # Create Debug menu
     debug_menu = tk.Menu(menu_bar, tearoff=0)
     menu_bar.add_cascade(label="Debug", menu=debug_menu)
     debug_menu.add_command(label="Toggle Stack Display", command=disp.toggle_stack_display)
-
-    # Bind F1 key to show_user_guide
     root.bind('<F1>', lambda event: show_user_guide())
 
-    # Create stack display widget
+    # Add stack display
     stack_display = tk.Label(root, text="Y: 0 Z: 0 T: 0", font=Courier, bg=config["bg_color"], fg="white")
-    disp.stack_display = stack_display  # Attach to Display instance
-    if config.get("show_stack_display", False):
-        disp.toggle_stack_display()  # Show if config specifies
-    else:
-        disp.toggle_stack_display()  # Hide initially
+    disp.stack_display = stack_display
+    disp.toggle_stack_display()
 
     return disp, buttons_list
 
-def create_single_button(root, cfg):
-    """Create a single button with labels."""
+def create_single_button(root: tk.Widget, cfg: Dict[str, Any]) -> Dict[str, Any]:
     orig_top = cfg.get("top_label", "")
     orig_main = cfg.get("main_label", "")
     orig_sub = cfg.get("sub_label", "")
 
-    # Create button frame
     frame = tk.Frame(
         root,
         bg=cfg.get("bg", "#1e1818"),
@@ -147,7 +154,6 @@ def create_single_button(root, cfg):
         height=cfg["height"]
     )
 
-    # Store original values in config
     cfg["frame"] = frame
     cfg["orig_top_text"] = orig_top
     cfg["orig_main_text"] = orig_main
@@ -155,9 +161,8 @@ def create_single_button(root, cfg):
     cfg["orig_bg"] = cfg.get("bg", "#1e1818")
     cfg["orig_top_fg"] = cfg.get("fg", "#e3af01")
     cfg["orig_fg"] = "white"
-    cfg["orig_sub_fg"] = cfg.get("fg", "#59b7d1")
+    cfg["orig_sub_fg"] = "#59b7d1"
 
-    # Add top label if present
     if orig_top:
         top_widget = tk.Label(
             frame,
@@ -171,7 +176,6 @@ def create_single_button(root, cfg):
     else:
         cfg["top_label"] = None
 
-    # Add main label
     main_widget = tk.Label(
         frame,
         text=orig_main,
@@ -182,7 +186,6 @@ def create_single_button(root, cfg):
     main_widget.place(relx=0.5, rely=0.5, anchor="center")
     cfg["main_label"] = main_widget
 
-    # Add sub label if present
     if orig_sub:
         sub_widget = tk.Label(
             frame,

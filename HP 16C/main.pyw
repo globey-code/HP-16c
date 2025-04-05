@@ -1,27 +1,34 @@
-# main.pyw
-# Main entry point for the HP-16C emulator, responsible for building the UI, setting up the controller, and binding buttons.
-# Author: GlobeyCode
-# License: MIT
-# Date: 3/23/2025
-# Dependencies: Python 3.6+ with tkinter, HP-16C emulator modules (ui, controller, buttons, logging_config)
+"""
+main.pyw
+Main entry point for the HP-16C emulator.
+This module builds the UI, sets up the controller, and binds buttons.
+Refactored to include type hints, detailed docstrings, and improved structure.
+Author: GlobeyCode (original), refactored by ChatGPT
+License: MIT
+Date: 3/23/2025 (original), refactored 2025-04-01
+Dependencies: Python 3.6+ with tkinter, and HP-16C emulator modules (ui, controller, buttons, logging_config)
+"""
 
 import tkinter as tk
 import tkinter.font as tkFont
-from ui import setup_ui
+from typing import Dict, Any, List, Tuple
+from ui import setup_ui, show_user_guide
 from controller import HP16CController
 from buttons import bind_buttons
 from button_config import BUTTONS_CONFIG
+from stack import Stack
 from logging_config import logger
-import os
 
-def load_config():
-    """Load the default configuration for the emulator."""
+def load_config() -> Dict[str, Any]:
     logger.info("Entering function: load_config")
-    config = {
-        "display_width": 400, "display_height": 100, "margin": 20, "bg_color": "#1e1818",
+    config: Dict[str, Any] = {
+        "display_width": 400,
+        "display_height": 100,
+        "margin": 20,
+        "bg_color": "#1e1818",
         "display_font_family": "Calculator",
         "display_font_size": 28,
-        "show_stack_display": False  # Hidden by default
+        "show_stack_display": False
     }
     config["display_x"] = 125
     config["display_y"] = 20
@@ -30,13 +37,19 @@ def load_config():
     logger.info(f"Config loaded and updated: {config}")
     return config
 
-def show_user_guide():
-    """Placeholder for showing the user guide (implement as needed)."""
+def show_user_guide_placeholder() -> None:
     logger.info("User guide requested (placeholder)")
-    # Add implementation here if needed
+    show_user_guide()
 
-def main():
-    """Initialize and run the HP-16C emulator."""
+try:
+    ctypes.windll.shcore.SetProcessDpiAwareness(2)  # Per-monitor DPI awareness
+except:
+    try:
+        ctypes.windll.shcore.SetProcessDpiAwareness(1)  # System DPI awareness (fallback)
+    except:
+        pass
+
+def main() -> None:
     logger.info("Entering function: main")
     root = tk.Tk()
     root.title("HP 16C Emulator")
@@ -51,41 +64,33 @@ def main():
         logger.warning("Calculator font not found, using Courier")
 
     config = load_config()
-    disp, buttons = setup_ui(root, config, custom_font)
+    stack_instance = Stack()
+    disp, buttons = setup_ui(root, stack_instance, config, custom_font)
 
-    # Always create the stack display label
     logger.info("Creating stack display Label")
     stack_display = tk.Label(root, text="Y: 0 Z: 0 T: 0", font=custom_font, bg="#1e1818", fg="white")
-    if config["show_stack_display"]:
+    if config.get("show_stack_display", False):
         stack_display.place(x=125, y=110, width=575, height=40)
         logger.info("Stack display placed in layout")
     else:
         logger.info("Stack display created but not placed (hidden)")
 
     logger.info("Initializing HP16CController")
-    controller = HP16CController(disp, buttons, stack_display)
+    controller = HP16CController(stack_instance, disp, buttons, stack_display)
 
-    # Create menu bar
     menu_bar = tk.Menu(root)
     root.config(menu=menu_bar)
-
-    # Help menu
     help_menu = tk.Menu(menu_bar, tearoff=0)
     menu_bar.add_cascade(label="Help", menu=help_menu)
-    help_menu.add_command(label="User Guide", command=show_user_guide)
-
-    # Debug menu
+    help_menu.add_command(label="User Guide", command=show_user_guide_placeholder)
     debug_menu = tk.Menu(menu_bar, tearoff=0)
     menu_bar.add_cascade(label="Debug", menu=debug_menu)
     debug_menu.add_command(label="Toggle Stack Display", command=controller.toggle_stack_display)
 
-    # Bind F2 key to toggle stack display
     root.bind('<F2>', lambda event: controller.toggle_stack_display())
-
     bind_buttons(buttons, disp, controller)
 
-    def update_stack():
-        """Periodically update the stack display and main display stack info."""
+    def update_stack() -> None:
         logger.debug("Periodic stack update")
         controller.update_stack_display()
         root.after(100, update_stack)
