@@ -11,13 +11,12 @@ Dependencies: Python 3.6+ with tkinter, and HP-16C emulator modules (ui, control
 
 import tkinter as tk
 import tkinter.font as tkFont
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any
 from ui import setup_ui, show_user_guide
-from controller import HP16CController
 from buttons import bind_buttons
-from button_config import BUTTONS_CONFIG
 from stack import Stack
 from logging_config import logger
+logger.info("Loading controller module (no reload)")
 
 def load_config() -> Dict[str, Any]:
     logger.info("Entering function: load_config")
@@ -42,6 +41,7 @@ def show_user_guide_placeholder() -> None:
     show_user_guide()
 
 try:
+    import ctypes
     ctypes.windll.shcore.SetProcessDpiAwareness(2)  # Per-monitor DPI awareness
 except:
     try:
@@ -75,6 +75,12 @@ def main() -> None:
     else:
         logger.info("Stack display created but not placed (hidden)")
 
+    # Force reload of controller module
+    logger.info("Reloading controller module")
+    import controller
+    import importlib
+    importlib.reload(controller)
+    from controller import HP16CController
     logger.info("Initializing HP16CController")
     controller = HP16CController(stack_instance, disp, buttons, stack_display)
 

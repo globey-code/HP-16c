@@ -138,7 +138,6 @@ class Display:
             # Display the full error message without applying the character limit
             display_text = str(entry)
             self.widget.config(text=display_text, anchor="w")  # Left-align for readability
-            # Optionally hide mode label during error
             self.mode_label.place_forget()
         else:
             if raw:
@@ -187,24 +186,27 @@ class Display:
 
                 # Determine value to display
                 if isinstance(entry, (str, int, float)):
-                    try:
-                        val = self.stack.interpret_in_base(str(entry), self.mode) if isinstance(entry, str) else (float(entry) if self.mode == "FLOAT" else int(entry))
-                    except (ValueError, TypeError):
-                        val = self.stack.peek()  # Fallback to current stack value
-                else:
-                    val = self.stack.peek()  # Use stack's current value if entry is invalid
-
-                self.current_value = val
-
-                # Format based on mode
-                if self.mode == "FLOAT":
-                    if self.decimal_places is not None:
-                        entry_str = f"{val:,.{self.decimal_places}f}"
+                    # Preserve pre-formatted string in DEC mode with 8-bit word size
+                    if self.mode == "DEC" and self.stack.word_size == 8 and isinstance(entry, str):
+                        entry_str = entry  # Use the padded string (e.g., "-001") directly
                     else:
-                        entry_str = f"{val:,.9f}".rstrip('0').rstrip('.')
-                        if '.' not in entry_str:
-                            entry_str += '.0'
+                        try:
+                            val = self.stack.interpret_in_base(str(entry), self.mode) if isinstance(entry, str) else (float(entry) if self.mode == "FLOAT" else int(entry))
+                        except (ValueError, TypeError):
+                            val = self.stack.peek()  # Fallback to current stack value
+                        # Format based on mode
+                        if self.mode == "FLOAT":
+                            if self.decimal_places is not None:
+                                entry_str = f"{val:,.{self.decimal_places}f}"
+                            else:
+                                entry_str = f"{val:,.9f}".rstrip('0').rstrip('.')
+                                if '.' not in entry_str:
+                                    entry_str += '.0'
+                        else:
+                            val_int = self.stack.apply_word_size(int(val))
+                            entry_str = self.stack.format_in_base(val_int, self.mode, pad=False)
                 else:
+                    val = self.stack.peek()
                     val_int = self.stack.apply_word_size(int(val))
                     entry_str = self.stack.format_in_base(val_int, self.mode, pad=False)
 
@@ -230,14 +232,14 @@ class Display:
                         logger.info(f"Mode indicator changed from '{current_mode_text}' to '{new_mode_text}' "
                                    f"(has_left={has_left}, has_right={has_right})")
                     self.mode_label.config(text=new_mode_text)
-                displayed_text = self.widget.cget("text") if not self.mode == "FLOAT" else self.float_widget.cget("text")
+                displayed_text = self.widget.cget("text") if self.mode != "FLOAT" else self.float_widget.cget("text")
                 logger.info(f"Displayed text (widget): '{displayed_text}'")
-                self.widget.update_idletasks() if not self.mode == "FLOAT" else self.float_widget.update_idletasks()
+                self.widget.update_idletasks() if self.mode != "FLOAT" else self.float_widget.update_idletasks()
 
-        if blink and not self.is_digit_entry:
-            self.blink()
-        self.is_digit_entry = False
-        self.update_stack_content()
+            if blink and not self.is_digit_entry:
+                self.blink()
+            self.is_digit_entry = False
+            self.update_stack_content()
 
     def get_visible_text(self) -> str:
         """Get the visible text, ensuring the rightmost max_display_chars are shown."""

@@ -228,18 +228,15 @@ def action_back_step(display_widget: Any, controller_obj: Any) -> None:
         display_widget.set_entry((0, ""), program_mode=True)
 
 def action_roll_up(display_widget: Any, controller_obj: Any) -> None:
-    """
-    Rotate stack upward (R↑).
-    If a user entry is in progress, commit it first.
-    """
-    if controller_obj.is_user_entry:
+    logger.info(f"R↑ entry: is_user_entry={controller_obj.is_user_entry}, raw_value={controller_obj.display.raw_value}")
+    if controller_obj.is_user_entry and controller_obj.display.raw_value:
         entry = controller_obj.display.raw_value
         val = controller_obj.stack.interpret_in_base(entry, controller_obj.display.mode)
         controller_obj.stack._x_register = val
         controller_obj.is_user_entry = False
-
     controller_obj.stack.roll_up()
     top_val = controller_obj.stack.peek()
+    logger.info(f"R↑ result: X={top_val}, stack={controller_obj.stack._stack}")
     display_widget.set_entry(controller_obj.stack.format_in_base(top_val, display_widget.mode, pad=False))
     controller_obj.update_stack_display()
     controller_obj.stack_lift_enabled = True

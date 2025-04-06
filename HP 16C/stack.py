@@ -144,12 +144,12 @@ class Stack:
     def format_in_base(self, value: Number, base: str, pad: bool = False) -> str:
         """
         Format a numeric value into a string representation based on the specified base.
-        
+    
         Args:
             value (Number): The numeric value to format (int or float).
             base (str): The base to format in ("FLOAT", "DEC", "HEX", "BIN", "OCT").
             pad (bool): If True, pad with leading zeros to word size (default: False).
-        
+    
         Returns:
             str: The formatted string representation.
         """
@@ -158,7 +158,7 @@ class Stack:
             return result if result else '0'
         value = int(value)
         mask = (1 << self.word_size) - 1
-        value &= mask
+        value &= mask  # Ensure value fits within word size
         display_leading_zeros = (self.test_flag(3) == 1) or pad
         if base == "BIN":
             result = format(value, f'0{self.word_size}b') if display_leading_zeros else (format(value, 'b') if value != 0 else '0')
@@ -166,13 +166,13 @@ class Stack:
             oct_digits = (self.word_size + 2) // 3
             result = format(value, f'0{oct_digits}o') if display_leading_zeros else (format(value, 'o') if value != 0 else '0')
         elif base == "DEC":
-            if self.complement_mode in {"1S", "2S"} and (value & (1 << (self.word_size - 1))):
+            if self.complement_mode in {"1S", "2S"} and (value & (1 << (self.word_size - 1))):  # Check MSB for sign
                 if self.complement_mode == "1S":
-                    result = str(-((~value) & mask))
-                else:
-                    result = str(value - (1 << self.word_size))
+                    result = str(-((~value) & mask))  # 1's complement: invert and negate
+                else:  # 2S
+                    result = str(value - (1 << self.word_size))  # 2's complement: subtract 2^word_size
             else:
-                result = str(value)
+                result = str(value)  # Unsigned or positive value
         elif base == "HEX":
             hex_digits = (self.word_size + 3) // 4
             hex_str = format(value, f'0{hex_digits}x') if display_leading_zeros else (format(value, 'x') if value != 0 else '0')
@@ -437,84 +437,48 @@ class Stack:
         self._stack[1] = self._stack[2]
 
     def set_word_size(self, bits: int) -> None:
-        """
-        Set the word size for the stack and adjust all values accordingly.
-    
-        Args:
-            bits (int): The new word size in bits (e.g., 8, 16, 32, 64).
-    
-        Raises:
-            IncorrectWordSizeError: If the word size is invalid (e.g., not positive or exceeds reasonable limits).
-        """
         if not isinstance(bits, int) or bits <= 0 or bits > 64:
             raise IncorrectWordSizeError(f"Invalid WSIZE:{bits} <= 64")
-    
         old_word_size = self.word_size
         self.word_size = bits
         mask = (1 << bits) - 1
-    
-        # Adjust X register
         self._x_register = self._x_register & mask
-    
-        # Adjust stack values (Y, Z, T)
         for i in range(len(self._stack)):
             self._stack[i] = self._stack[i] & mask
-    
-        # Adjust data registers
         for i in range(len(self._data_registers)):
             self._data_registers[i] = self._data_registers[i] & mask
-    
-        # Adjust I register
         self._i_register = self._i_register & mask
-    
         logger.info(f"Word size changed from {old_word_size} to {bits} bits")
 
     def set_complement_mode(self, mode: str) -> None:
         """
-        Set the complement mode for the stack and adjust all values accordingly.
+        Set the complement mode without altering raw bit values.
+        The interpretation of the raw bits is handled by format_in_base.
     
         Args:
             mode (str): The new complement mode ("UNSIGNED", "1S", or "2S").
     
         Raises:
-            ValueError: If the mode is not one of "UNSIGNED", "1S", or "2S".
+            ValueError: If mode is not "UNSIGNED", "1S", or "2S".
         """
         valid_modes = {"UNSIGNED", "1S", "2S"}
         if mode not in valid_modes:
-            raise ValueError(f"Invalid complement mode: {mode}. Must be one of {valid_modes}")
-    
+            raise ValueError(f"Invalid complement mode: {mode}")
         old_mode = self.complement_mode
         if old_mode == mode:
-            return  # No change needed
-    
-        # Convert all values from the old mode to signed integers
-        mask = (1 << self.word_size) - 1
-        x_signed = to_signed(self._x_register, self.word_size, old_mode)
-        stack_signed = [to_signed(val, self.word_size, old_mode) for val in self._stack]
-        registers_signed = [to_signed(val, self.word_size, old_mode) for val in self._data_registers]
-        i_signed = to_signed(self._i_register, self.word_size, old_mode)
-    
-        # Update the complement mode
+            return
         self.complement_mode = mode
-    
-        # Convert all values back to the new mode
-        self._x_register = from_signed(x_signed, self.word_size, mode) & mask
-        for i in range(len(self._stack)):
-            self._stack[i] = from_signed(stack_signed[i], self.word_size, mode) & mask
-        for i in range(len(self._data_registers)):
-            self._data_registers[i] = from_signed(registers_signed[i], self.word_size, mode) & mask
-        self._i_register = from_signed(i_signed, self.word_size, mode) & mask
-    
         logger.info(f"Complement mode changed from {old_mode} to {mode}")
-
+# R↑
     def roll_up(self) -> None:
         """Roll up the stack: T→X, X→Y, Y→Z, Z→T."""
-        old_t = self._stack[2]  # Capture current T
-        self._stack[2] = self._stack[1]  # Z → T
-        self._stack[1] = self._stack[0]  # Y → Z
-        self._stack[0] = self._x_register  # X → Y
-        self._x_register = old_t  # T → X
-        logger.info("Stack rolled up: T→X, X→Y, Y→Z, Z→T")
+        logger.info(f"Before R↑: X={self._x_register}, stack={self._stack}")
+        old_t = self._stack[2]
+        self._stack[2] = self._stack[1]
+        self._stack[1] = self._stack[0]
+        self._stack[0] = self._x_register
+        self._x_register = old_t
+        logger.info(f"After R↑: X={self._x_register}, stack={self._stack}")
 
     def last_x(self) -> int:
         """
@@ -661,7 +625,7 @@ class Stack:
     
         # Log the operation details
         logger.info(f"Rotated left with carry by {n}: {rotated} (word_size={word_size}, carry_in={carry_in}, carry_out={carry_out})")
-#RRn
+# RRn
     def rotate_right_carry(self) -> None:
         """Rotate X right by X bits through carry, matching real HP-16C RRn behavior."""
         word_size = self.get_word_size()
@@ -678,3 +642,66 @@ class Stack:
             self.clear_flag(4)
         self._x_register = rotated
         logger.info(f"Rotated right with carry by {n}: {rotated} (word_size={word_size}, carry_in={carry_in}, carry_out={carry_out})")
+# MASKL
+    def mask_left(self, bits: int) -> None:
+        """Mask the Y register with 'bits' 1s from the left, drop into X, preserve stack."""
+        word_size = self.get_word_size()
+        if not 0 <= bits <= word_size:
+            raise InvalidBitOperationError(f"Bit count {bits} out of range (0-{word_size})")
+        if len(self._stack) < 1:
+            raise StackUnderflowError("Need Y value for MASKL")
+    
+        mask = ((1 << bits) - 1) << (word_size - bits)
+        y = self._stack[0]  # Get Y
+        result = y & mask   # Compute masked value
+    
+        # Store old X in _last_x to track it
+        self._last_x = self._x_register
+        self._x_register = result
+        # Shift stack: Y stays, Z and T shift up
+        self._stack.pop(0)  # Remove old Y
+        self._stack.insert(0, y)  # Preserve Y
+        while len(self._stack) < 3:
+            self._stack.append(0)
+        if len(self._stack) > 3:
+            self._stack.pop(-1)
+    
+        self.clear_flag(4)
+        self.clear_flag(5)
+        logger.info(f"Masked left {bits} bits: Y={y} -> X={self._x_register}, last_x={self._last_x}, stack={self._stack}")
+# MASKR
+    def mask_right(self, bits: int) -> None:
+        """Mask the Y register with 'bits' 1s from the right, drop into X, preserve stack."""
+        word_size = self.get_word_size()
+        if not 0 <= bits <= word_size:
+            raise InvalidBitOperationError(f"Bit count {bits} out of range (0-{word_size})")
+        if len(self._stack) < 1:
+            raise StackUnderflowError("Need Y value for MASKR")
+    
+        mask = (1 << bits) - 1
+        y = self._stack[0]
+        result = y & mask
+    
+        self._stack.pop(0)
+        self._stack.insert(0, y)  # Preserve original Y
+        self._x_register = result
+    
+        while len(self._stack) < 3:
+            self._stack.append(0)
+        if len(self._stack) > 3:
+            self._stack.pop(-1)
+    
+        self.clear_flag(4)
+        self.clear_flag(5)
+        logger.info(f"Masked right {bits} bits: Y={y} -> X={self._x_register} (mask={mask:0{word_size}b}), stack={self._stack}")
+# RMD
+    def remainder(self) -> None:
+        """Replace X with the remainder from the last division operation, lifting stack."""
+        old_x = self._x_register  # Save current X
+        self._x_register = self._last_x  # Set X to remainder
+        self._stack.insert(0, old_x)  # Push old X to Y
+        while len(self._stack) > 3:
+            self._stack.pop(-1)  # Trim stack to 3 (T drops off)
+        self.clear_flag(4)  # Carry flag cleared
+        self.clear_flag(5)  # Overflow cleared
+        logger.info(f"Retrieved remainder: X={self._x_register} from last_x, old_X={old_x}, stack={self._stack}")

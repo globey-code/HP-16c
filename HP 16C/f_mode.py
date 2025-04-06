@@ -17,6 +17,7 @@ import stack
 from error import HP16CError, IncorrectWordSizeError, NoValueToShiftError, ShiftExceedsWordSizeError, InvalidBitOperationError, StackUnderflowError, DivisionByZeroError, InvalidOperandError
 from logging_config import logger, program_logger
 
+
 # Setup paths for module resolution
 CURRENT_DIR: str = os.path.dirname(os.path.abspath(__file__))
 PARENT_DIR: str = os.path.dirname(CURRENT_DIR)
@@ -52,32 +53,47 @@ def action_rotate_right_n(display_widget: Any, controller_obj: Any) -> None:
     controller_obj.rotate_right_carry()
 
 def action_mask_left(display_widget: Any, controller_obj: Any) -> None:
-    """
-    Mask the leftmost bits (MASKL).
-    
-    Reads the bit count from the display's raw value and applies the mask.
-    """
     try:
-        bits: int = int(display_widget.raw_value or "0")
-        controller_obj.mask_left(bits)
-    except ValueError:
-        controller_obj.handle_error(InvalidBitOperationError("Invalid bit count"))
+        if len(controller_obj.stack._stack) < 1:
+            raise StackUnderflowError("Need Y value for MASKL")
+        controller_obj.stack.mask_left(controller_obj.stack.peek())
+        top_val = controller_obj.stack.peek()
+        display_widget.set_entry(
+            controller_obj.stack.format_in_base(top_val, controller_obj.display.mode, pad=False)
+        )
+        controller_obj.update_stack_display()
+        controller_obj.is_user_entry = False  # Explicitly reset
+        controller_obj.display.raw_value = ""  # Clear stale raw_value
+    except HP16CError as e:
+        controller_obj.handle_error(e)
 
 def action_mask_right(display_widget: Any, controller_obj: Any) -> None:
-    """
-    Mask the rightmost bits (MASKR).
-    
-    Reads the bit count from the display's raw value and applies the mask.
-    """
     try:
-        bits: int = int(display_widget.raw_value or "0")
-        controller_obj.mask_right(bits)
-    except ValueError:
-        controller_obj.handle_error(InvalidBitOperationError("Invalid bit count"))
+        if len(controller_obj.stack._stack) < 1:
+            raise StackUnderflowError("Need Y value for MASKR")
+        controller_obj.stack.mask_right(controller_obj.stack.peek())
+        top_val = controller_obj.stack.peek()
+        display_widget.set_entry(
+            controller_obj.stack.format_in_base(top_val, controller_obj.display.mode, pad=False)
+        )
+        controller_obj.update_stack_display()
+        controller_obj.is_user_entry = False
+        controller_obj.display.raw_value = ""
+        display_widget.clear_entry()  # Reset display state fully
+    except HP16CError as e:
+        controller_obj.handle_error(e)
 
 def action_remainder(display_widget: Any, controller_obj: Any) -> None:
-    """Perform the double remainder operation (RMD)."""
-    controller_obj.double_remainder()
+    """Retrieve the remainder from the last division (RMD)."""
+    try:
+        controller_obj.stack.remainder()
+        top_val = controller_obj.stack.peek()
+        controller_obj.display.set_entry(
+            controller_obj.stack.format_in_base(top_val, controller_obj.display.mode, pad=False)
+        )
+        controller_obj.update_stack_display()
+    except HP16CError as e:
+        controller_obj.handle_error(e)
 
 def action_bitwise_xor(display_widget: Any, controller_obj: Any) -> None:
     """Perform a logical XOR operation."""
@@ -257,26 +273,17 @@ def action_bitwise_not(display_widget: Any, controller_obj: Any) -> None:
 # ============================================
 
 def action_set_word_size(display_widget: Any, controller_obj: Any) -> None:
-    """
-    Set the word size based on the display's raw value, preserving the current X.
-    """
+    """Set the word size (WSIZE). Uses X as the bit count."""
     try:
-        raw_value: str = display_widget.raw_value or "0"
-        current_mode: str = controller_obj.display.mode
-        if current_mode == "HEX":
-            bits: int = int(raw_value, 16)
-        elif current_mode == "OCT":
-            bits: int = int(raw_value, 8)
-        elif current_mode == "BIN":
-            bits: int = int(raw_value, 2)
-        else:
-            bits: int = int(raw_value)
-        if bits == 0:
-            bits = 64
+        bits: int = controller_obj.stack.peek()
         controller_obj.set_word_size(bits)
-        # Do not update X or display here—let set_word_size handle it
-    except ValueError:
-        controller_obj.handle_error(IncorrectWordSizeError())
+        top_val = controller_obj.stack.peek()
+        controller_obj.display.set_entry(
+            controller_obj.stack.format_in_base(top_val, controller_obj.display.mode, pad=False)
+        )
+        controller_obj.update_stack_display()
+    except HP16CError as e:
+        controller_obj.handle_error(e)
 
 def action_set_float_mode(display_widget: Any, controller_obj: Any) -> None:
     """
