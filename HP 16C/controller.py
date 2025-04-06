@@ -211,6 +211,12 @@ class HP16CController:
             logger.info(f"Ignoring invalid digit {digit} for base {self.display.mode}")
             return
 
+        # Lift stack if enabled before starting new entry
+        if not self.is_user_entry and self.stack_lift_enabled:
+            self.stack.push(self.stack.peek())
+            self.stack_lift_enabled = False
+            logger.info(f"Lifted stack: X={self.stack.peek()} pushed to Y")
+
         if not self.is_user_entry:
             self.pre_entry_x = self.stack.peek()
             self.display.clear_entry()
@@ -226,21 +232,19 @@ class HP16CController:
             max_val = float('inf')
             min_val = -float('inf')
         else:
-            # For all integer modes, input is treated as unsigned until interpreted
             max_val = (1 << word_size) - 1  # e.g., 255 for 8-bit
             min_val = 0  # Negative values come from operations, not direct entry
 
         current = self.display.raw_value or "0"
         new_value = current + digit
         try:
-            # Parse raw input according to the current mode's base
             if self.display.mode == "HEX":
                 raw_val = int(new_value, 16)
             elif self.display.mode == "OCT":
                 raw_val = int(new_value, 8)
             elif self.display.mode == "BIN":
                 raw_val = int(new_value, 2)
-            else:  # DEC or others
+            else:
                 raw_val = int(new_value)
             if self.display.mode != "FLOAT" and (raw_val > max_val or raw_val < min_val):
                 logger.info(f"Input blocked: {raw_val} exceeds {min_val} to {max_val} for {complement_mode} {word_size}-bit")
@@ -269,7 +273,6 @@ class HP16CController:
             self.stack._x_register = val
             formatted_value = self.stack.format_in_base(val, self.display.mode, pad=False)
             self.display.set_entry(formatted_value, raw=False, blink=False)
-            self.update_stack_display()
             self.update_stack_display(log_update=True)
 
     def get_max_digits(self, mode: str) -> int:
@@ -306,19 +309,11 @@ class HP16CController:
             if self.display.is_error_displayed:
                 logger.info("Operation skipped due to error state")
                 return
-            if operator == "+":
-                self.stack.add()
-            elif operator == "-":
-                self.stack.subtract()
-            elif operator == "*":
-                self.stack.multiply()
-            elif operator == "/":
-                self.stack.divide()
+            if operator in ["+", "-", "*", "/"]:
+                self.binary_operation(operator)
             else:
                 raise ValueError(f"Unknown operator: {operator}")
-            self.display.set_entry(self.stack.format_in_base(self.stack.peek(), self.display.mode), blink=True)
-            self.update_stack_display()
-            self.stack_lift_enabled = True
+            self.post_enter = False
         except ValueError as e:
             self.display.set_error(str(e))
             logger.info(f"Value error: {e}")
@@ -327,7 +322,6 @@ class HP16CController:
         except Exception as e:
             self.display.set_error(f"Error: {e}")
             logger.info(f"Unexpected error: {e}")
-        self.post_enter = False
 
     def enter_value(self) -> None:
         """Finalize entry and push to stack, or record ENTER in program mode."""
@@ -341,18 +335,27 @@ class HP16CController:
             self.display.set_entry((step, display_code), program_mode=True)
             self.last_program_step = step
             return
+    
+        # Handle regular mode: lift stack and update X if new entry
+        current_x = self.stack.peek()  # Capture current X before any changes
         if self.is_user_entry:
             entry = self.display.raw_value
             val = self.stack.interpret_in_base(entry, self.display.mode)
-            self.stack._x_register = val
+            self.stack._x_register = val  # Update X with new value
             formatted_value = self.stack.format_in_base(val, self.display.mode)
             self.display.set_entry(formatted_value, blink=True)
             self.is_user_entry = False
             self.decimal_entered = False
-        self.stack.push(self.stack._x_register)
+        else:
+            # If no new entry, use current X for display
+            formatted_value = self.stack.format_in_base(current_x, self.display.mode)
+            self.display.set_entry(formatted_value, blink=True)
+    
+        # Push the current X (or new value) to stack for lifting
+        self.stack.push(current_x if not self.is_user_entry else val)
         self.stack_lift_enabled = False
         self.result_displayed = True
-        self.update_stack_display()
+        self.update_stack_display(log_update=True)  # Log stack state
 
     def enter_base_change(self, base: str) -> None:
         """Handle base change (HEX, DEC, OCT, BIN)."""
@@ -438,6 +441,57 @@ class HP16CController:
         else:
             self.stack_display.place_forget()
             logger.info("Stack display hidden")
+
+    def binary_operation(self, operator: str) -> None:
+        """Perform binary operation between X and Y."""
+        logger.info(f"Entering binary_operation with operator={operator}, X={self.stack.peek()}")
+        logger.info(f"Entering operator: {operator}, X={self.stack.peek()}, stack={self.stack._stack}")
+        if self.entry_mode is not None:
+            logger.info(f"Ignoring operator {operator} in entry mode {self.entry_mode}")
+            return
+        self.display.clear_entry()
+        x = self.stack.peek()  # X register
+        self.stack.pop()       # Pop X
+        y = self.stack.peek()  # Y from stack
+        self.stack.pop()       # Pop Y (now stack is [Z, T])
+        if operator == "+":
+            val, carry, overflow = self.stack.add(y, x)
+            logger.info(f"Add: {y} + {x} = {val} ({self.stack.complement_mode}), carry={carry}, overflow={overflow}")
+            logger.info(f"After add: val={val}, carry={carry}, overflow={overflow}")
+            if overflow:
+                logger.info("G flag set due to overflow")
+        elif operator == "-":
+            val, borrow, overflow = self.stack.subtract(y, x)
+            logger.info(f"Subtract: {y} - {x} = {val} ({self.stack.complement_mode}), borrow={borrow}, overflow={overflow}")
+            logger.info(f"After subtract: val={val}, borrow={borrow}, overflow={overflow}")
+            if overflow:
+                logger.info("G flag set due to overflow")
+        elif operator == "*":
+            val, carry, overflow = self.stack.multiply(y, x)
+            logger.info(f"Multiply: {y} * {x} = {val} ({self.stack.complement_mode}), carry={carry}, overflow={overflow}")
+            logger.info(f"After multiply: val={val}, carry={carry}, overflow={overflow}")
+            if overflow:
+                logger.info("G flag set due to overflow")
+            else:
+                logger.info("No overflow detected in *")
+        elif operator == "/":
+            val, remainder, overflow = self.stack.divide(y, x)
+            logger.info(f"Divide: {y} / {x} = {val} ({self.stack.complement_mode}), remainder={remainder}, overflow={overflow}")
+            logger.info(f"After divide: val={val}, remainder={remainder}, overflow={overflow}")
+            if overflow:
+                logger.info("G flag set due to overflow")
+        else:
+            self.handle_error(HP16CError(f"Unsupported operator: {operator}", "E03"))
+            logger.info(f"Unsupported operator: {operator}")
+            return
+        self.stack.push(val)  # Push result to stack (now [val, Z, T])
+        self.display.set_entry(self.stack.format_in_base(val, self.display.mode), blink=True)
+        self.stack_lift_enabled = True
+        self.result_displayed = True
+        logger.info(f"About to call update_stack_display, show_stack_display={self.show_stack_display}")
+        # Remove forcing F2 on, rely on toggle state
+        self.update_stack_display(log_update=True)
+        logger.info("Finished binary_operation")
 
     def restore_normal_display(self) -> None:
         """Restore display after error."""

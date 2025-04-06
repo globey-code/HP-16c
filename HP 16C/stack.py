@@ -6,6 +6,7 @@ License: MIT
 Date: 3/23/2025 (original), refactored 2025-04-01
 """
 
+from typing import Union, Tuple
 from typing import List, Union
 from error import (
     HP16CError, IncorrectWordSizeError, NoValueToShiftError,
@@ -186,29 +187,28 @@ class Stack:
 
 ### ARITHMETIC OPERATIONS ###
 
-    def add(self) -> None:
-        """Add X to Y and update the stack.
+    def add(self, y: Number, x: Number) -> Tuple[int, int, int]:
+        """Add X to Y, handling word size, complement mode, and overflow.
 
-        Raises:
-            StackUnderflowError: If the stack has fewer than 3 elements (Y, Z, T).
+        Args:
+            y: First operand (Y from stack).
+            x: Second operand (X from register).
+
+        Returns:
+            Tuple[int, int, int]: (result, carry, overflow)
         """
-        # Check if stack has at least 3 elements (Y, Z, T)
-        if len(self._stack) < 3:
-            raise StackUnderflowError("Stack underflow: need at least Y, Z, T")
-    
-        # Assign operands: Y from stack, X from register
-        y = self._stack[0]      # Y
-        x = self._x_register    # X
-    
         # Perform addition based on current mode
         if self.current_mode == "FLOAT":
             # Floating-point addition
             result = y + x
             self.clear_flag(4)  # Clear carry flag
             self.clear_flag(5)  # Clear overflow flag
+            carry = 0
+            overflow = 0
             # Check for infinity to set overflow flag
             if isinstance(result, float) and (result == float('inf') or result == float('-inf')):
                 self.set_flag(5)
+                overflow = 1
             logger.info(f"Add (FLOAT): {y} + {x} = {result}")
         else:
             # Integer addition (signed or unsigned)
@@ -231,7 +231,7 @@ class Stack:
                 result_signed = a_signed + b_signed
                 # Convert back to unsigned representation
                 result = from_signed(result_signed, word_size, mode)
-                overflow = result_signed > max_signed or result_signed < min_signed
+                overflow = 1 if result_signed > max_signed or result_signed < min_signed else 0
                 carry = 0  # Carry typically not used in signed mode
         
             # Set or clear flags based on carry and overflow
@@ -245,39 +245,30 @@ class Stack:
                 self.clear_flag(5)
             logger.info(f"Add: {y} + {x} = {result} ({mode}), carry={carry}, overflow={overflow}")
     
-        # Save the old X value before it’s overwritten
-        self._last_x = x
-    
-        # Update X register with result
-        self._x_register = result
-    
-        # Update stack: Shift Z to Y, T to Z, and duplicate T
-        t = self._stack[2]  # T
-        self._stack = [self._stack[1], self._stack[2], t]  # [Z, T, T]
+        return result, carry, overflow
 
-    def subtract(self) -> None:
-        """Subtract X from Y and update the stack.
+    def subtract(self, y: Number, x: Number) -> Tuple[int, int, int]:
+        """Subtract X from Y, handling word size, complement mode, and overflow.
 
-        Raises:
-            StackUnderflowError: If the stack has fewer than 3 elements (Y, Z, T).
+        Args:
+            y: First operand (Y from stack).
+            x: Second operand (X from register).
+
+        Returns:
+            Tuple[int, int, int]: (result, borrow, overflow)
         """
-        # Check if stack has at least 3 elements (Y, Z, T)
-        if len(self._stack) < 3:
-            raise StackUnderflowError("Stack underflow: need at least Y, Z, T")
-    
-        # Assign operands: Y from stack, X from register
-        y = self._stack[0]      # Y
-        x = self._x_register    # X
-    
         # Perform subtraction based on current mode
         if self.current_mode == "FLOAT":
             # Floating-point subtraction
             result = y - x
             self.clear_flag(4)  # Clear borrow flag
             self.clear_flag(5)  # Clear overflow flag
+            borrow = 0
+            overflow = 0
             # Check for infinity to set overflow flag
             if isinstance(result, float) and (result == float('inf') or result == float('-inf')):
                 self.set_flag(5)
+                overflow = 1
             logger.info(f"Subtract (FLOAT): {y} - {x} = {result}")
         else:
             # Integer subtraction (signed or unsigned)
@@ -298,9 +289,9 @@ class Stack:
                 a_signed = to_signed(y, word_size, mode)
                 b_signed = to_signed(x, word_size, mode)
                 result_signed = a_signed - b_signed
-                # Convert back to unsigned representation (assuming a helper function)
-                result = result_signed & mask  # Simplification; may need from_signed()
-                overflow = result_signed > max_signed or result_signed < min_signed
+                # Convert back to unsigned representation
+                result = from_signed(result_signed, word_size, mode)
+                overflow = 1 if result_signed > max_signed or result_signed < min_signed else 0
                 borrow = 0  # Borrow typically not used in signed mode
         
             # Set or clear flags based on borrow and overflow
@@ -314,57 +305,75 @@ class Stack:
                 self.clear_flag(5)
             logger.info(f"Subtract: {y} - {x} = {result} ({mode}), borrow={borrow}, overflow={overflow}")
     
-        # Update X register with result
-        self._x_register = result
-    
-        # Update stack: Shift Z to Y, T to Z, and duplicate T
-        t = self._stack[2]  # T
-        self._stack = [self._stack[1], self._stack[2], t]  # [Z, T, T]
+        return result, borrow, overflow
 
-    def multiply(self) -> None:
-        if not self._stack:
-            raise StackUnderflowError("Not enough values on stack")
-        y = self._stack[0]
-        x = self._x_register
+    def multiply(self, y: Number, x: Number) -> Tuple[int, int, int]:
+        """Multiply X and Y, handling word size, complement mode, and overflow.
+
+        Args:
+            y: First operand (Y from stack).
+            x: Second operand (X from register).
+
+        Returns:
+            Tuple[int, int, int]: (result, carry, overflow)
+        """
         if self.current_mode == "FLOAT":
             result: Number = y * x
             self.clear_flag(4)
             self.clear_flag(5)
+            carry = 0
+            overflow = 0
             if isinstance(result, float) and (result == float('inf') or result == float('-inf')):
                 self.set_flag(5)
+                overflow = 1
             logger.info(f"Multiply (FLOAT): {y} * {x} = {result}")
         else:
             mode = self.get_complement_mode()
             word_size = self.get_word_size()
-            mask = (1 << word_size) - 1
+            mask = (1 << word_size) - 1  # 255 for 8-bit
             if mode == "UNSIGNED":
-                unmasked_result = y * x
-                result = unmasked_result & mask
+                full_result = y * x
+                result = full_result % (mask + 1)  # 2091 % 256 = 43
+                overflow = 1 if full_result > mask else 0
+                carry = 1 if overflow else 0
             else:
                 a_signed = to_signed(y, word_size, mode)
                 b_signed = to_signed(x, word_size, mode)
-                result_signed = a_signed * b_signed
-                result = from_signed(result_signed, word_size, mode)
+                full_result = a_signed * b_signed
+                result = from_signed(full_result, word_size, mode)
+                overflow = 1 if full_result > (1 << (word_size - 1)) - 1 or full_result < -(1 << (word_size - 1)) else 0
+                carry = 1 if overflow else 0
             self.clear_flag(4)
             self.clear_flag(5)
-            logger.info(f"Multiply: {y} * {x} = {result} ({mode})")
-        self._x_register = result
-        self._stack[0] = self._stack[1]
-        self._stack[1] = self._stack[2]
+            if overflow:
+                self.set_flag(5)
+            logger.info(f"Multiply: {y} * {x} = {result} ({mode}), carry={carry}, overflow={overflow}")
+        return result, carry, overflow
 
-    def divide(self) -> None:
-        if not self._stack:
-            raise StackUnderflowError("Not enough values on stack")
-        y = self._stack[0]
-        x = self._x_register
+    def divide(self, y: Number, x: Number) -> Tuple[int, int, int]:
+        """Divide Y by X, handling word size, complement mode, and overflow.
+
+        Args:
+            y: First operand (Y from stack).
+            x: Second operand (X from register).
+
+        Returns:
+            Tuple[int, int, int]: (result, remainder, overflow)
+
+        Raises:
+            DivisionByZeroError: If x is 0.
+        """
         if x == 0:
             raise DivisionByZeroError()
         if self.current_mode == "FLOAT":
-            result: Number = y / x
+            result = y / x
             self.clear_flag(4)
             self.clear_flag(5)
+            remainder = 0
+            overflow = 0
             if isinstance(result, float) and (result == float('inf') or result == float('-inf')):
                 self.set_flag(5)
+                overflow = 1
             logger.info(f"Divide (FLOAT): {y} / {x} = {result}")
         else:
             mode = self.get_complement_mode()
@@ -381,8 +390,8 @@ class Stack:
                 b_signed = to_signed(x, word_size, mode)
                 result_signed = int(a_signed / b_signed)
                 remainder = a_signed % b_signed
-                overflow = result_signed > max_signed or result_signed < min_signed
                 result = from_signed(result_signed, word_size, mode)
+                overflow = 1 if result_signed > max_signed or result_signed < min_signed else 0
             result = result & mask
             self._last_x = remainder
             if remainder != 0:
@@ -394,9 +403,7 @@ class Stack:
             else:
                 self.clear_flag(5)
             logger.info(f"Divide: {y} / {x} = {result} ({mode}), remainder={remainder}, overflow={overflow}")
-        self._x_register = result
-        self._stack[0] = self._stack[1]
-        self._stack[1] = self._stack[2]
+        return result, remainder, overflow
 
 
 ### f MODE ROW 1 ###
