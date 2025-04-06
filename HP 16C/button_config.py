@@ -98,8 +98,8 @@ BUTTONS_CONFIG: List[ButtonConfig] = [
     ButtonConfig(top_label="EEx", main_label="CHS", sub_label="X=Y", row=3, col=8),
     
     # COLUMN 9 (rightmost column, originally x=900)
-    ButtonConfig(top_label="XOR", main_label="/", sub_label="DBL/", row=0, col=9),
-    ButtonConfig(top_label="AND", main_label="*", sub_label="DBL*", row=1, col=9),
+    ButtonConfig(top_label="XOR", main_label="/", sub_label="DBL÷", row=0, col=9),
+    ButtonConfig(top_label="AND", main_label="*", sub_label="DBL×", row=1, col=9),
     ButtonConfig(top_label="NOT", main_label="-", sub_label="X>0", row=2, col=9),
     ButtonConfig(top_label="OR", main_label="+", sub_label="X=0", row=3, col=9),
 ]

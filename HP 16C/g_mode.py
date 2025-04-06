@@ -64,8 +64,8 @@ def action_double_remainder(display_widget: Any, controller_obj: Any) -> None:
     logger.info("DBLR placeholder executed")
 
 def action_double_divide(display_widget: Any, controller_obj: Any) -> None:
-    """Double Divide (DBL/). Placeholder implementation."""
-    logger.info("DBL/ placeholder executed")
+    """Double Divide (DBL÷). Placeholder implementation."""
+    logger.info("DBL÷ placeholder executed")
 
 
 # ======================================
@@ -143,8 +143,8 @@ def action_test_flag(display_widget: Any, controller_obj: Any) -> None:
     logger.info("Entered test_flag mode awaiting flag number (0-5)")
 
 def action_double_multiply(display_widget: Any, controller_obj: Any) -> None:
-    """Double Multiply (DBL*). Placeholder implementation."""
-    logger.info("DBL* placeholder executed")
+    """Double Multiply (DBL×). Placeholder implementation."""
+    logger.info("DBL× placeholder executed")
 
 
 # ======================================
@@ -325,7 +325,7 @@ G_FUNCTIONS: Dict[str, Callable[[Any, Any], None]] = {
     "#B": action_count_bits,
     "ABS": action_absolute,
     "DBLR": action_double_remainder,
-    "DBL/": action_double_divide,
+    "DBL÷": action_double_divide,
     # Program and Control Flow (Row 2)
     "RTN": action_return,
     "LBL": action_label,
@@ -336,7 +336,7 @@ G_FUNCTIONS: Dict[str, Callable[[Any, Any], None]] = {
     "SF": action_set_flag,
     "CF": action_clear_flag,
     "F?": action_test_flag,
-    "DBL*": action_double_multiply,
+    "DBL×": action_double_multiply,
     # Calculator Control Functions (Row 3)
     "P/R": action_toggle_program_run,
     "BST": action_back_step,

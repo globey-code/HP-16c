@@ -10,7 +10,7 @@ from typing import List, Union
 from error import (
     HP16CError, IncorrectWordSizeError, NoValueToShiftError,
     DivisionByZeroError, InvalidOperandError, StackUnderflowError,
-    NegativeShiftCountError
+    NegativeShiftCountError, InvalidBitOperationError
 )
 from logging_config import logger
 
@@ -65,20 +65,12 @@ class Stack:
         """Get the X register value."""
         return self._x_register
 
-    def get_word_size(self):
-        """Get the current word size."""
-        return self.word_size
+    def get_state(self) -> List[int]:
+        return [self._x_register] + self._stack
 
     def get_complement_mode(self):
         """Get the current complement mode."""
         return self.complement_mode
-
-    def set_g_flag(self, value):
-        self._flags[5] = value  # Use integer 5
-        logger.info(f"G flag set to {value}")
-
-    def get_g_flag(self):
-        return self._flags[5]  # Use integer 5
         
     def interpret_in_base(self, string_value: str, base: str) -> Number:
         """
@@ -142,17 +134,6 @@ class Stack:
             return 0.0 if base == "FLOAT" else 0
 
     def format_in_base(self, value: Number, base: str, pad: bool = False) -> str:
-        """
-        Format a numeric value into a string representation based on the specified base.
-    
-        Args:
-            value (Number): The numeric value to format (int or float).
-            base (str): The base to format in ("FLOAT", "DEC", "HEX", "BIN", "OCT").
-            pad (bool): If True, pad with leading zeros to word size (default: False).
-    
-        Returns:
-            str: The formatted string representation.
-        """
         if base == "FLOAT":
             result = f"{float(value):.9f}".rstrip('0').rstrip('.')
             return result if result else '0'
@@ -168,7 +149,10 @@ class Stack:
         elif base == "DEC":
             if self.complement_mode in {"1S", "2S"} and (value & (1 << (self.word_size - 1))):  # Check MSB for sign
                 if self.complement_mode == "1S":
-                    result = str(-((~value) & mask))  # 1's complement: invert and negate
+                    if value == mask:  # Special case for -0 in 1's complement
+                        result = "-0"
+                    else:
+                        result = str(-((~value) & mask))  # 1's complement: invert and negate
                 else:  # 2S
                     result = str(value - (1 << self.word_size))  # 2's complement: subtract 2^word_size
             else:
@@ -182,29 +166,7 @@ class Stack:
             result = str(value)
         return result
 
-
-
-    def set_flag(self, flag: int) -> None:
-        self._flags[flag] = 1
-
-    def clear_flag(self, flag: int) -> None:
-        self._flags[flag] = 0
-
-    def test_flag(self, flag: int) -> bool:
-        return self._flags[flag] == 1
-
-    def get_flags_bitfield(self) -> int:
-        return (self._flags[0] |
-                (self._flags[1] << 1) |
-                (self._flags[2] << 2) |
-                (self._flags[3] << 3))
-
-    def apply_word_size(self, value: int) -> int:
-        mask = (1 << self.word_size) - 1
-        return value & mask
-
-    def get_state(self) -> List[int]:
-        return [self._x_register] + self._stack
+### PUSH POP PEEK ###
 
     def push(self, value: int) -> None:
         self._stack.pop()
@@ -222,7 +184,7 @@ class Stack:
     def peek(self) -> int:
         return self._x_register
 
-    ### Arithmetic Operations ###
+### ARITHMETIC OPERATIONS ###
 
     def add(self) -> None:
         """Add X to Y and update the stack.
@@ -436,60 +398,9 @@ class Stack:
         self._stack[0] = self._stack[1]
         self._stack[1] = self._stack[2]
 
-    def set_word_size(self, bits: int) -> None:
-        if not isinstance(bits, int) or bits <= 0 or bits > 64:
-            raise IncorrectWordSizeError(f"Invalid WSIZE:{bits} <= 64")
-        old_word_size = self.word_size
-        self.word_size = bits
-        mask = (1 << bits) - 1
-        self._x_register = self._x_register & mask
-        for i in range(len(self._stack)):
-            self._stack[i] = self._stack[i] & mask
-        for i in range(len(self._data_registers)):
-            self._data_registers[i] = self._data_registers[i] & mask
-        self._i_register = self._i_register & mask
-        logger.info(f"Word size changed from {old_word_size} to {bits} bits")
 
-    def set_complement_mode(self, mode: str) -> None:
-        """
-        Set the complement mode without altering raw bit values.
-        The interpretation of the raw bits is handled by format_in_base.
-    
-        Args:
-            mode (str): The new complement mode ("UNSIGNED", "1S", or "2S").
-    
-        Raises:
-            ValueError: If mode is not "UNSIGNED", "1S", or "2S".
-        """
-        valid_modes = {"UNSIGNED", "1S", "2S"}
-        if mode not in valid_modes:
-            raise ValueError(f"Invalid complement mode: {mode}")
-        old_mode = self.complement_mode
-        if old_mode == mode:
-            return
-        self.complement_mode = mode
-        logger.info(f"Complement mode changed from {old_mode} to {mode}")
-# R↑
-    def roll_up(self) -> None:
-        """Roll up the stack: T→X, X→Y, Y→Z, Z→T."""
-        logger.info(f"Before R↑: X={self._x_register}, stack={self._stack}")
-        old_t = self._stack[2]
-        self._stack[2] = self._stack[1]
-        self._stack[1] = self._stack[0]
-        self._stack[0] = self._x_register
-        self._x_register = old_t
-        logger.info(f"After R↑: X={self._x_register}, stack={self._stack}")
+### f MODE ROW 1 ###
 
-    def last_x(self) -> int:
-        """
-        Return the last X value before the most recent stack operation that modified it.
-    
-        Returns:
-            int: The value of _last_x.
-        """
-        return self._last_x
-
-# f mode Row 1
 # SL
     def shift_left(self) -> None:
         """Shift the X register left by one bit, respecting word size and complement mode."""
@@ -705,3 +616,284 @@ class Stack:
         self.clear_flag(4)  # Carry flag cleared
         self.clear_flag(5)  # Overflow cleared
         logger.info(f"Retrieved remainder: X={self._x_register} from last_x, old_X={old_x}, stack={self._stack}")
+
+### f MODE ROW 2 ###
+
+# SB
+    def set_bit(self, bit_index: int) -> None:
+        """Set the specified bit in the X register to 1 (SB operation).
+        
+        Args:
+            bit_index (int): The bit position to set (0 to word_size - 1).
+            
+        Raises:
+            InvalidBitOperationError: If bit_index is out of range.
+        """
+        word_size = self.get_word_size()
+        if not 0 <= bit_index < word_size:
+            raise InvalidBitOperationError(f"Bit {bit_index} beyond 0-{word_size-1}")
+        
+        mask = 1 << bit_index
+        self._last_x = self._x_register  # Save X before modification
+        self._x_register |= mask         # Set the bit
+        self._x_register &= (1 << word_size) - 1  # Ensure it fits word size
+        self.clear_flag(4)               # Clear carry flag
+        self.clear_flag(5)               # Clear overflow flag
+        logger.info(f"Set bit {bit_index} in X: {self._x_register}")
+# CB
+    def clear_bit(self, bit_index: int) -> None:
+        """Clear the specified bit in the X register to 0 (CB operation).
+        
+        Args:
+            bit_index (int): The bit position to clear (0 to word_size - 1).
+            
+        Raises:
+            InvalidBitOperationError: If bit_index is out of range.
+        """
+        word_size = self.get_word_size()
+        if not 0 <= bit_index < word_size:
+            raise InvalidBitOperationError(f"Bit index {bit_index} out of range (0-{word_size-1})")
+        
+        mask = ~(1 << bit_index)
+        self._last_x = self._x_register  # Save X before modification
+        self._x_register &= mask         # Clear the bit
+        self._x_register &= (1 << word_size) - 1  # Ensure it fits word size
+        self.clear_flag(4)               # Clear carry flag
+        self.clear_flag(5)               # Clear overflow flag
+        logger.info(f"Cleared bit {bit_index} in X: {self._x_register}")
+# B?
+    def test_bit(self, bit_index: int) -> int:
+        """Test if the specified bit in the X register is set (B? operation).
+        
+        Args:
+            bit_index (int): The bit position to test (0 to word_size - 1).
+            
+        Returns:
+            int: 1 if the bit is set, 0 if not.
+            
+        Raises:
+            InvalidBitOperationError: If bit_index is out of range.
+        """
+        word_size = self.get_word_size()
+        if not 0 <= bit_index < word_size:
+            raise InvalidBitOperationError(f"Bit index {bit_index} out of range (0-{word_size-1})")
+        
+        mask = 1 << bit_index
+        result = 1 if (self._x_register & mask) else 0
+        self.clear_flag(4)  # Clear carry flag
+        self.clear_flag(5)  # Clear overflow flag
+        logger.info(f"Tested bit {bit_index} in X={self._x_register}: {'set' if result else 'clear'}")
+        return result
+# BIT Related
+    def count_bits(self) -> int:
+        """Count the number of 1 bits in the X register (#B operation).
+        
+        Returns:
+            int: The number of 1 bits in X, respecting word size.
+        """
+        word_size = self.get_word_size()
+        mask = (1 << word_size) - 1
+        x = self._x_register & mask  # Ensure X fits within word size
+        count = bin(x).count('1')    # Count 1s in binary representation
+        self.clear_flag(4)           # Clear carry flag (no carry in this operation)
+        self.clear_flag(5)           # Clear overflow flag
+        logger.info(f"Counted bits in X={x}: {count} ones")
+        self._last_x = self._x_register  # Save X for potential recall
+        self._x_register = count     # Replace X with the count
+        return count
+
+### f MODE ROW 3 ###
+
+# SET COML
+    def set_complement_mode(self, mode: str) -> None:
+        """
+        Set the complement mode without altering raw bit values.
+        The interpretation of the raw bits is handled by format_in_base.
+    
+        Args:
+            mode (str): The new complement mode ("UNSIGNED", "1S", or "2S").
+    
+        Raises:
+            ValueError: If mode is not "UNSIGNED", "1S", or "2S".
+        """
+        valid_modes = {"UNSIGNED", "1S", "2S"}
+        if mode not in valid_modes:
+            raise ValueError(f"Invalid complement mode: {mode}")
+        old_mode = self.complement_mode
+        if old_mode == mode:
+            return
+        self.complement_mode = mode
+        logger.info(f"Complement mode changed from {old_mode} to {mode}")
+
+### f MODE ROW 4 ###
+
+# WSIZE
+    def set_word_size(self, bits: int) -> None:
+        if not isinstance(bits, int) or bits <= 0 or bits > 64:
+            raise IncorrectWordSizeError(f"Invalid WSIZE:{bits} <= 64")
+        old_word_size = self.word_size
+        self.word_size = bits
+        mask = (1 << bits) - 1
+        self._x_register = self._x_register & mask
+        for i in range(len(self._stack)):
+            self._stack[i] = self._stack[i] & mask
+        for i in range(len(self._data_registers)):
+            self._data_registers[i] = self._data_registers[i] & mask
+        self._i_register = self._i_register & mask
+        logger.info(f"Word size changed from {old_word_size} to {bits} bits")
+# WSIZE Related
+    def apply_word_size(self, value: int) -> int:
+        mask = (1 << self.word_size) - 1
+        return value & mask
+    def get_word_size(self):
+        """Get the current word size."""
+        return self.word_size
+
+
+### g MODE ROW 1 ###
+
+# LJ
+    def left_justify(self) -> None:
+        """Shift X left until the most significant bit is 1 or X is 0 (LJ operation)."""
+        word_size = self.get_word_size()
+        mask = (1 << word_size) - 1
+        x = self._x_register & mask
+        
+        if x == 0:
+            self.clear_flag(4)  # Clear carry
+            self.clear_flag(5)  # Clear overflow
+            logger.info("Left justify: X=0, no shift")
+            return
+        
+        # Find the position of the MSB
+        msb_pos = word_size - 1
+        while msb_pos >= 0 and not (x & (1 << msb_pos)):
+            msb_pos -= 1
+        
+        # Shift left to justify
+        shift_amount = word_size - 1 - msb_pos
+        self._last_x = self._x_register
+        self._x_register = (x << shift_amount) & mask
+        self.clear_flag(4)  # Clear carry
+        self.clear_flag(5)  # Clear overflow
+        logger.info(f"Left justified X: shifted {shift_amount} bits, result={self._x_register}")
+# ABS 
+    def absolute(self) -> None:
+        """Set the X register to its absolute value (ABS operation)."""
+        word_size = self.get_word_size()
+        mode = self.get_complement_mode()
+        mask = (1 << word_size) - 1
+        
+        if self.current_mode == "FLOAT":
+            self._x_register = abs(float(self._x_register))
+            logger.info(f"Absolute (FLOAT): X set to {self._x_register}")
+        else:
+            signed_value = to_signed(self._x_register, word_size, mode)
+            abs_value = abs(signed_value)
+            self._x_register = from_signed(abs_value, word_size, mode)
+            logger.info(f"Absolute ({mode}): X={signed_value} set to {self._x_register}")
+        
+        self.clear_flag(4)  # Clear carry flag
+        self.clear_flag(5)  # Clear overflow flag
+        self._last_x = self._x_register  # Update last_x (though typically unchanged by ABS)
+# DBL÷
+    def double_divide(self) -> None:
+        """Divide Y by X, treating Y as a double-word value, and store quotient in X (DBL÷)."""
+        if len(self._stack) < 1:
+            raise StackUnderflowError("Need Y value for double divide")
+        y = self._stack[0]
+        x = self._x_register
+        if x == 0:
+            raise DivisionByZeroError()
+        
+        word_size = self.get_word_size()
+        mask = (1 << word_size) - 1
+        # Simplified: treat as single-word division for now
+        result = (y // x) & mask
+        remainder = (y % x) & mask
+        self._last_x = remainder
+        self._x_register = result
+        self._stack.pop(0)
+        self._stack.insert(0, 0)  # Clear Y
+        while len(self._stack) < 3:
+            self._stack.append(0)
+        if remainder != 0:
+            self.set_flag(4)
+        else:
+            self.clear_flag(4)
+        self.clear_flag(5)
+        logger.info(f"Double divide: {y} / {x} = {result}, remainder={remainder}")
+
+
+### g MODE ROW 2 ###
+
+# SF
+    def set_flag(self, flag: int) -> None:
+        self._flags[flag] = 1
+# CF
+    def clear_flag(self, flag: int) -> None:
+        self._flags[flag] = 0
+# F?
+    def test_flag(self, flag: int) -> bool:
+        return self._flags[flag] == 1
+# Flag Related
+    def set_g_flag(self, value):
+        self._flags[5] = value  # Use integer 5
+        logger.info(f"G flag set to {value}")
+    def get_g_flag(self):
+        return self._flags[5]  
+    def get_flags_bitfield(self) -> int:
+        return (self._flags[0] |
+                (self._flags[1] << 1) |
+                (self._flags[2] << 2) |
+                (self._flags[3] << 3))
+# DBL×
+    def double_multiply(self) -> None:
+        """Multiply X and Y, treating them as double-word values, and store low word in X (DBL×)."""
+        if len(self._stack) < 1:
+            raise StackUnderflowError("Need Y value for double multiply")
+        y = self._stack[0]
+        x = self._x_register
+        word_size = self.get_word_size()
+        mask = (1 << word_size) - 1
+        
+        # Double-word multiplication (simplified to single-word result for now)
+        result = (y * x) & mask  # Truncate to word size
+        self._last_x = self._x_register
+        self._x_register = result
+        self._stack.pop(0)
+        self._stack.insert(0, 0)  # Clear Y
+        while len(self._stack) < 3:
+            self._stack.append(0)
+        self.clear_flag(4)
+        self.clear_flag(5)
+        logger.info(f"Double multiply: {y} * {x} = {result} (low word)")
+
+
+### g MODE ROW 3 ###
+
+# R↑
+    def roll_up(self) -> None:
+        """Roll up the stack: T→X, X→Y, Y→Z, Z→T."""
+        logger.info(f"Before R↑: X={self._x_register}, stack={self._stack}")
+        old_t = self._stack[2]
+        self._stack[2] = self._stack[1]
+        self._stack[1] = self._stack[0]
+        self._stack[0] = self._x_register
+        self._x_register = old_t
+        logger.info(f"After R↑: X={self._x_register}, stack={self._stack}")
+
+### g MODE ROW 4 ###
+
+# LSTX
+    def last_x(self) -> int:
+        """
+        Return the last X value before the most recent stack operation that modified it.
+    
+        Returns:
+            int: The value of _last_x.
+        """
+        return self._last_x
+
+
+

@@ -153,7 +153,10 @@ def action_show(display_widget: Any, controller_obj: Any, mode: str) -> bool:
 def action_set_bit(display_widget: Any, controller_obj: Any) -> None:
     """Set a specific bit (SB)."""
     try:
-        bit_index: int = int(display_widget.raw_value or "0")
+        if controller_obj.is_user_entry:
+            bit_index = int(display_widget.raw_value or "0")
+        else:
+            bit_index = controller_obj.stack.peek()  # Use X if no new entry
         controller_obj.set_bit(bit_index)
     except ValueError:
         controller_obj.handle_error(InvalidBitOperationError("Invalid bit index"))
