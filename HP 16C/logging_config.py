@@ -1,10 +1,11 @@
 """
 logging_config.py
-Sets up logging for the HP-16C emulator with console and file output, including timestamps.
-Author: GlobeyCode (original), refactored by ChatGPT
+Configures logging for the HP-16C emulator with console and file output, including timestamps.
+Author: GlobeyCode
 License: MIT
-Date: 3/23/2025 (original), refactored 2025-04-01
-Dependencies: Python 3.6+ (logging, os, datetime)
+Created: 3/23/2025
+Last Modified: 4/06/2025
+Dependencies: Python 3.6+, logging, os, datetime
 """
 
 import logging

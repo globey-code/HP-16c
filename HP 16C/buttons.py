@@ -1,11 +1,11 @@
 ﻿"""
 buttons.py
-Consolidates button logic for the HP-16C emulator, including normal actions,
-f/g mode toggling, and button command binding.
-Author: GlobeyCode (original), refactored by ChatGPT
+Handles button bindings and normal-mode actions for the HP-16C emulator, including digit entry and operator processing.
+Author: GlobeyCode
 License: MIT
-Date: 3/23/2025 (original), refactored 2025-04-01
-Dependencies: Python 3.6+, HP-16C emulator modules (stack, base_conversion, f_mode, g_mode, error)
+Created: 3/23/2025
+Last Modified: 4/06/2025
+Dependencies: Python 3.6+, stack, logging_config
 """
 
 from typing import Any, Dict, List, Callable
@@ -58,7 +58,7 @@ def handle_normal_command_by_label(btn: Dict[str, Any], display: Any, controller
         controller_obj.enter_value()
     elif label_text.isdigit() or label_text in "ABCDEF":
         controller_obj.enter_digit(label_text)
-    elif label_text in {"+", "-", "*", "/", "AND", "OR", "XOR", "NOT", "RMD"}:
+    elif label_text in {"+", "-", "×", "÷", "AND", "OR", "XOR", "NOT", "RMD"}:
         controller_obj.enter_operator(label_text)
     elif label_text == ".":
         if display.mode == "FLOAT":
@@ -180,7 +180,7 @@ def handle_backspace(display_widget: Any, controller_obj: Any) -> None:
             logger.info(f"BSP executed: Removed '{removed_instruction}', new length={len(controller_obj.program_memory)}")
             if controller_obj.program_memory:
                 last_instruction = controller_obj.program_memory[-1]
-                op_map = {"/": "10", "*": "20", "-": "30", "+": "40", ".": "48", "ENTER": "36"}
+                op_map = {"÷": "10", "×": "20", "-": "30", "+": "40", ".": "48", "ENTER": "36"}
                 base_map = {"HEX": "23", "DEC": "24", "OCT": "25", "BIN": "26"}
                 if isinstance(last_instruction, str):
                     if last_instruction in op_map:

@@ -1,10 +1,11 @@
 """
 arithmetic.py
-Provides integer-based arithmetic operations for the HP-16C emulator.
-Functions now include type hints and obtain parameters from a Stack instance.
-Author: GlobeyCode (original), refactored by ChatGPT
+Provides integer-based arithmetic operations for the HP-16C emulator, supporting multiple complement modes.
+Author: GlobeyCode
 License: MIT
-Date: 3/23/2025 (original), refactored 2025-04-01
+Created: 3/23/2025
+Last Modified: 4/06/2025
+Dependencies: Python 3.6+, stack, error, logging_config
 """
 
 from typing import Union, Tuple

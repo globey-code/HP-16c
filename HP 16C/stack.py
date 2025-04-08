@@ -1,9 +1,11 @@
 ﻿"""
 stack.py
-Implements the stack for the HP-16C emulator, including arithmetic operations.
-Author: GlobeyCode (original), refactored by ChatGPT
+Implements the RPN stack for the HP-16C emulator, including arithmetic, bit operations, and base conversion utilities.
+Author: GlobeyCode
 License: MIT
-Date: 3/23/2025 (original), refactored 2025-04-01
+Created: 3/23/2025
+Last Modified: 4/01/2025
+Dependencies: Python 3.6+, typing, error, logging_config
 """
 
 from typing import Union, Tuple
@@ -54,6 +56,7 @@ class Stack:
         self._x_register: int = 0  # X register
         self._flags: dict[int, int] = {i: 0 for i in range(6)}
         self._last_x: int = 0
+        self._last_remainder = 0
         self._i_register: int = 0
         self._data_registers: List[int] = [0] * 10
         
@@ -351,59 +354,41 @@ class Stack:
         return result, carry, overflow
 
     def divide(self, y: Number, x: Number) -> Tuple[int, int, int]:
-        """Divide Y by X, handling word size, complement mode, and overflow.
-
-        Args:
-            y: First operand (Y from stack).
-            x: Second operand (X from register).
-
-        Returns:
-            Tuple[int, int, int]: (result, remainder, overflow)
-
-        Raises:
-            DivisionByZeroError: If x is 0.
-        """
-        if x == 0:
-            raise DivisionByZeroError()
-        if self.current_mode == "FLOAT":
-            result = y / x
-            self.clear_flag(4)
-            self.clear_flag(5)
-            remainder = 0
-            overflow = 0
-            if isinstance(result, float) and (result == float('inf') or result == float('-inf')):
-                self.set_flag(5)
-                overflow = 1
-            logger.info(f"Divide (FLOAT): {y} / {x} = {result}")
-        else:
-            mode = self.get_complement_mode()
-            word_size = self.get_word_size()
-            mask = (1 << word_size) - 1
-            max_signed = (1 << (word_size - 1)) - 1
-            min_signed = -(1 << (word_size - 1))
-            if mode == "UNSIGNED":
-                result = int(y / x)
-                remainder = y % x
-                overflow = 0
-            else:
-                a_signed = to_signed(y, word_size, mode)
-                b_signed = to_signed(x, word_size, mode)
-                result_signed = int(a_signed / b_signed)
-                remainder = a_signed % b_signed
-                result = from_signed(result_signed, word_size, mode)
-                overflow = 1 if result_signed > max_signed or result_signed < min_signed else 0
-            result = result & mask
-            self._last_x = remainder
-            if remainder != 0:
-                self.set_flag(4)
-            else:
+            if x == 0:
+                raise DivisionByZeroError()
+            if self.current_mode == "FLOAT":
+                result = y / x
                 self.clear_flag(4)
-            if overflow:
-                self.set_flag(5)
-            else:
                 self.clear_flag(5)
-            logger.info(f"Divide: {y} / {x} = {result} ({mode}), remainder={remainder}, overflow={overflow}")
-        return result, remainder, overflow
+                remainder = 0
+                overflow = 0
+                if isinstance(result, float) and (result == float('inf') or result == float('-inf')):
+                    self.set_flag(5)
+                    overflow = 1
+            else:
+                mode = self.get_complement_mode()
+                word_size = self.get_word_size()
+                mask = (1 << word_size) - 1
+                if mode == "UNSIGNED":
+                    result = int(y / x)
+                    remainder = y % x
+                    overflow = 0
+                else:
+                    a_signed = to_signed(y, word_size, mode)
+                    b_signed = to_signed(x, word_size, mode)
+                    result_signed = int(a_signed / b_signed)
+                    remainder = a_signed % b_signed
+                    overflow = result_signed > ((1 << (word_size - 1)) - 1) or result_signed < -(1 << (word_size - 1))
+                    result = from_signed(result_signed, word_size, mode)
+                result = result & mask
+                self._last_remainder = remainder  # Store remainder for single-word division
+                if remainder != 0:
+                    self.set_flag(4)
+                else:
+                    self.clear_flag(4)
+                if overflow:
+                    self.set_flag(5)
+            return result, remainder, overflow
 
 
 ### f MODE ROW 1 ###
@@ -503,45 +488,21 @@ class Stack:
         logger.info(f"Rotated right: {rotated} (word size={word_size}, mode={mode}, carry={carry})")
 # RLn
     def rotate_left_carry(self) -> None:
-        """Rotate X left by X bits through carry, matching real HP-16C RLn behavior.
-    
-        Raises:
-            ValueError: If word_size is not positive.
-            NegativeShiftCountError: If the rotation count is negative or exceeds word_size - 1.
-        """
-        # Get and validate word size
         word_size = self.get_word_size()
         if word_size <= 0:
             raise ValueError("Word size must be positive")
-    
-        # Check raw rotation amount before any masking or normalization
         if self._x_register < 0 or self._x_register >= word_size:
             raise NegativeShiftCountError("Invalid rotation count", "E108")
-
-    
-        # Create mask for the word size
         mask = (1 << word_size) - 1
-    
-        # Determine rotation amount (already validated to be in [0, word_size - 1])
-        n = self._x_register & mask  # Interpret as unsigned value
-    
-        # Get carry-in from flag 4
+        n = self._x_register & mask  # n = 1
         carry_in = 1 if self.test_flag(4) else 0
-    
-        # Perform the rotation: (x << n) | (x >> (word_size - n))
         rotated = ((self._x_register << n) | (self._x_register >> (word_size - n))) & mask
-    
-        # Determine carry-out from the MSB of the rotated value
         carry_out = 1 if (rotated & (1 << (word_size - 1))) else 0
         if carry_out:
             self.set_flag(4)
         else:
             self.clear_flag(4)
-    
-        # Update the X register
         self._x_register = rotated
-    
-        # Log the operation details
         logger.info(f"Rotated left with carry by {n}: {rotated} (word_size={word_size}, carry_in={carry_in}, carry_out={carry_out})")
 # RRn
     def rotate_right_carry(self) -> None:
@@ -614,15 +575,14 @@ class Stack:
         logger.info(f"Masked right {bits} bits: Y={y} -> X={self._x_register} (mask={mask:0{word_size}b}), stack={self._stack}")
 # RMD
     def remainder(self) -> None:
-        """Replace X with the remainder from the last division operation, lifting stack."""
-        old_x = self._x_register  # Save current X
-        self._x_register = self._last_x  # Set X to remainder
-        self._stack.insert(0, old_x)  # Push old X to Y
+        old_x = self._x_register
+        self._x_register = self._last_remainder  # Use _last_remainder
+        self._stack.insert(0, old_x)
         while len(self._stack) > 3:
-            self._stack.pop(-1)  # Trim stack to 3 (T drops off)
-        self.clear_flag(4)  # Carry flag cleared
-        self.clear_flag(5)  # Overflow cleared
-        logger.info(f"Retrieved remainder: X={self._x_register} from last_x, old_X={old_x}, stack={self._stack}")
+            self._stack.pop(-1)
+        self.clear_flag(4)
+        self.clear_flag(5)
+        logger.info(f"Retrieved remainder: X={self._last_remainder} from last_remainder, old_X={old_x}, stack={self._stack}")
 
 ### f MODE ROW 2 ###
 

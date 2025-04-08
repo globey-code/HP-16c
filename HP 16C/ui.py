@@ -1,11 +1,11 @@
 """
 ui.py
-Builds the UI components for the HP-16C emulator, including the display and button grid.
-Refactored to include type hints, clearer docstrings, and improved layout calculations.
-Author: GlobeyCode (original), refactored by ChatGPT
+Builds the graphical user interface for the HP-16C emulator, including the display and button grid layout.
+Author: GlobeyCode
 License: MIT
-Date: 3/23/2025 (original), refactored 2025-04-01
-Dependencies: Python 3.6+ with tkinter, and HP-16C emulator modules (buttons, display, controller)
+Created: 3/23/2025
+Last Modified: 4/06/2025
+Dependencies: Python 3.6+, tkinter, tkinter.font, display, stack, button_config, logging_config, user_guide
 """
 
 from typing import Tuple, List, Dict, Any
@@ -16,18 +16,7 @@ from stack import Stack
 from button_config import BUTTONS_CONFIG
 from logging_config import logger
 from dataclasses import asdict
-
-
-def show_user_guide() -> None:
-    help_window = tk.Toplevel()
-    help_window.title("User Guide")
-    tk.Label(
-        help_window,
-        text=(
-            "This is the user guide for the HP-16C emulator.\n"
-            "Here you can find instructions on how to use the emulator."
-        )
-    ).pack()
+from user_guide import show_user_guide  # Import from user_guide.py
 
 def setup_ui(root: tk.Tk, stack: Stack, config: Dict[str, Any], Courier: tkFont.Font) -> Tuple[Display, List[Dict[str, Any]]]:
     total_width = 1049 + 2 * config["margin"]
@@ -78,18 +67,16 @@ def setup_ui(root: tk.Tk, stack: Stack, config: Dict[str, Any], Courier: tkFont.
     buttons_list: List[Dict[str, Any]] = []
     logger.info("Creating buttons from BUTTONS_CONFIG")
     for cfg in BUTTONS_CONFIG:
-        # Convert ButtonConfig dataclass to dictionary for create_single_button
         btn_dict = create_single_button(buttons_frame, asdict(cfg))
-        rowspan = cfg.rowspan  # Access rowspan directly from dataclass
+        rowspan = cfg.rowspan
         btn_dict["frame"].grid(
-            row=cfg.row,       # Use dot notation
-            column=cfg.col,    # Use dot notation
+            row=cfg.row,
+            column=cfg.col,
             rowspan=rowspan,
             padx=(25, 2),
             pady=(20, 2),
             sticky="nsew"
         )
-        # Access text fields from btn_dict since they are added by create_single_button
         top_text = (btn_dict.get('orig_top_text') or '').replace('\n', '')
         main_text = (btn_dict.get('orig_main_text') or '').replace('\n', '')
         sub_text = (btn_dict.get('orig_sub_text') or '').replace('\n', '')
@@ -126,11 +113,11 @@ def setup_ui(root: tk.Tk, stack: Stack, config: Dict[str, Any], Courier: tkFont.
     root.config(menu=menu_bar)
     help_menu = tk.Menu(menu_bar, tearoff=0)
     menu_bar.add_cascade(label="Help", menu=help_menu)
-    help_menu.add_command(label="User Guide", command=show_user_guide)
+    help_menu.add_command(label="User Guide", command=show_user_guide)  # Use imported function
     debug_menu = tk.Menu(menu_bar, tearoff=0)
     menu_bar.add_cascade(label="Debug", menu=debug_menu)
     debug_menu.add_command(label="Toggle Stack Display", command=disp.toggle_stack_display)
-    root.bind('<F1>', lambda event: show_user_guide())
+    root.bind('<F1>', lambda event: show_user_guide())  # Use imported function
 
     # Add stack display
     stack_display = tk.Label(root, text="Y: 0 Z: 0 T: 0", font=Courier, bg=config["bg_color"], fg="white")

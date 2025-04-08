@@ -1,19 +1,18 @@
 ﻿"""
 controller.py
-Coordinates stack operations and display updates for the HP-16C emulator,
-implementing RPN behavior.
-Refactored to use dependency injection and integrate base conversion into Stack and Display.
-Author: GlobeyCode (original), refactored by ChatGPT
+Coordinates stack operations, display updates, and user input for the HP-16C emulator, implementing RPN behavior.
+Author: GlobeyCode
 License: MIT
-Date: 3/23/2025 (original), refactored 2025-04-01, fixed 2025-04-05
-Dependencies: Python 3.6+, refactored modules: stack, buttons, f_mode, g_mode, error, logging_config
+Created: 3/23/2025
+Last Modified: 4/05/2025
+Dependencies: Python 3.6+, buttons, f_mode, g_mode, error, logging_config, stack
 """
 
 from typing import Any, List, Optional, Tuple, Union
 from buttons import VALID_CHARS, revert_to_normal
 from f_mode import f_action
 from g_mode import g_action
-from error import HP16CError
+from error import HP16CError, StackUnderflowError
 from logging_config import logger, program_logger
 from stack import Stack
 
@@ -52,7 +51,7 @@ class HP16CController:
         self.stack = stack
         self.stack.set_word_size(8)  # Set default word size to 8 bits
         logger.info("Default word size set to 8 bits")
-        self.show_stack_display = False
+        self.show_stack_display: bool = False
         self.display = display
         self.buttons = buttons
         self.stack_display = stack_display
@@ -299,7 +298,7 @@ class HP16CController:
             raise ValueError(f"Invalid mode: {mode}")
 
     def enter_operator(self, operator: str) -> None:
-        """Process an operator command (+, -, *, /)."""
+        """Process an operator command (+, -, *, ÷)."""
         logger.info(f"Entering operator: {operator}, X={self.stack.peek()}, stack={self.stack._stack}")
         if self.program_mode:
             logger.info("Operation skipped due to program mode")
@@ -309,7 +308,7 @@ class HP16CController:
             if self.display.is_error_displayed:
                 logger.info("Operation skipped due to error state")
                 return
-            if operator in ["+", "-", "*", "/"]:
+            if operator in ["+", "-", "×", "÷"]:
                 self.binary_operation(operator)
             else:
                 raise ValueError(f"Unknown operator: {operator}")
@@ -324,7 +323,6 @@ class HP16CController:
             logger.info(f"Unexpected error: {e}")
 
     def enter_value(self) -> None:
-        """Finalize entry and push to stack, or record ENTER in program mode."""
         logger.info("Entering value (lifting stack)")
         if self.program_mode:
             instruction = "ENTER"
@@ -336,26 +334,24 @@ class HP16CController:
             self.last_program_step = step
             return
     
-        # Handle regular mode: lift stack and update X if new entry
-        current_x = self.stack.peek()  # Capture current X before any changes
+        current_x = self.stack.peek()
         if self.is_user_entry:
             entry = self.display.raw_value
             val = self.stack.interpret_in_base(entry, self.display.mode)
-            self.stack._x_register = val  # Update X with new value
+            self.stack._x_register = val
             formatted_value = self.stack.format_in_base(val, self.display.mode)
             self.display.set_entry(formatted_value, blink=True)
             self.is_user_entry = False
             self.decimal_entered = False
+            self.stack.push(val)
         else:
-            # If no new entry, use current X for display
             formatted_value = self.stack.format_in_base(current_x, self.display.mode)
             self.display.set_entry(formatted_value, blink=True)
+            self.stack.push(current_x)
     
-        # Push the current X (or new value) to stack for lifting
-        self.stack.push(current_x if not self.is_user_entry else val)
         self.stack_lift_enabled = False
         self.result_displayed = True
-        self.update_stack_display(log_update=True)  # Log stack state
+        self.update_stack_display(log_update=True)
 
     def enter_base_change(self, base: str) -> None:
         """Handle base change (HEX, DEC, OCT, BIN)."""
@@ -443,55 +439,36 @@ class HP16CController:
             logger.info("Stack display hidden")
 
     def binary_operation(self, operator: str) -> None:
-        """Perform binary operation between X and Y."""
         logger.info(f"Entering binary_operation with operator={operator}, X={self.stack.peek()}")
-        logger.info(f"Entering operator: {operator}, X={self.stack.peek()}, stack={self.stack._stack}")
         if self.entry_mode is not None:
-            logger.info(f"Ignoring operator {operator} in entry mode {self.entry_mode}")
+            logger.info(f"Ignoring operator {operator} in entry_mode {self.entry_mode}")
             return
         self.display.clear_entry()
-        x = self.stack.peek()  # X register
-        self.stack.pop()       # Pop X
-        y = self.stack.peek()  # Y from stack
-        self.stack.pop()       # Pop Y (now stack is [Z, T])
+        x = self.stack.peek()
+        self.stack.pop()
+        y = self.stack.peek()
+        self.stack.pop()
         if operator == "+":
             val, carry, overflow = self.stack.add(y, x)
-            logger.info(f"Add: {y} + {x} = {val} ({self.stack.complement_mode}), carry={carry}, overflow={overflow}")
-            logger.info(f"After add: val={val}, carry={carry}, overflow={overflow}")
-            if overflow:
-                logger.info("G flag set due to overflow")
+            self.stack._last_x = x
         elif operator == "-":
             val, borrow, overflow = self.stack.subtract(y, x)
-            logger.info(f"Subtract: {y} - {x} = {val} ({self.stack.complement_mode}), borrow={borrow}, overflow={overflow}")
-            logger.info(f"After subtract: val={val}, borrow={borrow}, overflow={overflow}")
-            if overflow:
-                logger.info("G flag set due to overflow")
-        elif operator == "*":
+            self.stack._last_x = x
+        elif operator == "×":
             val, carry, overflow = self.stack.multiply(y, x)
-            logger.info(f"Multiply: {y} * {x} = {val} ({self.stack.complement_mode}), carry={carry}, overflow={overflow}")
-            logger.info(f"After multiply: val={val}, carry={carry}, overflow={overflow}")
-            if overflow:
-                logger.info("G flag set due to overflow")
-            else:
-                logger.info("No overflow detected in *")
-        elif operator == "/":
+            self.stack._last_x = x
+        elif operator == "÷":
             val, remainder, overflow = self.stack.divide(y, x)
-            logger.info(f"Divide: {y} / {x} = {val} ({self.stack.complement_mode}), remainder={remainder}, overflow={overflow}")
-            logger.info(f"After divide: val={val}, remainder={remainder}, overflow={overflow}")
-            if overflow:
-                logger.info("G flag set due to overflow")
+            self.stack._last_x = x
+            self.stack._last_remainder = remainder  # Store for f RMD
         else:
             self.handle_error(HP16CError(f"Unsupported operator: {operator}", "E03"))
-            logger.info(f"Unsupported operator: {operator}")
             return
-        self.stack.push(val)  # Push result to stack (now [val, Z, T])
+        self.stack.push(val)
         self.display.set_entry(self.stack.format_in_base(val, self.display.mode), blink=True)
         self.stack_lift_enabled = True
         self.result_displayed = True
-        logger.info(f"About to call update_stack_display, show_stack_display={self.show_stack_display}")
-        # Remove forcing F2 on, rely on toggle state
         self.update_stack_display(log_update=True)
-        logger.info("Finished binary_operation")
 
     def restore_normal_display(self) -> None:
         """Restore display after error."""
@@ -727,11 +704,10 @@ class HP16CController:
         self.update_stack_display()
 # RLn
     def rotate_left_carry(self) -> None:
-        """Rotate X left with carry."""
         logger.info("Rotating left with carry")
         try:
             if self.is_user_entry:
-                self.finalize_entry()
+                self.finalize_entry()  # Sets X = 1
             self.stack.rotate_left_carry()
             top_val = self.stack.peek()
             logger.info(f"After rotation, top_val = {top_val}")

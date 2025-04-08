@@ -1,9 +1,11 @@
 """
 error.py
-Custom exceptions for the HP-16C emulator.
+Defines custom exception classes for error handling in the HP-16C emulator.
 Author: GlobeyCode
 License: MIT
-Date: 3/23/2025
+Created: 3/23/2025
+Last Modified: 4/06/2025
+Dependencies: Python 3.6+, typing, logging_config
 """
 
 from typing import Optional

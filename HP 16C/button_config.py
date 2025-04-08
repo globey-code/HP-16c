@@ -1,11 +1,11 @@
 ﻿"""
 button_config.py
-Defines the layout configuration for all buttons in the HP-16C emulator using a grid system.
-Refactored to use a dataclass for type safety and maintainability.
-Author: GlobeyCode (original), refactored by ChatGPT
+Defines the button layout configuration for the HP-16C emulator using a dataclass-based grid system.
+Author: GlobeyCode
 License: MIT
-Date: 3/23/2025 (original), refactored 2025-04-01
-Dependencies: Python 3.6+
+Created: 3/23/2025
+Last Modified: 4/06/2025
+Dependencies: Python 3.6+, dataclasses, typing
 """
 
 from dataclasses import dataclass, field
@@ -98,8 +98,8 @@ BUTTONS_CONFIG: List[ButtonConfig] = [
     ButtonConfig(top_label="EEx", main_label="CHS", sub_label="X=Y", row=3, col=8),
     
     # COLUMN 9 (rightmost column, originally x=900)
-    ButtonConfig(top_label="XOR", main_label="/", sub_label="DBL÷", row=0, col=9),
-    ButtonConfig(top_label="AND", main_label="*", sub_label="DBL×", row=1, col=9),
+    ButtonConfig(top_label="XOR", main_label="÷", sub_label="DBL÷", row=0, col=9),
+    ButtonConfig(top_label="AND", main_label="×", sub_label="DBL×", row=1, col=9),
     ButtonConfig(top_label="NOT", main_label="-", sub_label="X>0", row=2, col=9),
     ButtonConfig(top_label="OR", main_label="+", sub_label="X=0", row=3, col=9),
 ]

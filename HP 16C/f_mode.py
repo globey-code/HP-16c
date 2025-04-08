@@ -1,12 +1,11 @@
 """
 f_mode.py
-Consolidates button logic for the f-mode in the HP-16C emulator, handling operations
-like shifting, rotating, and masking.
-Refactored to include type hints, detailed docstrings, and improved structure.
-Author: GlobeyCode (original), refactored by ChatGPT
+Consolidates button logic for f-mode operations in the HP-16C emulator, handling bit shifts, rotations, masking, and system configuration.
+Author: GlobeyCode
 License: MIT
-Date: 3/23/2025 (original), refactored 2025-04-01
-Dependencies: Python 3.6+, HP-16C emulator modules (sys, os, buttons, stack, base_conversion, error, logging_config)
+Created: 3/23/2025
+Last Modified: 4/06/2025
+Dependencies: Python 3.6+, sys, os, buttons, stack, error, logging_config
 """
 
 from typing import Any, Dict, Callable
@@ -14,7 +13,7 @@ import sys
 import os
 import buttons
 import stack
-from error import HP16CError, IncorrectWordSizeError, NoValueToShiftError, ShiftExceedsWordSizeError, InvalidBitOperationError, StackUnderflowError, DivisionByZeroError, InvalidOperandError
+from error import HP16CError, IncorrectWordSizeError, NoValueToShiftError, ShiftExceedsWordSizeError, InvalidBitOperationError, StackUnderflowError, DivisionByZeroError, InvalidOperandError, NegativeShiftCountError
 from logging_config import logger, program_logger
 
 
@@ -45,12 +44,66 @@ def action_rotate_right(display_widget: Any, controller_obj: Any) -> None:
     controller_obj.rotate_right()
 
 def action_rotate_left_n(display_widget: Any, controller_obj: Any) -> None:
-    """Rotate left with carry (RLn)."""
-    controller_obj.rotate_left_carry()
+    """Rotate Y left by X bits with carry (RLn)."""
+    try:
+        if controller_obj.is_user_entry:
+            controller_obj.finalize_entry()
+        if len(controller_obj.stack._stack) < 1:
+            raise StackUnderflowError("Need Y value for RLn")
+        n = controller_obj.stack.pop()  # X = rotation count
+        y = controller_obj.stack.pop()  # Y = operand
+        if n < 0 or n >= controller_obj.stack.word_size:
+            raise NegativeShiftCountError("Invalid rotation count", "E108")
+        mask = (1 << controller_obj.stack.word_size) - 1
+        carry_in = 1 if controller_obj.stack.test_flag(4) else 0
+        rotated = ((y << n) | (y >> (controller_obj.stack.word_size - n)) | (carry_in << (n - 1))) & mask
+        carry_out = 1 if (y & (1 << (controller_obj.stack.word_size - n))) else 0
+        controller_obj.stack._x_register = rotated
+        if carry_out:
+            controller_obj.stack.set_flag(4)
+        else:
+            controller_obj.stack.clear_flag(4)
+        top_val = controller_obj.stack.peek()
+        display_widget.set_entry(
+            controller_obj.stack.format_in_base(top_val, controller_obj.display.mode, pad=False),
+            blink=True
+        )
+        controller_obj.update_stack_display()
+        controller_obj.is_user_entry = False
+        logger.info(f"Rotated Y={y} left with carry by {n}: {rotated} (word_size={controller_obj.stack.word_size}, carry_in={carry_in}, carry_out={carry_out})")
+    except HP16CError as e:
+        controller_obj.handle_error(e)
 
 def action_rotate_right_n(display_widget: Any, controller_obj: Any) -> None:
-    """Rotate right with carry (RRn)."""
-    controller_obj.rotate_right_carry()
+    """Rotate Y right by X bits with carry (RRn)."""
+    try:
+        if controller_obj.is_user_entry:
+            controller_obj.finalize_entry()
+        if len(controller_obj.stack._stack) < 1:
+            raise StackUnderflowError("Need Y value for RRn")
+        n = controller_obj.stack.pop()  # X = rotation count
+        y = controller_obj.stack.pop()  # Y = operand
+        if n < 0 or n >= controller_obj.stack.word_size:
+            raise NegativeShiftCountError("Invalid rotation count", "E108")
+        mask = (1 << controller_obj.stack.word_size) - 1
+        carry_in = 1 if controller_obj.stack.test_flag(4) else 0
+        rotated = ((y >> n) | (y << (controller_obj.stack.word_size - n)) | (carry_in << (controller_obj.stack.word_size - n - 1))) & mask
+        carry_out = 1 if (y & (1 << (n - 1))) else 0
+        controller_obj.stack._x_register = rotated
+        if carry_out:
+            controller_obj.stack.set_flag(4)
+        else:
+            controller_obj.stack.clear_flag(4)
+        top_val = controller_obj.stack.peek()
+        display_widget.set_entry(
+            controller_obj.stack.format_in_base(top_val, controller_obj.display.mode, pad=False),
+            blink=True
+        )
+        controller_obj.update_stack_display()
+        controller_obj.is_user_entry = False
+        logger.info(f"Rotated Y={y} right with carry by {n}: {rotated} (word_size={controller_obj.stack.word_size}, carry_in={carry_in}, carry_out={carry_out})")
+    except HP16CError as e:
+        controller_obj.handle_error(e)
 
 def action_mask_left(display_widget: Any, controller_obj: Any) -> None:
     try:
@@ -212,9 +265,6 @@ def action_clear_program(display_widget: Any, controller_obj: Any) -> None:
 def action_clear_register(display_widget: Any, controller_obj: Any) -> bool:
     """
     Clear all data storage registers.
-    
-    Reverts buttons to normal mode, exits f-mode, and blinks the display.
-    Returns True on success.
     """
     stack.clear_registers()
     logger.info("All data storage registers cleared to zero")
@@ -224,16 +274,13 @@ def action_clear_register(display_widget: Any, controller_obj: Any) -> bool:
     controller_obj.f_mode_active = False
     display_widget.hide_f_mode()
     current_value = stack.peek()
-    formatted_value = format_in_current_base(current_value, display_widget.mode)
+    formatted_value = controller_obj.stack.format_in_base(current_value, display_widget.mode, pad=False)
     display_widget.set_entry(formatted_value, blink=True)
     return True
 
 def action_clear_prefix(display_widget: Any, controller_obj: Any) -> bool:
     """
     Clear any pending prefix operations (CLR PRFX).
-    
-    Resets mode states, hides indicators, reverts buttons, and refreshes the display.
-    Returns True on success.
     """
     controller_obj.entry_mode = None
     controller_obj.f_mode_active = False
@@ -243,9 +290,8 @@ def action_clear_prefix(display_widget: Any, controller_obj: Any) -> bool:
     for btn in controller_obj.buttons:
         if btn.get("command_name") not in ("yellow_f_function", "blue_g_function", "reload_program"):
             buttons.revert_to_normal(btn, controller_obj.buttons, display_widget, controller_obj)
-    from base_conversion import format_in_current_base
-    current_x = stack.peek()
-    formatted_x = format_in_current_base(current_x, display_widget.mode)
+    current_x = controller_obj.stack.peek()
+    formatted_x = controller_obj.stack.format_in_base(current_x, display_widget.mode, pad=False)
     display_widget.set_entry(formatted_x)
     logger.info("Clear Prefix: Reset prefix states, reverted buttons, and refreshed display")
     return True

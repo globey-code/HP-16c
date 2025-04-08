@@ -1,20 +1,18 @@
 ﻿"""
 g_mode.py
-Consolidates button logic for the g-mode in the HP-16C emulator,
-handling operations such as left justification, reciprocal, and flag management.
-Refactored to include type hints and clearer structure.
-Author: GlobeyCode (original), refactored by ChatGPT
+Consolidates button logic for g-mode operations in the HP-16C emulator, including bit manipulation, arithmetic functions, and program control.
+Author: GlobeyCode
 License: MIT
-Date: 3/23/2025 (original), refactored 2025-04-01
-Dependencies: Python 3.6+, tkinter (for types), and HP-16C emulator modules (sys, os, stack, base_conversion, buttons, error, logging_config)
+Created: 3/23/2025
+Last Modified: 4/01/2025
+Dependencies: Python 3.6+, tkinter (for type hints), sys, os, stack, buttons, error, logging_config
 """
 
 from typing import Any, Callable, Dict
 import sys
 import os
 import stack
-
-from error import HP16CError
+from error import HP16CError, StackUnderflowError, DivisionByZeroError
 from logging_config import logger, program_logger
 
 # Set up paths
@@ -64,8 +62,60 @@ def action_double_remainder(display_widget: Any, controller_obj: Any) -> None:
     logger.info("DBLR placeholder executed")
 
 def action_double_divide(display_widget: Any, controller_obj: Any) -> None:
-    """Double Divide (DBL÷). Placeholder implementation."""
-    logger.info("DBL÷ placeholder executed")
+    try:
+        if controller_obj.is_user_entry:
+            controller_obj.finalize_entry()
+        if len(controller_obj.stack._stack) < 1:
+            raise StackUnderflowError("Need Y value for DBL÷")
+        
+        x = controller_obj.stack.peek()  # Divisor
+        controller_obj.stack.pop()       # Pop X
+        y = controller_obj.stack.peek()  # High word
+        controller_obj.stack.pop()       # Pop Y
+        
+        if x == 0:
+            raise DivisionByZeroError()
+        
+        word_size = controller_obj.stack.get_word_size()
+        
+        dividend = y << word_size
+        divisor = x
+        
+        quotient = dividend // divisor
+        remainder = dividend % divisor
+        
+        controller_obj.stack.push(quotient)
+        controller_obj.stack._last_x = x  # For g LST X
+        
+        # Display quotient immediately
+        formatted_quotient = controller_obj.stack.format_in_base(quotient, controller_obj.display.mode, pad=False)
+        display_widget.set_entry(formatted_quotient, blink=True)
+        
+        # Schedule remainder display after 2 seconds
+        def show_remainder():
+            formatted_remainder = f"RMD {remainder}"
+            display_widget.set_entry(formatted_remainder, blink=False, raw=True)
+        
+        # Schedule return to quotient after 4 seconds
+        def restore_quotient():
+            display_widget.set_entry(formatted_quotient, blink=False)
+        
+        display_widget.master.after(2000, show_remainder)  # 2 seconds for quotient
+        display_widget.master.after(4000, restore_quotient)  # 2 more seconds for remainder, then back
+        
+        if remainder != 0:
+            controller_obj.stack.set_flag(4)
+        else:
+            controller_obj.stack.clear_flag(4)
+        controller_obj.stack.clear_flag(5)
+        
+        controller_obj.update_stack_display()
+        controller_obj.is_user_entry = False
+        controller_obj.stack_lift_enabled = True
+        
+        logger.info(f"DBL÷: {y} << {word_size} = {dividend} ÷ {divisor} = {quotient}, remainder={remainder}")
+    except HP16CError as e:
+        controller_obj.handle_error(e)
 
 
 # ======================================
@@ -167,7 +217,7 @@ def action_toggle_program_run(display_widget: Any, controller_obj: Any) -> None:
             last_step = len(controller_obj.program_memory) - 1
             if last_step >= 0 and controller_obj.program_memory:
                 last_instruction = controller_obj.program_memory[last_step]
-                op_map = {"/": "10", "*": "20", "-": "30", "+": "40", ".": "48", "ENTER": "36"}
+                op_map = {"÷": "10", "×": "20", "-": "30", "+": "40", ".": "48", "ENTER": "36"}
                 base_map = {"HEX": "23", "DEC": "24", "OCT": "25", "BIN": "26"}
                 if isinstance(last_instruction, str):
                     if last_instruction in op_map:
@@ -205,7 +255,7 @@ def action_back_step(display_widget: Any, controller_obj: Any) -> None:
         logger.info(f"BST executed: Removed '{removed_instruction}', new length={len(controller_obj.program_memory)}")
         if controller_obj.program_memory:
             last_instruction = controller_obj.program_memory[-1]
-            op_map = {"/": "10", "*": "20", "-": "30", "+": "40", ".": "48", "ENTER": "36"}
+            op_map = {"÷": "10", "×": "20", "-": "30", "+": "40", ".": "48", "ENTER": "36"}
             base_map = {"HEX": "23", "DEC": "24", "OCT": "25", "BIN": "26"}
             if isinstance(last_instruction, str):
                 if last_instruction in op_map:

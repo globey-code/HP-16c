@@ -1,21 +1,24 @@
 """
 main.pyw
-Main entry point for the HP-16C emulator.
-This module builds the UI, sets up the controller, and binds buttons.
-Refactored to include type hints, detailed docstrings, and improved structure.
-Author: GlobeyCode (original), refactored by ChatGPT
+Serves as the main entry point for the HP-16C emulator, initializing the UI and core components.
+Author: GlobeyCode
 License: MIT
-Date: 3/23/2025 (original), refactored 2025-04-01
-Dependencies: Python 3.6+ with tkinter, and HP-16C emulator modules (ui, controller, buttons, logging_config)
+Created: 3/23/2025
+Last Modified: 4/07/2025
+Dependencies: Python 3.6+, tkinter, tkinter.font, ui, controller, buttons, stack, logging_config, user_guide
 """
 
+import os
 import tkinter as tk
 import tkinter.font as tkFont
 from typing import Dict, Any
-from ui import setup_ui, show_user_guide
+from ui import setup_ui
 from buttons import bind_buttons
 from stack import Stack
 from logging_config import logger
+from user_guide import show_user_guide  # Import directly from user_guide.py
+import ctypes
+
 logger.info("Loading controller module (no reload)")
 
 def load_config() -> Dict[str, Any]:
@@ -37,11 +40,11 @@ def load_config() -> Dict[str, Any]:
     return config
 
 def show_user_guide_placeholder() -> None:
-    logger.info("User guide requested (placeholder)")
-    show_user_guide()
+    logger.info("User guide requested")
+    show_user_guide()  # Call the imported function directly
 
+# Set DPI awareness
 try:
-    import ctypes
     ctypes.windll.shcore.SetProcessDpiAwareness(2)  # Per-monitor DPI awareness
 except:
     try:
@@ -56,12 +59,22 @@ def main() -> None:
     root.configure(bg="#1e1818")
     root.resizable(False, False)
 
-    available_fonts = tkFont.families()
-    font_family = "Calculator" if "Calculator" in available_fonts else "Courier"
-    custom_font = tkFont.Font(family=font_family, size=28)
-    logger.info(f"Using font: family={font_family}, size=28")
-    if font_family == "Courier":
-        logger.warning("Calculator font not found, using Courier")
+    # Load calculator.ttf from the font folder using Windows API
+    base_path = os.path.dirname(os.path.abspath(__file__))  # Directory of main.pyw
+    font_path = os.path.join(base_path, "font", "calculator.ttf")
+    
+    try:
+        # Use AddFontResourceEx to load the font for this process only
+        FR_PRIVATE = 0x10  # Font is private to the process, not installed system-wide
+        if ctypes.windll.gdi32.AddFontResourceExW(font_path, FR_PRIVATE, 0) > 0:
+            custom_font = tkFont.Font(family="Calculator", size=28)
+            logger.info(f"Using font: family=Calculator, size=28 from {font_path}")
+        else:
+            raise OSError("Failed to add font resource")
+    except (OSError, tk.TclError) as e:
+        # Fallback to Courier New if loading fails
+        custom_font = tkFont.Font(family="Courier New", size=28)
+        logger.warning(f"Failed to load Calculator font from {font_path}: {e}, using Courier New")
 
     config = load_config()
     stack_instance = Stack()

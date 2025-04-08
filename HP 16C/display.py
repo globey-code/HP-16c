@@ -1,12 +1,11 @@
 """
 display.py
-Pure UI component that shows the current entry, mode, and stack content.
-Matches HP-16C display behavior per the Owner's Handbook.
-Refactored to integrate base conversion logic and improve maintainability.
-Author: GlobeyCode (original), refactored by ChatGPT
+Manages the display component of the HP-16C emulator, showing stack values, modes, and status indicators.
+Author: GlobeyCode
 License: MIT
-Date: 3/23/2025 (original), refactored 2025-04-01
-Dependencies: Python 3.6+, tkinter, stack, logging_config
+Created: 3/23/2025
+Last Modified: 4/06/2025
+Dependencies: Python 3.6+, tkinter, tkinter.font, stack, logging_config
 """
 
 from typing import Optional, Union, Tuple
